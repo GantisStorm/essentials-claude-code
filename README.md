@@ -109,6 +109,14 @@ Or enable in `.claude/settings.local.json`:
 }
 ```
 
+### Step 3: Create Plans Directory (in your project)
+
+The agents store implementation plans in your project's `.claude/plans/` directory:
+
+```bash
+mkdir -p .claude/plans
+```
+
 ## Usage
 
 ### Planning & Implementation
@@ -181,7 +189,7 @@ Orchestrator Commands
 
 ### Plan Storage
 
-All plans are stored in `.claude/plans/`:
+All plans are stored in **your project's** `.claude/plans/` directory (not the plugin):
 - `{task-slug}-plan.md` - Implementation plans
 - `bug-scout-{identifier}-plan.md` - Bug fix plans
 - `code-quality-{filename}-plan.md` - Quality improvement plans
