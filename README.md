@@ -109,13 +109,43 @@ Or enable in `.claude/settings.local.json`:
 }
 ```
 
-### Step 3: Create Plans Directory (in your project)
+### Step 3: Create Required Directories (in your project)
 
-The agents store implementation plans in your project's `.claude/plans/` directory:
+The agents need these directories in your project:
 
 ```bash
 mkdir -p .claude/plans
+mkdir -p .claude/skills
 ```
+
+### Step 4: Create Project-Specific Code Quality Skill
+
+Create `.claude/skills/code-quality.md` tuned to your project's tooling:
+
+```markdown
+# Code Quality
+
+Run code quality checks for this project.
+
+## Commands
+
+```bash
+# Linting and formatting
+your-linter . --fix
+your-formatter .
+
+# Type checking
+your-type-checker
+```
+
+## Configuration
+
+- Line length: [your limit]
+- Linter config: [your config file]
+- Type checker config: [your config file]
+```
+
+This skill is referenced by the code-quality agent to run your project's specific quality checks.
 
 ## Usage
 
@@ -205,14 +235,12 @@ essentials/
 │   ├── file-editor-default.md    # File modification agent
 │   ├── planner-default.md        # Planning agent
 │   └── prompt-builder-default.md # Prompt engineering agent
-├── commands/
-│   ├── bug-scout.md              # /bug-scout command
-│   ├── code-quality.md           # /code-quality command
-│   ├── editor.md                 # /editor command
-│   ├── planner.md                # /planner command
-│   └── prompt-builder.md         # /prompt-builder command
-└── skills/
-    └── code-quality.md           # Code quality skill reference
+└── commands/
+    ├── bug-scout.md              # /bug-scout command
+    ├── code-quality.md           # /code-quality command
+    ├── editor.md                 # /editor command
+    ├── planner.md                # /planner command
+    └── prompt-builder.md         # /prompt-builder command
 ```
 
 ## Key Design Principles
