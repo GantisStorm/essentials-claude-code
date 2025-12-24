@@ -6,9 +6,9 @@
   "homepage": "https://github.com/GantisStorm/essentials-claude-code",
   "plugins": [
     {
-      "name": "orchestrator-framework",
-      "description": "Complete orchestration framework with planner, bug-scout, code-quality, file-editor, and prompt-builder agents",
-      "path": "orchestrator-framework"
+      "name": "essentials",
+      "description": "Essential agents for Claude Code: planner, bug-scout, code-quality, file-editor, and prompt-builder",
+      "path": "essentials"
     }
   ]
 }

@@ -2,11 +2,11 @@
 
 A comprehensive multi-agent orchestration framework for Claude Code. Features deep planning, bug investigation, code quality analysis, and parallel file editing capabilities.
 
-## Core Concept: Orchestrated Multi-Agent Workflows
+## Core Concept: Multi-Agent Workflows
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                     ORCHESTRATOR FRAMEWORK                                   │
+│                        ESSENTIALS FRAMEWORK                                  │
 │                                                                             │
 │  COMMANDS (User-Invoked)           AGENTS (Background Workers)              │
 │  ─────────────────────────         ────────────────────────────             │
@@ -96,7 +96,7 @@ Iterative prompt engineering from vibe descriptions:
 ### Step 2: Install the Plugin
 
 ```bash
-/plugin install orchestrator-framework@essentials-claude-code
+/plugin install essentials@essentials-claude-code
 ```
 
 Or enable in `.claude/settings.local.json`:
@@ -104,7 +104,7 @@ Or enable in `.claude/settings.local.json`:
 ```json
 {
   "enabledPlugins": {
-    "orchestrator-framework@essentials-claude-code": true
+    "essentials@essentials-claude-code": true
   }
 }
 ```
@@ -190,7 +190,7 @@ All plans are stored in `.claude/plans/`:
 ## Directory Structure
 
 ```
-orchestrator-framework/
+essentials/
 ├── agents/
 │   ├── bug-scout-default.md      # Bug investigation agent
 │   ├── code-quality-default.md   # Code analysis agent
