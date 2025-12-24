@@ -1,0 +1,14 @@
+{
+  "name": "essentials-claude-code",
+  "version": "1.0.0",
+  "description": "Multi-agent orchestration framework for Claude Code with deep planning, bug investigation, code quality analysis, and parallel file editing capabilities",
+  "author": "GantisStorm",
+  "homepage": "https://github.com/GantisStorm/essentials-claude-code",
+  "plugins": [
+    {
+      "name": "orchestrator-framework",
+      "description": "Complete orchestration framework with planner, bug-scout, code-quality, file-editor, and prompt-builder agents",
+      "path": "orchestrator-framework"
+    }
+  ]
+}
