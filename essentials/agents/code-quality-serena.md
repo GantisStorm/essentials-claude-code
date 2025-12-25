@@ -178,11 +178,13 @@ Functions (from LSP):
   - Parameters: [from symbol info]
 
 Interfaces/Types (from LSP):
-- [TypeName] (lines X-Y, kind=11)
+- [TypeName] (lines X-Y, kind=11) | Used: [Yes/No] | Referenced at: [line numbers or "Only in type signature"]
 
 Global Variables (from LSP):
 - [varName] (kind=13)
 ```
+
+**IMPORTANT**: For interfaces/types, use `find_referencing_symbols` to check if they're only used in their own definition (e.g., as a parameter type that's never actually accessed). Mark these as potentially unused.
 
 ---
 
@@ -231,6 +233,13 @@ Elements with ZERO references from find_referencing_symbols:
 - Type: [from LSP kind]
 - Reason: No references found
 - Recommendation: Remove or investigate if intentionally unused
+
+SPECIAL CHECK - Unused Interfaces/Types:
+- Use find_referencing_symbols to find all references to interface/type
+- Check if only referenced in parameter types where parameter itself is unused
+- Example: `interface Filters { tags: string[] }` used in `searchTribes(query: string, filters?: Filters)`
+  but `filters` parameter never accessed in function body (verify by reading function)
+- These are effectively dead code even though LSP shows references
 ```
 
 ---
@@ -299,8 +308,20 @@ Naming Issues (from LSP):
 - [ ] Misleading names: [check names don't match behavior]
 - [ ] Inconsistent naming style: [compare with project conventions from Phase 0]
 
+Redundant Logic (from file content):
+- [ ] Redundant conditionals (ternary/if-else with identical branches): [locations]
+  Example: `x ? foo.bar() : foo.bar()` or `member.platform === 'RUMBLE' ? id.toLowerCase() : id.toLowerCase()`
+- [ ] Unnecessary conditional expressions: [locations]
+
+Magic Numbers/Strings (from file content):
+- [ ] Magic numbers that should be constants: [locations with values]
+  Example: `timeout = 7 * 24 * 60 * 60` should use `TIME_CONSTANTS.SECONDS_PER_WEEK`
+- [ ] Hardcoded strings repeated multiple times: [use search_for_pattern to find duplicates]
+- [ ] Numeric literals without clear meaning: [locations]
+
 Dead Code (from LSP):
 - [ ] Unused symbols: [symbols with zero references from find_referencing_symbols]
+- [ ] Unused interfaces/types: [types only used in unused parameter signatures]
 - [ ] Unreachable code: [analyze call graph]
 ```
 
@@ -315,6 +336,12 @@ Missing Types:
 
 Type Inconsistencies:
 - [ ] Return type doesn't match implementation: [analyze code]
+
+Best Practices (from file content):
+- [ ] parseInt/parseFloat without radix parameter: [use search_for_pattern("parseInt\\(") to find]
+  Example: `parseInt(value)` should be `parseInt(value, 10)`
+- [ ] Number parsing with redundant null coalescing: [locations]
+  Example: `parseInt(x ?? '0') ?? 0` - second `?? 0` is redundant since parseInt('0') returns 0
 ```
 
 ## 4.3 Project Standards Compliance
@@ -635,6 +662,10 @@ After writing the plan file, report back with MINIMAL information:
 - [ ] Verified project standards compliance (from Phase 0)
 - [ ] Used search_for_pattern for security vulnerability patterns
 - [ ] Verified unused public API (not used by consumers)
+- [ ] Checked for redundant conditionals (identical branches)
+- [ ] Checked for magic numbers that should be constants
+- [ ] Used search_for_pattern to find parseInt without radix
+- [ ] Used find_referencing_symbols to identify unused interfaces/types
 
 **Phase 5 - Improvement Plan:**
 - [ ] Prioritized all issues

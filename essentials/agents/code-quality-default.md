@@ -203,13 +203,15 @@ FUNCTIONS:
 
 ```
 TYPE DEFINITIONS:
-- Type aliases: [name] = [definition]
-- Generic type parameters: [name]
-- Interfaces/Protocols: [name] (if defined)
-- Structured types (tuples, records): [name]
-- Data classes/structs: [name]
-- Enumerations: [name]
+- Type aliases: [name] = [definition] | Used: [Yes/No] | Referenced at: [line numbers or "Only in definition"]
+- Generic type parameters: [name] | Used: [Yes/No]
+- Interfaces/Protocols: [name] (if defined) | Used: [Yes/No] | Referenced at: [line numbers or "Only in type signature"]
+- Structured types (tuples, records): [name] | Used: [Yes/No]
+- Data classes/structs: [name] | Used: [Yes/No]
+- Enumerations: [name] | Used: [Yes/No] | Values used: [list]
 ```
+
+**IMPORTANT**: For interfaces/types, check if they're only used in their own definition (e.g., as a parameter type that's never actually accessed). Mark these as potentially unused.
 
 ---
 
@@ -252,9 +254,14 @@ PUBLIC ELEMENT AUDIT:
 ```
 UNUSED ELEMENTS:
 - [element_name] at line X:
-  - Type: [import/variable/function/method/class/parameter]
-  - Reason unused: [never referenced / assigned but not read / etc.]
+  - Type: [import/variable/function/method/class/parameter/interface/type]
+  - Reason unused: [never referenced / assigned but not read / only used in own definition / etc.]
   - Recommendation: [Remove / Prefix with _ if intentional / Investigate]
+
+SPECIAL CHECK - Unused Interfaces/Types:
+- Interface/type defined but only referenced in parameter types where the parameter itself is unused
+- Example: `interface Filters { tags: string[] }` used in `searchTribes(query: string, filters?: Filters)` but `filters` parameter never accessed in function body
+- These are effectively dead code even though they appear "used"
 ```
 
 ---
@@ -339,6 +346,17 @@ Duplication:
 - [ ] Duplicate code blocks (>5 lines similar): [locations]
 - [ ] Copy-paste patterns: [locations]
 - [ ] Logic that should be extracted: [locations]
+
+Redundant Logic:
+- [ ] Redundant conditionals (ternary/if-else with identical branches): [locations]
+  Example: `x ? foo.bar() : foo.bar()` or `if (x) { return a.toLowerCase() } else { return a.toLowerCase() }`
+- [ ] Unnecessary conditional expressions: [locations]
+
+Magic Numbers/Strings:
+- [ ] Magic numbers that should be constants: [locations with values]
+  Example: `timeout = 7 * 24 * 60 * 60` should use `TIME_CONSTANTS.SECONDS_PER_WEEK`
+- [ ] Hardcoded strings repeated multiple times: [locations]
+- [ ] Numeric literals without clear meaning: [locations]
 ```
 
 ## 4.2 Inheritance & Composition Analysis
@@ -387,6 +405,10 @@ Language Idioms:
 - [ ] Using equality checks where identity checks are appropriate: [locations]
 - [ ] Not using resource management patterns (try-with-resources, using, etc.): [locations]
 - [ ] Inefficient string building in loops: [locations]
+- [ ] parseInt/parseFloat without radix parameter: [locations]
+  Example: `parseInt(value)` should be `parseInt(value, 10)`
+- [ ] Number parsing with redundant null coalescing: [locations]
+  Example: `parseInt(x ?? '0') ?? 0` - second `?? 0` is redundant
 
 Modern Language Features:
 - [ ] Could use pattern matching: [if/elif chains]
@@ -1103,6 +1125,10 @@ Before completing your analysis, verify ALL items:
 - [ ] Verified cross-file consistency with siblings/consumers
 - [ ] Identified unused public API elements (not used by consumers)
 - [ ] Verified patterns match sibling files
+- [ ] Checked for redundant conditionals (identical branches)
+- [ ] Checked for magic numbers that should be constants
+- [ ] Checked for parseInt without radix parameter
+- [ ] Identified unused interfaces/types (only in parameter signatures)
 
 **Phase 5 - Improvement Plan:**
 - [ ] Prioritized all issues
