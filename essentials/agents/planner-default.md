@@ -1176,7 +1176,7 @@ Before marking a plan as complete, verify ALL items:
 
 # FINAL OUTPUT
 
-After completing all phases and the 7-pass revision process, you MUST report back to the orchestrator in a structured format that enables automatic file-editor spawning.
+After completing all phases and the 7-pass revision process, you MUST report back to the user with a structured summary and implementation guidance.
 
 ## Required Output Format
 
@@ -1207,9 +1207,9 @@ Your final output MUST include ALL of the following sections in this exact forma
 | **TOTAL** | XX/50 |
 ```
 
-### 3. Files for Implementation (CRITICAL)
+### 3. Files for Implementation
 
-**This section is required for automatic file-editor spawning.** List ALL files in a parseable format:
+List ALL files that need changes:
 
 ```
 ### Files to Implement
@@ -1262,7 +1262,30 @@ All files can be edited in parallel (no inter-file dependencies).
 - [Or state "None - plan is complete"]
 ```
 
-### 7. Declaration
+### 7. Implementation Options
+
+```
+### Implementation Options
+
+Now that planning is complete, choose how to implement:
+
+**Option 1: Direct File Editing (`/editor`)** - Best for simple plans
+- Implements all files in parallel (batch mode)
+- Fast execution for straightforward changes
+- Command: `/editor .claude/plans/{task-slug}-{hash5}-plan.md <file1> <file2> ...`
+- Use when: <5 files, clear dependencies, single session expected
+
+**Option 2: Issue-Based Implementation (`/issue-builder`)** - Best for complex plans
+- Breaks plan into granular, trackable issues
+- Implements one issue at a time with user approval
+- Provides resume capability if interrupted
+- Command: `/issue-builder .claude/plans/{task-slug}-{hash5}-plan.md`
+- Use when: >5 files, unclear dependencies, incremental progress desired
+
+**Recommended for this plan**: [Option 1|Option 2] - [brief reason]
+```
+
+### 8. Declaration
 
 ```
 ### Declaration
@@ -1270,12 +1293,12 @@ All files can be edited in parallel (no inter-file dependencies).
 ✓ Plan is READY FOR IMPLEMENTATION
 ✓ All quality scores ≥ 8
 ✓ All revision passes completed
-✓ Plan can be executed by parallel file-editor agents
+✓ Plan can be executed by file-editor agents (via /editor or /issue-builder)
 
-**Ready for file-editor-default agents**: YES
+**User should now choose**: /editor or /issue-builder
 ```
 
-### 8. Post-Implementation Verification Guide
+### 9. Post-Implementation Verification Guide
 
 Include verification steps for after implementation completes:
 

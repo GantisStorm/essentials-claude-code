@@ -1,6 +1,6 @@
 # Essentials for Claude Code
 
-A comprehensive multi-agent orchestration framework for Claude Code. Features deep planning, bug investigation, code quality analysis (standard and LSP-powered), and parallel file editing capabilities.
+A comprehensive multi-agent orchestration framework for Claude Code. Features deep planning, bug investigation, code quality analysis (standard and LSP-powered), issue-based iterative implementation, and parallel file editing capabilities.
 
 ## Core Concept: Multi-Agent Workflows
 
@@ -97,7 +97,7 @@ Comprehensive architectural planning with multi-phase investigation:
 - Risk analysis and mitigation planning
 - Per-file implementation instructions
 - 7-pass revision process for quality assurance
-- Auto-spawns file-editor agents for implementation
+- Guides user to choose implementation approach: `/editor` (batch) or `/issue-builder` (iterative)
 
 ### 2. **Bug Scout** (`/bug-scout`)
 Deep bug investigation and automatic fix implementation:
@@ -152,8 +152,19 @@ Parallel file editing and creation from implementation plans:
 - Security checklist verification
 - Regression loop to clean up artifacts
 - Detailed change tracking and rollback documentation
+- **Best for**: Simple plans (<5 files), batch execution, single session
 
-### 5. **Prompt Builder** (`/prompt-builder`)
+### 5. **Issue Builder** (`/issue-builder`) ⭐ NEW
+Issue-based iterative implementation with granular control:
+- Breaks plans into trackable, atomic issues
+- Creates `issues-{hash}.json` with dependency graph
+- **Iterative workflow**: Implement one issue at a time with user approval
+- Resume capability if interrupted (`--resume` flag)
+- Full verification per issue (CHANGES COMPLETED == TOTAL CHANGES)
+- Complete audit trail in issues.json
+- **Best for**: Complex plans (>5 files), unclear dependencies, resumable work
+
+### 6. **Prompt Builder** (`/prompt-builder`)
 Iterative prompt engineering from vibe descriptions:
 - Transforms rough ideas into structured prompts
 - Anti-pattern elimination (no vague phrases)
@@ -237,11 +248,19 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 ### Planning & Implementation
 
 ```bash
-# Create and execute an implementation plan
+# Create an implementation plan
 /planner Add OAuth2 authentication with Google login
 
-# Execute a specific plan on files (edits existing, creates new as needed)
-/editor .claude/plans/oauth2-plan.md src/auth/handler src/auth/middleware src/auth/oauth_provider
+# After planning, choose implementation approach:
+
+# Option 1: Batch mode - all files in parallel
+/editor .claude/plans/oauth2-a3f9e-plan.md src/auth/handler src/auth/middleware src/auth/oauth_provider
+
+# Option 2: Iterative mode - one issue at a time with user approval
+/issue-builder .claude/plans/oauth2-a3f9e-plan.md
+
+# Resume interrupted issue-based implementation
+/issue-builder .claude/plans/oauth2-a3f9e-plan.md --resume
 ```
 
 ### Bug Investigation
@@ -288,8 +307,14 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 ```
 Orchestrator Commands
 ├── /planner
-│   ├── planner-default (investigation + planning)
-│   └── file-editor-default (parallel, per-file)
+│   └── planner-default (investigation + planning → guides user to choose /editor or /issue-builder)
+│
+├── /editor
+│   └── file-editor-default (parallel, per-file, batch mode)
+│
+├── /issue-builder ⭐ NEW
+│   ├── issue-builder-default (breaks plan into issues, iterative orchestration)
+│   └── file-editor-default (per issue, one at a time with user approval)
 │
 ├── /bug-scout
 │   ├── bug-scout-default (investigation + fix plan)
@@ -299,11 +324,8 @@ Orchestrator Commands
 │   ├── code-quality-default (standard analysis + plan)
 │   └── file-editor-default (parallel, per-file)
 │
-├── /code-quality-serena ⭐ NEW
+├── /code-quality-serena ⭐
 │   ├── code-quality-serena (LSP semantic analysis + plan)
-│   └── file-editor-default (parallel, per-file)
-│
-├── /editor
 │   └── file-editor-default (parallel, per-file)
 │
 └── /prompt-builder
@@ -313,10 +335,11 @@ Orchestrator Commands
 ### Plan Storage
 
 All plans are stored in **your project's** `.claude/plans/` directory (not the plugin):
-- `{task-slug}-plan.md` - Implementation plans (from /planner)
-- `bug-scout-{identifier}-plan.md` - Bug fix plans (from /bug-scout)
-- `code-quality-{filename}-plan.md` - Quality improvement plans (from /code-quality standard)
-- `code-quality-serena-{filename}-plan.md` - Quality improvement plans (from /code-quality-serena LSP)
+- `{task-slug}-{hash5}-plan.md` - Implementation plans (from /planner)
+- `issues-{hash5}.json` - Issue breakdown files (from /issue-builder) ⭐ NEW
+- `bug-scout-{identifier}-{hash5}-plan.md` - Bug fix plans (from /bug-scout)
+- `code-quality-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality standard)
+- `code-quality-serena-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality-serena LSP)
 - `prompt-builder-{slug}-draft.md` - Prompt drafts (from /prompt-builder)
 
 ## Directory Structure
@@ -328,6 +351,7 @@ essentials/
 │   ├── code-quality-default.md     # Code analysis agent (standard)
 │   ├── code-quality-serena.md      # Code analysis agent (LSP-powered) ⭐
 │   ├── file-editor-default.md      # File modification agent
+│   ├── issue-builder-default.md    # Issue-based implementation agent ⭐ NEW
 │   ├── planner-default.md          # Planning agent
 │   └── prompt-builder-default.md   # Prompt engineering agent
 └── commands/
@@ -335,6 +359,7 @@ essentials/
     ├── code-quality.md             # /code-quality command
     ├── code-quality-serena.md      # /code-quality-serena command ⭐
     ├── editor.md                   # /editor command
+    ├── issue-builder.md            # /issue-builder command ⭐ NEW
     ├── planner.md                  # /planner command
     └── prompt-builder.md           # /prompt-builder command
 ```
