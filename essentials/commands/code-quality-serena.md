@@ -66,7 +66,7 @@ Perform a comprehensive code quality analysis following your 7-phase process wit
 
 5. IMPROVEMENT PLAN GENERATION - Prioritized fixes with before/after examples
 
-6. WRITE PLAN FILE - Write to .claude/plans/code-quality-{filename}-plan.md
+6. WRITE PLAN FILE - Write to .claude/plans/code-quality-serena-{filename}-plan.md
 
 7. OUTPUT FORMAT - Structured report for orchestrator with LSP stats
 
@@ -117,7 +117,7 @@ For each completed agent, collect:
 
 From each agent's output, extract:
 1. The file path analyzed
-2. The plan file path (e.g., `.claude/plans/code-quality-filename-plan.md`)
+2. The plan file path (e.g., `.claude/plans/code-quality-serena-filename-plan.md`)
 3. Whether changes are required (`Changes Required: Yes/No`)
 4. Total fixes count and priority level
 
@@ -170,7 +170,7 @@ For each completed editor, collect:
 **This step ensures no fixes are missed.** For each file that was edited:
 
 1. **Compare change counts**:
-   - `TOTAL CHANGES` from code-quality-serena's plan file
+   - `TOTAL CHANGES` from code-quality-serena's plan file (.claude/plans/code-quality-serena-*.md)
    - `CHANGES COMPLETED` reported by file-editor-default
 
 2. **If counts don't match** (editor made fewer changes than planned):

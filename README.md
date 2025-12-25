@@ -24,7 +24,7 @@ flowchart TD
     end
 
     subgraph storage["💾 PLAN STORAGE"]
-        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• bug-scout-{id}-plan.md<br/>• code-quality-{file}-plan.md")]
+        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• bug-scout-{id}-plan.md<br/>• code-quality-{file}-plan.md<br/>• code-quality-serena-{file}-plan.md")]
     end
 
     subgraph execution["⚙️ FILE-EDITOR ORCHESTRATION"]
@@ -311,10 +311,11 @@ Orchestrator Commands
 ### Plan Storage
 
 All plans are stored in **your project's** `.claude/plans/` directory (not the plugin):
-- `{task-slug}-plan.md` - Implementation plans
-- `bug-scout-{identifier}-plan.md` - Bug fix plans
-- `code-quality-{filename}-plan.md` - Quality improvement plans (both standard and LSP)
-- `prompt-builder-{slug}-draft.md` - Prompt drafts
+- `{task-slug}-plan.md` - Implementation plans (from /planner)
+- `bug-scout-{identifier}-plan.md` - Bug fix plans (from /bug-scout)
+- `code-quality-{filename}-plan.md` - Quality improvement plans (from /code-quality standard)
+- `code-quality-serena-{filename}-plan.md` - Quality improvement plans (from /code-quality-serena LSP)
+- `prompt-builder-{slug}-draft.md` - Prompt drafts (from /prompt-builder)
 
 ## Directory Structure
 

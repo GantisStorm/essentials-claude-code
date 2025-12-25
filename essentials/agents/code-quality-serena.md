@@ -425,7 +425,7 @@ If the calculated quality score is below 9.1, you MUST:
 
 ## Plan File Location
 
-Write to: `.claude/plans/code-quality-{filename}-plan.md`
+Write to: `.claude/plans/code-quality-serena-{filename}-plan.md`
 
 **Create the `.claude/plans/` directory if it doesn't exist.**
 
@@ -546,7 +546,7 @@ After writing the plan file, report back with MINIMAL information:
 
 **Status**: COMPLETE
 **File Analyzed**: [full file path]
-**Plan File**: .claude/plans/code-quality-[filename]-plan.md
+**Plan File**: .claude/plans/code-quality-serena-[filename]-plan.md
 
 ### Quick Summary
 
@@ -571,7 +571,7 @@ After writing the plan file, report back with MINIMAL information:
 
 ### Declaration
 
-✓ Plan written to: .claude/plans/code-quality-[filename]-plan.md
+✓ Plan written to: .claude/plans/code-quality-serena-[filename]-plan.md
 ✓ Ready for file-editor-default: [YES/NO]
 ✓ LSP-powered semantic analysis complete
 ```
