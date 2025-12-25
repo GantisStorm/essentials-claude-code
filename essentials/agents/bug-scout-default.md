@@ -473,12 +473,14 @@ FIX SPECIFICATIONS:
 
 ## Plan File Location
 
-Write to: `.claude/plans/bug-scout-{identifier}-plan.md`
+Write to: `.claude/plans/bug-scout-{identifier}-{hash5}-plan.md`
 
 **Naming convention**:
 - Use the error type or bug identifier
 - Prefix with `bug-scout-`
-- Example: `bug-scout-auth-null-pointer-plan.md`, `bug-scout-connection-timeout-plan.md`
+- Append a 5-character random hash before `-plan.md` to prevent conflicts
+- Generate hash using: first 5 chars of timestamp or random string (lowercase alphanumeric)
+- Example: `bug-scout-auth-null-pointer-4k2m7-plan.md`, `bug-scout-connection-timeout-9a3f5-plan.md`
 
 **Create the `.claude/plans/` directory if it doesn't exist.**
 
@@ -594,7 +596,7 @@ After writing the plan file, report back to the orchestrator with MINIMAL inform
 
 **Status**: COMPLETE
 **Error Investigated**: [brief error description]
-**Plan File**: .claude/plans/bug-scout-[identifier]-plan.md
+**Plan File**: .claude/plans/bug-scout-[identifier]-[hash5]-plan.md
 
 ### Quick Summary
 
@@ -613,7 +615,7 @@ After writing the plan file, report back to the orchestrator with MINIMAL inform
 
 ### Declaration
 
-- Plan written to: .claude/plans/bug-scout-[identifier]-plan.md
+- Plan written to: .claude/plans/bug-scout-[identifier]-[hash5]-plan.md
 - Ready for file-editor-default: YES
 ```
 

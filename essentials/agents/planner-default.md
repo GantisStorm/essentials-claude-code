@@ -42,10 +42,12 @@ Your first action must be a tool call (Glob, Grep, Read, or MCP lookup). Do not 
 
 All plans are written to: `.claude/plans/`
 
-**File naming convention**: `{task-slug}-plan.md`
+**File naming convention**: `{task-slug}-{hash5}-plan.md`
 - Use kebab-case
 - Keep it descriptive but concise
-- Examples: `oauth2-authentication-plan.md`, `payment-integration-plan.md`, `login-bug-fix-plan.md`
+- Append a 5-character random hash before `-plan.md` to prevent conflicts
+- Generate hash using: first 5 chars of timestamp or random string (lowercase alphanumeric)
+- Examples: `oauth2-authentication-a3f9e-plan.md`, `payment-integration-7b2d4-plan.md`, `login-bug-fix-9k4m2-plan.md`
 
 **Create the directory if it doesn't exist.**
 
@@ -625,7 +627,7 @@ Pass 7: Final Quality Score     → Score and iterate if needed
 
 ## Pass 1: Initial Draft
 
-Write the complete plan following all phases above. Save to `.claude/plans/{task-slug}-plan.md`
+Write the complete plan following all phases above. Save to `.claude/plans/{task-slug}-{hash5}-plan.md` (generate a unique 5-char hash)
 
 ---
 
@@ -998,7 +1000,7 @@ At the end of the plan file, include a comprehensive revision log:
 
 # PLAN FILE FORMAT
 
-Write the plan to `.claude/plans/{task-slug}-plan.md` with this structure:
+Write the plan to `.claude/plans/{task-slug}-{hash5}-plan.md` with this structure:
 
 ```markdown
 # {Task Title} - Implementation Plan
@@ -1148,7 +1150,7 @@ Before marking a plan as complete, verify ALL items:
 - [ ] Quality score card included in plan
 - [ ] Revision history documents all 7 passes
 - [ ] Plan status is "READY FOR IMPLEMENTATION"
-- [ ] Plan written to `.claude/plans/{task-slug}-plan.md`
+- [ ] Plan written to `.claude/plans/{task-slug}-{hash5}-plan.md`
 
 ---
 
@@ -1165,7 +1167,7 @@ Before marking a plan as complete, verify ALL items:
 - `SearxNG MCP` - Search for best practices, tutorials, solutions
 
 **Plan Writing:**
-- `Write` - Write the plan to `.claude/plans/{task-slug}-plan.md`
+- `Write` - Write the plan to `.claude/plans/{task-slug}-{hash5}-plan.md`
 - `Edit` - Update the plan during revision passes
 
 **Context gathering is NOT optional.** A plan without thorough investigation will fail.
@@ -1186,7 +1188,7 @@ Your final output MUST include ALL of the following sections in this exact forma
 ## Planner Report
 
 **Status**: COMPLETE
-**Plan File**: .claude/plans/{task-slug}-plan.md
+**Plan File**: .claude/plans/{task-slug}-{hash5}-plan.md
 **Task**: [brief 1-line description]
 ```
 
@@ -1333,7 +1335,7 @@ The orchestrator (planner command) will:
 ## Planner Report
 
 **Status**: COMPLETE
-**Plan File**: .claude/plans/user-authentication-plan.md
+**Plan File**: .claude/plans/user-authentication-3k7f2-plan.md
 **Task**: Add OAuth2 authentication with Google login
 
 ### Quality Scores

@@ -41,7 +41,7 @@ Use `TaskOutput` with `block: true` to wait for the planner agent to complete. T
 ### Step 4: Parse Planner Output
 
 From the planner's output, extract:
-1. The plan file path (e.g., `.claude/plans/feature-name-plan.md`)
+1. The plan file path (e.g., `.claude/plans/feature-name-3k7f2-plan.md` with 5-char hash)
 2. The list of files to edit/create from the "Files" section
 3. The overall risk level from the "Risk Assessment Summary"
 4. Any blockers that must be resolved

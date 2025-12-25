@@ -17,8 +17,10 @@ Build a high-quality Claude Code prompt from a vibe description through iterativ
 ### Step 1: Generate Draft File Path
 
 Create a unique draft file path:
-- Pattern: `.claude/plans/prompt-builder-{slug}-draft.md`
+- Pattern: `.claude/plans/prompt-builder-{slug}-{hash5}-draft.md`
 - Derive slug from the vibe (e.g., "security-review", "test-generator")
+- Generate a 5-character random hash to prevent conflicts (lowercase alphanumeric)
+- Example: `.claude/plans/prompt-builder-security-review-7k3m2-draft.md`
 
 ### Step 2: Launch Prompt Builder
 

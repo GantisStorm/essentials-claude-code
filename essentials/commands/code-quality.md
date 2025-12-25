@@ -97,7 +97,7 @@ For each completed agent, collect:
 
 From each agent's output, extract:
 1. The file path analyzed
-2. The plan file path (e.g., `.claude/plans/code-quality-filename-plan.md`)
+2. The plan file path (e.g., `.claude/plans/code-quality-filename-6k9f2-plan.md` with 5-char hash)
 3. Whether changes are required (`Changes Required: Yes/No`)
 4. Total fixes count and priority level
 

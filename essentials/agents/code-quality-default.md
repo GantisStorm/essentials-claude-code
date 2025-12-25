@@ -421,6 +421,14 @@ Error Handling:
 - [ ] Empty catch/except blocks: [locations]
 - [ ] Not re-raising in catch/except: [locations where appropriate]
 - [ ] Missing exception chaining: [locations]
+
+Resource Management:
+- [ ] File handles not closed properly: [locations without try-finally or with-statements]
+- [ ] Database connections not closed: [locations missing connection cleanup]
+- [ ] Network sockets left open: [locations]
+- [ ] Memory leaks from circular references: [locations]
+- [ ] Large objects not released after use: [locations]
+- [ ] Streams not closed after reading/writing: [locations]
 ```
 
 ## 4.5 SOLID Principles Violations
@@ -478,7 +486,69 @@ YAGNI (You Aren't Gonna Need It):
 - [ ] Commented-out code blocks: [locations]
 ```
 
-## 4.7 Security Vulnerability Patterns (OWASP-Aligned)
+## 4.7 Performance & Efficiency Issues
+
+```
+PERFORMANCE ANALYSIS:
+
+Memory Management:
+- [ ] Memory leaks from objects not released: [locations]
+- [ ] Excessive memory allocation in loops: [locations]
+- [ ] Large objects copied instead of referenced: [locations]
+- [ ] Memory-intensive operations without cleanup: [locations]
+- [ ] Unbounded caches without eviction policies: [locations]
+
+Algorithm Efficiency:
+- [ ] O(n²) or worse algorithms where O(n log n) possible: [locations]
+- [ ] Inefficient searching (linear search on sorted data): [locations]
+- [ ] Redundant computations that could be cached: [locations]
+- [ ] Nested loops that could be optimized: [locations]
+
+Database & I/O:
+- [ ] N+1 query problems: [locations making queries in loops]
+- [ ] Missing database indexes for frequent queries: [tables/columns]
+- [ ] Excessive database roundtrips: [locations]
+- [ ] Large file operations without streaming: [locations]
+- [ ] Synchronous I/O blocking main thread: [locations]
+
+Caching Opportunities:
+- [ ] Repeated expensive calculations: [locations that could cache results]
+- [ ] API calls that could be cached: [locations]
+- [ ] Database queries that could be cached: [locations]
+- [ ] File reads that could be cached: [locations]
+```
+
+## 4.8 Concurrency & Thread Safety
+
+```
+CONCURRENCY ANALYSIS:
+
+Thread Safety Issues:
+- [ ] Shared mutable state without synchronization: [locations]
+- [ ] Race conditions on shared variables: [locations]
+- [ ] Non-atomic operations on shared data: [locations]
+- [ ] Missing locks/mutexes for critical sections: [locations]
+- [ ] Improper use of volatile/atomic variables: [locations]
+
+Deadlock Potential:
+- [ ] Multiple locks acquired in different orders: [locations]
+- [ ] Nested locks without timeout: [locations]
+- [ ] Lock held during blocking operations: [locations]
+
+Async/Concurrent Patterns:
+- [ ] Promises/futures not handled properly: [locations]
+- [ ] Missing error handling in async code: [locations]
+- [ ] Callback hell / nested async: [locations that could use async/await]
+- [ ] Parallel operations without proper synchronization: [locations]
+- [ ] Missing timeouts for async operations: [locations]
+
+Resource Contention:
+- [ ] Hot spots causing lock contention: [locations]
+- [ ] Thread pool starvation risks: [locations]
+- [ ] Unbounded queues/buffers: [locations]
+```
+
+## 4.9 Security Vulnerability Patterns (OWASP-Aligned)
 
 ```
 SECURITY ISSUES:
@@ -514,7 +584,220 @@ Dangerous Functions:
 - [ ] Insecure deserialization: [locations]
 ```
 
-## 4.8 Technical Debt Estimation
+## 4.10 Test Quality & Coverage
+
+```
+TEST QUALITY ANALYSIS:
+
+Test Coverage:
+- [ ] Test coverage percentage: [X%] - Target: 80%+
+- [ ] Untested public functions/methods: [list]
+- [ ] Critical paths without tests: [locations]
+- [ ] Edge cases not covered by tests: [scenarios]
+
+Test Quality:
+- [ ] Tests without assertions: [test names]
+- [ ] Tests with too many assertions (>5): [test names]
+- [ ] Tests testing multiple concerns: [test names that should be split]
+- [ ] Flaky tests (inconsistent results): [test names]
+- [ ] Slow tests (>1s unit test): [test names]
+
+Test Naming & Organization:
+- [ ] Tests with unclear names: [test names]
+- [ ] Test naming inconsistent with conventions: [violations]
+- [ ] Test organization doesn't mirror source structure: [locations]
+- [ ] Missing test documentation for complex scenarios: [tests]
+
+Test Maintainability:
+- [ ] Duplicate test code that should be extracted: [locations]
+- [ ] Tests coupled to implementation details: [test names]
+- [ ] Hard-coded test data that should be fixtures: [locations]
+- [ ] Tests without proper setup/teardown: [test names]
+```
+
+## 4.11 Architectural & Design Quality
+
+```
+ARCHITECTURAL ANALYSIS:
+
+Module Coupling:
+- [ ] Tight coupling between modules: [module pairs with high coupling]
+- [ ] Circular dependencies between modules: [dependency cycles]
+- [ ] God modules (too many dependencies): [modules]
+- [ ] Unstable dependencies (depend on frequently changing modules): [locations]
+
+Module Cohesion:
+- [ ] Low cohesion modules (unrelated functionality): [modules]
+- [ ] Mixed abstraction levels in same module: [locations]
+- [ ] Business logic mixed with infrastructure: [locations]
+
+Design Pattern Violations:
+- [ ] Inconsistent use of established patterns: [locations]
+- [ ] Anti-patterns detected: [locations with pattern names]
+- [ ] Missing factory patterns for complex object creation: [locations]
+- [ ] Missing strategy pattern for algorithm variation: [locations]
+
+Architectural Alignment:
+- [ ] Code bypassing established architecture layers: [violations]
+- [ ] Direct database access from presentation layer: [locations]
+- [ ] Business logic in controllers/views: [locations]
+- [ ] Cross-cutting concerns not centralized: [locations]
+```
+
+## 4.12 Documentation Quality
+
+```
+DOCUMENTATION ANALYSIS:
+
+API Documentation:
+- [ ] Public APIs without documentation: [functions/classes]
+- [ ] Parameters without descriptions: [functions]
+- [ ] Return values not documented: [functions]
+- [ ] Exceptions not documented: [functions that throw]
+- [ ] Examples missing from complex APIs: [functions]
+
+Code Comments:
+- [ ] Complex algorithms without explanation: [locations]
+- [ ] Commented-out code blocks: [locations]
+- [ ] Outdated comments contradicting code: [locations]
+- [ ] TODO/FIXME without issue tracking: [locations]
+- [ ] Magic numbers without explanation: [locations]
+
+High-Level Documentation:
+- [ ] Module-level documentation missing: [modules]
+- [ ] Architecture documentation outdated: [areas]
+- [ ] Onboarding documentation incomplete: [gaps]
+- [ ] API usage examples missing: [areas]
+
+Documentation Coverage:
+- [ ] Documentation coverage percentage: [X%]
+- [ ] Documentation-to-code ratio: [X:1]
+- [ ] Documentation staleness (last updated): [modules with old docs]
+```
+
+## 4.13 Code Churn & Stability Metrics
+
+```
+CODE STABILITY ANALYSIS:
+
+Churn Analysis:
+- [ ] High-churn files (>30% monthly change): [files with churn %]
+- [ ] Hotspot files (frequent bugs + high churn): [files]
+- [ ] Unstable interfaces (frequently changing APIs): [interfaces]
+- [ ] Frequent refactoring indicates design issues: [areas]
+
+Change Impact:
+- [ ] Changes requiring modifications in many files: [change patterns]
+- [ ] Shotgun surgery smell (small change, many files): [locations]
+- [ ] Divergent change smell (class changed for multiple reasons): [classes]
+
+Defect Density:
+- [ ] Files with high bug density: [files with defect counts]
+- [ ] Recently introduced defects: [recent changes with bugs]
+- [ ] Defect patterns by module: [modules with common issues]
+```
+
+## 4.14 Advanced Code Metrics
+
+```
+ADVANCED COMPLEXITY METRICS:
+
+Halstead Complexity Measures:
+- [ ] Halstead Volume (V): [value] - Measures program size based on operators/operands
+  - Formula: V = N * log2(n) where N = total operators+operands, n = unique operators+operands
+  - Interpretation: Higher volume = larger, more complex program
+  - Thresholds: <1000 (good), 1000-8000 (moderate), >8000 (high complexity)
+
+- [ ] Halstead Difficulty (D): [value] - Measures how difficult code is to write/understand
+  - Formula: D = (n1/2) * (N2/n2) where n1 = unique operators, N2 = total operands, n2 = unique operands
+  - Interpretation: Higher difficulty = harder to understand/maintain
+  - Thresholds: <10 (easy), 10-20 (moderate), >20 (difficult)
+
+- [ ] Halstead Effort (E): [value] - Estimated mental effort to implement/understand
+  - Formula: E = D * V
+  - Interpretation: Higher effort = more time needed for comprehension
+  - Thresholds: <10000 (low), 10000-100000 (moderate), >100000 (high effort)
+
+- [ ] Halstead Predicted Bugs (B): [value] - Estimated number of bugs in code
+  - Formula: B = V / 3000 (empirically derived)
+  - Interpretation: Predicted defects based on volume
+  - Thresholds: <0.5 (good), 0.5-2 (moderate), >2 (high bug risk)
+
+ABC Metrics (Assignment, Branch, Condition):
+- [ ] Assignment Count (A): [count] - Number of variable assignments
+  - Measures: Variable assignments, increments, mutations
+  - High A indicates: Data manipulation complexity
+
+- [ ] Branch Count (B): [count] - Number of branch points
+  - Measures: Function calls, method invocations
+  - High B indicates: Control flow complexity
+
+- [ ] Condition Count (C): [count] - Number of conditional expressions
+  - Measures: if/else, switch, ternary, boolean logic
+  - High C indicates: Decision complexity
+
+- [ ] ABC Magnitude: [value] - Combined complexity score
+  - Formula: sqrt(A² + B² + C²)
+  - Thresholds: <20 (simple), 20-50 (moderate), >50 (complex)
+
+Detailed Maintainability Index:
+- [ ] Raw MI (without comments): [0-100]
+  - Formula: 171 - 5.2*ln(V) - 0.23*G - 16.2*ln(LOC)
+  - V = Halstead Volume, G = Cyclomatic Complexity, LOC = Lines of Code
+  - Scale: 0-9 (unmaintainable), 10-19 (high risk), 20-100 (maintainable)
+
+- [ ] MI with comment ratio: [0-100]
+  - Adjusted for percentage of comment lines
+  - Higher = better documentation improves maintainability
+
+- [ ] Per-function MI: [list functions with MI < 20]
+  - Identify specific functions with poor maintainability
+
+Depth of Inheritance:
+- [ ] Maximum inheritance depth: [depth] - Deepest inheritance chain
+  - Thresholds: 1-2 (good), 3-4 (acceptable), >4 (too deep)
+  - Deep inheritance issues: Hard to understand, fragile base class
+
+- [ ] Average inheritance depth: [depth]
+  - Overall inheritance complexity across codebase
+
+Coupling Between Objects (CBO):
+- [ ] CBO score per class: [class: score]
+  - Measures: Number of classes coupled to this class
+  - Coupling types: Method calls, field access, inheritance, type usage
+  - Thresholds: 0-5 (low), 6-10 (moderate), >10 (high coupling)
+
+- [ ] Efferent coupling (Ce): [count] - Classes this class depends on
+  - High Ce indicates: Class uses many external dependencies
+
+- [ ] Afferent coupling (Ca): [count] - Classes that depend on this class
+  - High Ca indicates: Class is heavily used by others (responsibility)
+
+Lack of Cohesion in Methods (LCOM):
+- [ ] LCOM score per class: [class: score]
+  - Measures: How related are methods in a class
+  - Formula: Number of method pairs with no shared instance variables
+  - Interpretation: High LCOM = methods don't work together (low cohesion)
+  - Thresholds: 0-20% (cohesive), 20-50% (moderate), >50% (should split)
+
+- [ ] Classes with LCOM > 50%: [list]
+  - Candidates for splitting into multiple classes
+
+Response for Complexity (RFC):
+- [ ] RFC per class: [class: count]
+  - Measures: Number of methods that can be invoked by class
+  - Includes: Own methods + methods called
+  - Thresholds: <20 (simple), 20-50 (moderate), >50 (complex)
+  - High RFC indicates: Class has high responsibility/complexity
+
+Weighted Methods per Class (WMC):
+- [ ] WMC per class: [class: score]
+  - Sum of cyclomatic complexity of all methods
+  - Higher WMC = more testing needed, harder to maintain
+  - Thresholds: <10 (simple), 10-30 (moderate), >30 (complex)
+```
+
+## 4.15 Technical Debt Estimation
 
 ```
 TECHNICAL DEBT ANALYSIS:
@@ -716,12 +999,14 @@ If the calculated quality score is below 9.1, you MUST:
 
 ## Plan File Location
 
-Write to: `.claude/plans/code-quality-{filename}-plan.md`
+Write to: `.claude/plans/code-quality-{filename}-{hash5}-plan.md`
 
 **Naming convention**:
 - Use the target file's name (without path)
 - Prefix with `code-quality-`
-- Example: Analyzing `src/services/auth_service.py` → `.claude/plans/code-quality-auth_service-plan.md`
+- Append a 5-character random hash before `-plan.md` to prevent conflicts
+- Generate hash using: first 5 chars of timestamp or random string (lowercase alphanumeric)
+- Example: Analyzing `src/services/auth_service.py` → `.claude/plans/code-quality-auth_service-7m4k3-plan.md`
 
 **Create the `.claude/plans/` directory if it doesn't exist.**
 
@@ -894,7 +1179,7 @@ After writing the plan file, report back to the orchestrator with MINIMAL inform
 
 **Status**: COMPLETE
 **File Analyzed**: [full file path]
-**Plan File**: .claude/plans/code-quality-[filename]-plan.md
+**Plan File**: .claude/plans/code-quality-[filename]-[hash5]-plan.md
 
 ### Quick Summary
 
@@ -913,7 +1198,7 @@ After writing the plan file, report back to the orchestrator with MINIMAL inform
 
 ### Declaration
 
-✓ Plan written to: .claude/plans/code-quality-[filename]-plan.md
+✓ Plan written to: .claude/plans/code-quality-[filename]-[hash5]-plan.md
 ✓ Ready for file-editor-default: [YES/NO]
 ```
 
@@ -963,7 +1248,7 @@ This approach:
 
 **Status**: COMPLETE
 **File Analyzed**: src/services/auth_service
-**Plan File**: .claude/plans/code-quality-auth_service-plan.md
+**Plan File**: .claude/plans/code-quality-auth_service-6k9f2-plan.md
 
 ### Quick Summary
 
@@ -982,7 +1267,7 @@ This approach:
 
 ### Declaration
 
-✓ Plan written to: .claude/plans/code-quality-auth_service-plan.md
+✓ Plan written to: .claude/plans/code-quality-auth_service-6k9f2-plan.md
 ✓ Ready for file-editor-default: YES
 ```
 
@@ -1114,10 +1399,17 @@ Before completing your analysis, verify ALL items:
 - [ ] Scanned for code smells
 - [ ] Analyzed inheritance patterns
 - [ ] Checked type safety
-- [ ] Verified best practices
+- [ ] Verified best practices (including resource management)
 - [ ] Analyzed SOLID principles compliance
 - [ ] Checked DRY/KISS/YAGNI violations
 - [ ] Scanned for security vulnerabilities (OWASP patterns)
+- [ ] Analyzed performance & efficiency issues
+- [ ] Checked concurrency & thread safety
+- [ ] Assessed test quality & coverage
+- [ ] Evaluated architectural & design quality
+- [ ] Reviewed documentation quality
+- [ ] Analyzed code churn & stability metrics
+- [ ] Calculated advanced code metrics (Halstead, ABC, CBO, LCOM, RFC, WMC)
 - [ ] Estimated technical debt
 - [ ] Performed data flow/taint analysis
 - [ ] Calculated cognitive complexity
@@ -1129,6 +1421,10 @@ Before completing your analysis, verify ALL items:
 - [ ] Checked for magic numbers that should be constants
 - [ ] Checked for parseInt without radix parameter
 - [ ] Identified unused interfaces/types (only in parameter signatures)
+- [ ] Checked for memory leaks and resource leaks
+- [ ] Identified race conditions and thread safety issues
+- [ ] Analyzed module coupling and cohesion
+- [ ] Verified test coverage meets 80%+ target
 
 **Phase 5 - Improvement Plan:**
 - [ ] Prioritized all issues

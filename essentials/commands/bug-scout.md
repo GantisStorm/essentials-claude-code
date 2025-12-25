@@ -83,7 +83,7 @@ Perform a comprehensive bug investigation following your 7-phase process:
    - Include before/after code examples
 
 6. WRITE PLAN TO FILE
-   - Write plan to .claude/plans/bug-scout-<identifier>-plan.md
+   - Write plan to .claude/plans/bug-scout-<identifier>-<hash5>-plan.md (with 5-char hash)
    - Include TOTAL CHANGES count
    - Format for file-editor-default consumption
 
@@ -104,7 +104,7 @@ Use `subagent_type: "bug-scout-default"` when invoking the Task tool.
 Use `TaskOutput` with `block: true` to wait for the bug-scout agent to complete.
 
 From the agent's output, extract:
-1. The plan file path (e.g., `.claude/plans/bug-scout-auth-error-plan.md`)
+1. The plan file path (e.g., `.claude/plans/bug-scout-auth-error-4k2m7-plan.md` with 5-char hash)
 2. Severity level
 3. Root cause confidence
 4. Files to edit

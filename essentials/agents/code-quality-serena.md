@@ -342,9 +342,306 @@ Best Practices (from file content):
   Example: `parseInt(value)` should be `parseInt(value, 10)`
 - [ ] Number parsing with redundant null coalescing: [locations]
   Example: `parseInt(x ?? '0') ?? 0` - second `?? 0` is redundant since parseInt('0') returns 0
+
+Resource Management (from file content):
+- [ ] File handles not closed properly: [use search_for_pattern to find file operations without cleanup]
+- [ ] Database connections not closed: [check for missing connection cleanup]
+- [ ] Network sockets left open: [locations]
+- [ ] Memory leaks from circular references: [analyze object relationships]
+- [ ] Large objects not released after use: [locations]
+- [ ] Streams not closed after reading/writing: [locations]
 ```
 
-## 4.3 Project Standards Compliance
+## 4.3 Performance & Efficiency Issues
+
+```
+PERFORMANCE ANALYSIS (using file content + LSP):
+
+Memory Management:
+- [ ] Memory leaks from objects not released: [analyze with LSP reference tracking]
+- [ ] Excessive memory allocation in loops: [find loops with object creation]
+- [ ] Large objects copied instead of referenced: [check parameter passing]
+- [ ] Memory-intensive operations without cleanup: [locations]
+- [ ] Unbounded caches without eviction policies: [use search_for_pattern for cache patterns]
+
+Algorithm Efficiency:
+- [ ] O(n²) or worse algorithms where O(n log n) possible: [analyze nested loops]
+- [ ] Inefficient searching (linear search on sorted data): [locations]
+- [ ] Redundant computations that could be cached: [find repeated calculations]
+- [ ] Nested loops that could be optimized: [locations]
+
+Database & I/O:
+- [ ] N+1 query problems: [use search_for_pattern to find queries in loops]
+- [ ] Missing database indexes for frequent queries: [analyze query patterns]
+- [ ] Excessive database roundtrips: [locations]
+- [ ] Large file operations without streaming: [check file read patterns]
+- [ ] Synchronous I/O blocking main thread: [locations]
+
+Caching Opportunities:
+- [ ] Repeated expensive calculations: [analyze with LSP to find duplicate logic]
+- [ ] API calls that could be cached: [use search_for_pattern for API patterns]
+- [ ] Database queries that could be cached: [locations]
+- [ ] File reads that could be cached: [locations]
+```
+
+## 4.4 Concurrency & Thread Safety
+
+```
+CONCURRENCY ANALYSIS (using file content + search_for_pattern):
+
+Thread Safety Issues:
+- [ ] Shared mutable state without synchronization: [search for global/class variables]
+- [ ] Race conditions on shared variables: [analyze access patterns]
+- [ ] Non-atomic operations on shared data: [locations]
+- [ ] Missing locks/mutexes for critical sections: [search for synchronization patterns]
+- [ ] Improper use of volatile/atomic variables: [locations]
+
+Deadlock Potential:
+- [ ] Multiple locks acquired in different orders: [analyze lock acquisition patterns]
+- [ ] Nested locks without timeout: [locations]
+- [ ] Lock held during blocking operations: [search for lock patterns with I/O]
+
+Async/Concurrent Patterns:
+- [ ] Promises/futures not handled properly: [search_for_pattern for async patterns]
+- [ ] Missing error handling in async code: [locations]
+- [ ] Callback hell / nested async: [locations that could use async/await]
+- [ ] Parallel operations without proper synchronization: [locations]
+- [ ] Missing timeouts for async operations: [search for async operations]
+
+Resource Contention:
+- [ ] Hot spots causing lock contention: [analyze frequently accessed resources]
+- [ ] Thread pool starvation risks: [check thread pool configurations]
+- [ ] Unbounded queues/buffers: [search for queue/buffer patterns]
+```
+
+## 4.5 Test Quality & Coverage
+
+```
+TEST QUALITY ANALYSIS (using LSP + test file analysis):
+
+Test Coverage:
+- [ ] Test coverage percentage: [X%] - Target: 80%+
+- [ ] Untested public functions/methods: [use find_referencing_symbols to find untested symbols]
+- [ ] Critical paths without tests: [analyze based on complexity and importance]
+- [ ] Edge cases not covered by tests: [scenarios]
+
+Test Quality:
+- [ ] Tests without assertions: [use LSP to find test functions with no assert calls]
+- [ ] Tests with too many assertions (>5): [count assertions per test]
+- [ ] Tests testing multiple concerns: [test names that should be split]
+- [ ] Flaky tests (inconsistent results): [from test history if available]
+- [ ] Slow tests (>1s unit test): [from test execution data]
+
+Test Naming & Organization:
+- [ ] Tests with unclear names: [analyze test function names from LSP]
+- [ ] Test naming inconsistent with conventions: [compare with project standards]
+- [ ] Test organization doesn't mirror source structure: [compare file structures]
+- [ ] Missing test documentation for complex scenarios: [tests without docstrings]
+
+Test Maintainability:
+- [ ] Duplicate test code that should be extracted: [find similar test patterns]
+- [ ] Tests coupled to implementation details: [analyze test dependencies]
+- [ ] Hard-coded test data that should be fixtures: [search for data in tests]
+- [ ] Tests without proper setup/teardown: [check test structure]
+```
+
+## 4.6 Architectural & Design Quality
+
+```
+ARCHITECTURAL ANALYSIS (using LSP):
+
+Module Coupling:
+- [ ] Tight coupling between modules: [use find_referencing_symbols to analyze dependencies]
+- [ ] Circular dependencies between modules: [build dependency graph with LSP]
+- [ ] God modules (too many dependencies): [count imports and references]
+- [ ] Unstable dependencies (depend on frequently changing modules): [cross-reference with churn data]
+
+Module Cohesion:
+- [ ] Low cohesion modules (unrelated functionality): [analyze symbol purposes from LSP]
+- [ ] Mixed abstraction levels in same module: [check symbol types and purposes]
+- [ ] Business logic mixed with infrastructure: [analyze import patterns]
+
+Design Pattern Violations:
+- [ ] Inconsistent use of established patterns: [compare with sibling modules from Phase 0]
+- [ ] Anti-patterns detected: [search for known anti-pattern code signatures]
+- [ ] Missing factory patterns for complex object creation: [analyze constructors]
+- [ ] Missing strategy pattern for algorithm variation: [find if/switch on type]
+
+Architectural Alignment:
+- [ ] Code bypassing established architecture layers: [analyze call hierarchies with LSP]
+- [ ] Direct database access from presentation layer: [check import patterns]
+- [ ] Business logic in controllers/views: [analyze based on file locations and symbols]
+- [ ] Cross-cutting concerns not centralized: [find duplicated logging/auth/validation]
+```
+
+## 4.7 Documentation Quality
+
+```
+DOCUMENTATION ANALYSIS (using LSP + file content):
+
+API Documentation:
+- [ ] Public APIs without documentation: [use LSP to find public symbols without docstrings]
+- [ ] Parameters without descriptions: [analyze function signatures vs docs]
+- [ ] Return values not documented: [check docstrings for return documentation]
+- [ ] Exceptions not documented: [find throws/raises without documentation]
+- [ ] Examples missing from complex APIs: [check for example blocks in docs]
+
+Code Comments:
+- [ ] Complex algorithms without explanation: [find high-complexity functions without comments]
+- [ ] Commented-out code blocks: [use search_for_pattern for comment patterns]
+- [ ] Outdated comments contradicting code: [manual review of comment accuracy]
+- [ ] TODO/FIXME without issue tracking: [search_for_pattern for TODO/FIXME]
+- [ ] Magic numbers without explanation: [find numeric literals without comments]
+
+High-Level Documentation:
+- [ ] Module-level documentation missing: [check file-level docstrings]
+- [ ] Architecture documentation outdated: [compare with actual structure]
+- [ ] Onboarding documentation incomplete: [gaps in getting started docs]
+- [ ] API usage examples missing: [check for example code]
+
+Documentation Coverage:
+- [ ] Documentation coverage percentage: [calculate from LSP symbol count vs documented]
+- [ ] Documentation-to-code ratio: [X:1]
+- [ ] Documentation staleness (last updated): [compare doc dates with code changes]
+```
+
+## 4.8 Code Churn & Stability Metrics
+
+```
+CODE STABILITY ANALYSIS (using git history if available):
+
+Churn Analysis:
+- [ ] High-churn files (>30% monthly change): [from git log analysis]
+- [ ] Hotspot files (frequent bugs + high churn): [combine bug tracking with churn]
+- [ ] Unstable interfaces (frequently changing APIs): [track public API changes]
+- [ ] Frequent refactoring indicates design issues: [analyze refactoring patterns]
+
+Change Impact:
+- [ ] Changes requiring modifications in many files: [use find_referencing_symbols to predict impact]
+- [ ] Shotgun surgery smell (small change, many files): [analyze coupling]
+- [ ] Divergent change smell (class changed for multiple reasons): [track change reasons]
+
+Defect Density:
+- [ ] Files with high bug density: [from bug tracking system if available]
+- [ ] Recently introduced defects: [recent changes with bugs]
+- [ ] Defect patterns by module: [group bugs by module]
+```
+
+## 4.9 Advanced Code Metrics
+
+```
+ADVANCED COMPLEXITY METRICS (using LSP + file analysis):
+
+Halstead Complexity Measures:
+- [ ] Halstead Volume (V): [value] - Measures program size based on operators/operands
+  - Count operators/operands from file content
+  - Formula: V = N * log2(n) where N = total operators+operands, n = unique operators+operands
+  - Interpretation: Higher volume = larger, more complex program
+  - Thresholds: <1000 (good), 1000-8000 (moderate), >8000 (high complexity)
+
+- [ ] Halstead Difficulty (D): [value] - Measures how difficult code is to write/understand
+  - Formula: D = (n1/2) * (N2/n2) where n1 = unique operators, N2 = total operands, n2 = unique operands
+  - Interpretation: Higher difficulty = harder to understand/maintain
+  - Thresholds: <10 (easy), 10-20 (moderate), >20 (difficult)
+
+- [ ] Halstead Effort (E): [value] - Estimated mental effort to implement/understand
+  - Formula: E = D * V
+  - Interpretation: Higher effort = more time needed for comprehension
+  - Thresholds: <10000 (low), 10000-100000 (moderate), >100000 (high effort)
+
+- [ ] Halstead Predicted Bugs (B): [value] - Estimated number of bugs in code
+  - Formula: B = V / 3000 (empirically derived)
+  - Interpretation: Predicted defects based on volume
+  - Thresholds: <0.5 (good), 0.5-2 (moderate), >2 (high bug risk)
+
+ABC Metrics (Assignment, Branch, Condition):
+- [ ] Assignment Count (A): [count] - Number of variable assignments
+  - Use search_for_pattern to count assignments (=, +=, -=, etc.)
+  - Measures: Variable assignments, increments, mutations
+  - High A indicates: Data manipulation complexity
+
+- [ ] Branch Count (B): [count] - Number of branch points
+  - Use LSP to count function/method calls
+  - Measures: Function calls, method invocations
+  - High B indicates: Control flow complexity
+
+- [ ] Condition Count (C): [count] - Number of conditional expressions
+  - Use search_for_pattern for if/else/switch/ternary
+  - Measures: if/else, switch, ternary, boolean logic
+  - High C indicates: Decision complexity
+
+- [ ] ABC Magnitude: [value] - Combined complexity score
+  - Formula: sqrt(A² + B² + C²)
+  - Thresholds: <20 (simple), 20-50 (moderate), >50 (complex)
+
+Detailed Maintainability Index:
+- [ ] Raw MI (without comments): [0-100]
+  - Formula: 171 - 5.2*ln(V) - 0.23*G - 16.2*ln(LOC)
+  - V = Halstead Volume, G = Cyclomatic Complexity, LOC = Lines of Code
+  - Scale: 0-9 (unmaintainable), 10-19 (high risk), 20-100 (maintainable)
+
+- [ ] MI with comment ratio: [0-100]
+  - Count comment lines vs code lines
+  - Adjusted for percentage of comment lines
+  - Higher = better documentation improves maintainability
+
+- [ ] Per-function MI: [list functions with MI < 20]
+  - Use LSP to analyze each function separately
+  - Identify specific functions with poor maintainability
+
+Depth of Inheritance:
+- [ ] Maximum inheritance depth: [depth] - Deepest inheritance chain
+  - Use LSP to trace class hierarchy (find base classes recursively)
+  - Thresholds: 1-2 (good), 3-4 (acceptable), >4 (too deep)
+  - Deep inheritance issues: Hard to understand, fragile base class
+
+- [ ] Average inheritance depth: [depth]
+  - Calculate across all classes from LSP data
+  - Overall inheritance complexity across codebase
+
+Coupling Between Objects (CBO):
+- [ ] CBO score per class: [class: score]
+  - Use find_referencing_symbols to count coupled classes
+  - Measures: Number of classes coupled to this class
+  - Coupling types: Method calls, field access, inheritance, type usage
+  - Thresholds: 0-5 (low), 6-10 (moderate), >10 (high coupling)
+
+- [ ] Efferent coupling (Ce): [count] - Classes this class depends on
+  - Count imports and external references from LSP
+  - High Ce indicates: Class uses many external dependencies
+
+- [ ] Afferent coupling (Ca): [count] - Classes that depend on this class
+  - Use find_referencing_symbols to count dependents
+  - High Ca indicates: Class is heavily used by others (responsibility)
+
+Lack of Cohesion in Methods (LCOM):
+- [ ] LCOM score per class: [class: score]
+  - Use LSP to analyze method-to-instance-variable relationships
+  - Measures: How related are methods in a class
+  - Formula: Number of method pairs with no shared instance variables
+  - Interpretation: High LCOM = methods don't work together (low cohesion)
+  - Thresholds: 0-20% (cohesive), 20-50% (moderate), >50% (should split)
+
+- [ ] Classes with LCOM > 50%: [list]
+  - Candidates for splitting into multiple classes
+
+Response for Complexity (RFC):
+- [ ] RFC per class: [class: count]
+  - Use LSP to count methods + find_referencing_symbols for called methods
+  - Measures: Number of methods that can be invoked by class
+  - Includes: Own methods + methods called
+  - Thresholds: <20 (simple), 20-50 (moderate), >50 (complex)
+  - High RFC indicates: Class has high responsibility/complexity
+
+Weighted Methods per Class (WMC):
+- [ ] WMC per class: [class: score]
+  - Use LSP to get all methods, calculate cyclomatic complexity for each
+  - Sum of cyclomatic complexity of all methods
+  - Higher WMC = more testing needed, harder to maintain
+  - Thresholds: <10 (simple), 10-30 (moderate), >30 (complex)
+```
+
+## 4.10 Project Standards Compliance
 
 Based on context from Phase 0, check compliance:
 
@@ -370,7 +667,7 @@ API Usage Alignment (from Phase 0 consumers):
 - [ ] Private elements not accessed externally: [verify no external references]
 ```
 
-## 4.4 Security Vulnerability Patterns (OWASP-Aligned)
+## 4.11 Security Vulnerability Patterns (OWASP-Aligned)
 
 ```
 SECURITY ISSUES:
@@ -452,7 +749,14 @@ If the calculated quality score is below 9.1, you MUST:
 
 ## Plan File Location
 
-Write to: `.claude/plans/code-quality-serena-{filename}-plan.md`
+Write to: `.claude/plans/code-quality-serena-{filename}-{hash5}-plan.md`
+
+**Naming convention**:
+- Use the target file's name (without path)
+- Prefix with `code-quality-serena-`
+- Append a 5-character random hash before `-plan.md` to prevent conflicts
+- Generate hash using: first 5 chars of timestamp or random string (lowercase alphanumeric)
+- Example: Analyzing `src/services/auth_service.ts` → `.claude/plans/code-quality-serena-auth_service-3m8k5-plan.md`
 
 **Create the `.claude/plans/` directory if it doesn't exist.**
 
@@ -573,7 +877,7 @@ After writing the plan file, report back with MINIMAL information:
 
 **Status**: COMPLETE
 **File Analyzed**: [full file path]
-**Plan File**: .claude/plans/code-quality-serena-[filename]-plan.md
+**Plan File**: .claude/plans/code-quality-serena-[filename]-[hash5]-plan.md
 
 ### Quick Summary
 
@@ -598,7 +902,7 @@ After writing the plan file, report back with MINIMAL information:
 
 ### Declaration
 
-✓ Plan written to: .claude/plans/code-quality-serena-[filename]-plan.md
+✓ Plan written to: .claude/plans/code-quality-serena-[filename]-[hash5]-plan.md
 ✓ Ready for file-editor-default: [YES/NO]
 ✓ LSP-powered semantic analysis complete
 ```
@@ -659,6 +963,13 @@ After writing the plan file, report back with MINIMAL information:
 
 **Phase 4 - Quality Issues:**
 - [ ] Checked code smells using file content + LSP data
+- [ ] Analyzed performance & efficiency issues
+- [ ] Checked concurrency & thread safety
+- [ ] Assessed test quality & coverage using LSP
+- [ ] Evaluated architectural & design quality with LSP
+- [ ] Reviewed documentation quality
+- [ ] Analyzed code churn & stability metrics
+- [ ] Calculated advanced code metrics (Halstead, ABC, CBO, LCOM, RFC, WMC) using LSP
 - [ ] Verified project standards compliance (from Phase 0)
 - [ ] Used search_for_pattern for security vulnerability patterns
 - [ ] Verified unused public API (not used by consumers)
@@ -666,6 +977,10 @@ After writing the plan file, report back with MINIMAL information:
 - [ ] Checked for magic numbers that should be constants
 - [ ] Used search_for_pattern to find parseInt without radix
 - [ ] Used find_referencing_symbols to identify unused interfaces/types
+- [ ] Checked for memory leaks and resource leaks
+- [ ] Identified race conditions and thread safety issues
+- [ ] Analyzed module coupling and cohesion with LSP
+- [ ] Verified test coverage meets 80%+ target using LSP
 
 **Phase 5 - Improvement Plan:**
 - [ ] Prioritized all issues
