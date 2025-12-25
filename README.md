@@ -28,10 +28,10 @@ flowchart TD
     end
 
     subgraph execution["⚙️ FILE-EDITOR ORCHESTRATION"]
-        orchestrator["File-Editor Orchestrator<br/>Reads plan file<br/>Identifies files to edit<br/>Spawns parallel agents"]
-        editor1["file-editor-default<br/>File: src/auth/handler.ts<br/>Changes: 6 fixes"]
-        editor2["file-editor-default<br/>File: src/auth/middleware.ts<br/>Changes: 4 fixes"]
-        editor3["file-editor-default<br/>File: src/models/user.ts<br/>Changes: 8 fixes"]
+        orchestrator["File-Editor Orchestrator<br/>Reads plan file<br/>Identifies files to edit/create<br/>Spawns parallel agents"]
+        editor1["file-editor-default<br/>File: src/auth/handler.ts [edit]<br/>Changes: 6 fixes"]
+        editor2["file-editor-default<br/>File: src/auth/middleware.ts [edit]<br/>Changes: 4 fixes"]
+        editor3["file-editor-default<br/>File: src/auth/oauth.ts [create]<br/>New file with complete content"]
     end
 
     planner_cmd --> planner_agent
@@ -144,8 +144,10 @@ Advanced semantic code navigation using Serena LSP:
 - **`/code-quality-serena`**: Larger codebases, accurate refactoring, semantic accuracy matters
 
 ### 4. **File Editor** (`/editor`)
-Parallel file modification from implementation plans:
+Parallel file editing and creation from implementation plans:
 - Reads plans from `.claude/plans/`
+- **Edits existing files** (`[edit]`) using precise modifications
+- **Creates new files** (`[create]`) with complete, functional content
 - Implements changes atomically and defensively
 - Security checklist verification
 - Regression loop to clean up artifacts
@@ -238,8 +240,8 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 # Create and execute an implementation plan
 /planner Add OAuth2 authentication with Google login
 
-# Execute a specific plan on files
-/editor .claude/plans/oauth2-plan.md src/auth/handler src/auth/middleware
+# Execute a specific plan on files (edits existing, creates new as needed)
+/editor .claude/plans/oauth2-plan.md src/auth/handler src/auth/middleware src/auth/oauth_provider
 ```
 
 ### Bug Investigation
@@ -339,13 +341,14 @@ essentials/
 
 ## Key Design Principles
 
-1. **Parallel Execution**: File-editor agents run in parallel for multi-file changes
+1. **Parallel Execution**: File-editor agents run in parallel for multi-file edits and creations
 2. **Plan-Driven**: All complex work flows through plan files in `.claude/plans/`
-3. **Minimal Context Pollution**: Agents return minimal output; details stay in plan files
-4. **Verification Loops**: All implementations are verified against plan counts
-5. **No Git Modifications**: Agents never commit; user reviews and commits manually
-6. **Security-First**: All file edits include security checklist verification
-7. **Semantic Accuracy** (LSP): Use language servers for accurate code understanding
+3. **Edit or Create**: Plans specify `[edit]` for modifications and `[create]` for new files
+4. **Minimal Context Pollution**: Agents return minimal output; details stay in plan files
+5. **Verification Loops**: All implementations are verified against plan counts
+6. **No Git Modifications**: Agents never commit; user reviews and commits manually
+7. **Security-First**: All file edits include security checklist verification
+8. **Semantic Accuracy** (LSP): Use language servers for accurate code understanding
 
 ## LSP vs Standard Analysis Comparison
 

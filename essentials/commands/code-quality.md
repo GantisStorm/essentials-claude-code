@@ -117,12 +117,16 @@ Execute the code quality plan on your assigned file.
 Plan file: <plan-file-path>
 Your assigned file: <file-path>
 
-Read the plan file first, find your file's section in the Implementation Plan, and implement ALL changes precisely.
+Read the plan file first, find your file's section in the Implementation Plan. Your section will be marked either `[edit]` or `[create]`:
+- For `[edit]`: Use the Edit tool to modify the existing file precisely
+- For `[create]`: Use the Write tool to create a new, complete, functional file with all imports, types, implementation, and exports
+
+Implement ALL changes precisely as specified in the plan.
 
 **CRITICAL**: You MUST implement ALL changes listed in TOTAL CHANGES for your file.
 
 When complete, report back with:
-1. File path
+1. File path and action type (edit/create)
 2. **CHANGES COMPLETED**: [X] / [Y] (must match TOTAL CHANGES from plan)
 3. Summary of each change made (numbered)
 4. Regression check results

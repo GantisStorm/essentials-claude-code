@@ -1,10 +1,10 @@
 ---
 allowed-tools: Task, TaskOutput, Bash, Read
 argument-hint: <plan-file-path> <file1> [file2] ... [fileN]
-description: Execute a plan by spawning parallel file-editor agents for each file (project)
+description: Execute a plan by spawning parallel file-editor agents to edit existing files or create new files (project)
 ---
 
-Execute the implementation plan by spawning parallel `file-editor-default` agents in the background and collecting results.
+Execute the implementation plan by spawning parallel `file-editor-default` agents in the background and collecting results. Each agent handles either editing an existing file or creating a new file as specified in the plan.
 
 **IMPORTANT**: The editor NEVER runs git commands that modify state (commit, add, checkout, reset, revert). Only view-only git commands allowed (diff, status, log). All changes remain uncommitted for user review.
 
@@ -21,14 +21,15 @@ Execute the implementation plan by spawning parallel `file-editor-default` agent
 
 Parse `$ARGUMENTS` to extract:
 1. The plan file path (first argument)
-2. The list of files to edit (remaining arguments)
+2. The list of files to edit or create (remaining arguments)
 
 **Validation checks:**
 - Verify plan file exists (use Bash: `ls <plan-path>`)
-- Verify all target files exist (for edits) or parent directories exist (for creates)
-- Report any missing files before proceeding
+- For files to **edit**: Verify the file exists
+- For files to **create**: Verify parent directory exists (file should NOT exist yet)
+- Report any validation failures before proceeding
 
-**IMPORTANT**: Do NOT read the entire plan file yourself. Pass the plan path directly to the agents to avoid polluting the orchestrator's context window.
+**IMPORTANT**: Do NOT read the entire plan file yourself. Pass the plan path directly to the agents to avoid polluting the orchestrator's context window. The plan file contains `[edit]` or `[create]` markers for each file that the agents will read.
 
 ### Step 2: Pre-Flight Conflict Check
 
@@ -46,12 +47,16 @@ Execute the implementation plan on your assigned file.
 Plan file: <plan-file-path>
 Your assigned file: <file-path>
 
-Read the plan file first, find your file's section in the Implementation Plan, and implement ALL changes precisely.
+Read the plan file first, find your file's section in the Implementation Plan. Your section will be marked either `[edit]` or `[create]`:
+- For `[edit]`: Use the Edit tool to modify the existing file
+- For `[create]`: Use the Write tool to create a new, complete, functional file
+
+Implement ALL changes precisely as specified in the plan.
 
 **CRITICAL**: You MUST implement ALL changes listed in TOTAL CHANGES for your file.
 
 When complete, report back with:
-1. File path
+1. File path and action type (edit/create)
 2. **CHANGES COMPLETED**: [X] / [Y] (must match TOTAL CHANGES from plan)
 3. Summary of each change made (numbered)
 4. Regression check results
@@ -149,22 +154,24 @@ After all agents complete and verification runs, provide a comprehensive summary
 
 ### Pre-Flight Validation
 - Plan file: ✓ Found
-- Target files: [count] found, [count] to create
+- Files to edit: [count] found
+- Files to create: [count] (parent directories verified)
 - Potential conflicts: [list or "None"]
 
-### Files Modified: [count] / [total]
+### Files Modified/Created: [count] / [total]
 
-| File | Status | Changes | Security | Regression |
-|------|--------|---------|----------|------------|
-| [path] | ✓ Complete | [brief summary] | ✓ Good | Clean |
-| [path] | ✓ Complete | [brief summary] | ⚠ Review | Clean |
-| [path] | ✗ Failed | [reason] | N/A | N/A |
+| File | Action | Status | Changes | Security | Regression |
+|------|--------|--------|---------|----------|------------|
+| [path] | edit | ✓ Complete | [brief summary] | ✓ Good | Clean |
+| [path] | create | ✓ Complete | [brief summary] | ⚠ Review | Clean |
+| [path] | edit | ✗ Failed | [reason] | N/A | N/A |
 
 ### Aggregated Metrics
 
 | Metric | Count |
 |--------|-------|
-| Files completed | X |
+| Files edited | X |
+| Files created | X |
 | Files failed | X |
 | Lines added | X |
 | Lines modified | X |
@@ -292,7 +299,9 @@ Editor does NOT run git checkout. User can revert with:
 ## Error Handling
 
 - **Plan file missing**: Report error immediately and stop
-- **Target file missing** (for edit): Report which files are missing, stop if critical
+- **Target file missing** (for `[edit]`): Report which files are missing, stop if critical
+- **File already exists** (for `[create]`): Report conflict, ask user whether to overwrite or skip
+- **Parent directory missing** (for `[create]`): Create parent directory first, then proceed
 - **File-editor fails**: Continue with other files, mark as failed in summary
 - **All agents fail**: Report comprehensive error summary with diagnostics
 - **Changes incomplete**: Re-dispatch editor with missed changes only, verify again
@@ -304,19 +313,32 @@ Editor does NOT run git checkout. User can revert with:
 ## Rollback Guidance (for user reference)
 
 Editor only uses view-only git commands. User handles all reversions:
+
+**For edited files:**
 1. Review changes: `git diff`
 2. Revert individual files: `git checkout -- <file>`
 3. Revert multiple files: `git checkout -- <file1> <file2> ...`
 4. Revert all changes: `git checkout -- .`
+
+**For created files:**
+1. Review new files: `git status` (shows untracked files)
+2. Remove individual files: `rm <file>`
+3. Remove multiple files: `rm <file1> <file2> ...`
 
 **Editor will NOT run these commands** - only document them for user reference.
 
 ## Example Usage
 
 ```bash
-# Execute a plan on multiple files
+# Execute a plan on multiple files (mix of edits and creates)
 /editor .claude/plans/oauth2-plan.md src/auth/handler src/auth/middleware src/models/user
 
-# Execute a plan on a single file
+# Execute a plan on a single file to edit
 /editor .claude/plans/bugfix-plan.md src/services/payment
+
+# Execute a plan that creates new files
+/editor .claude/plans/new-feature-plan.md src/services/new_service src/models/new_model
+
+# Mixed: edit existing and create new
+/editor .claude/plans/refactor-plan.md src/old/existing_file src/new/created_file
 ```

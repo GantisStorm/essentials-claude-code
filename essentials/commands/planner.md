@@ -75,7 +75,7 @@ Proceed with implementation? [Y/N]
 
 ### Step 5: Auto-Spawn File Editors
 
-If the planner identified files to edit, **automatically launch `file-editor-default` agents in background** for each file:
+If the planner identified files to edit or create, **automatically launch `file-editor-default` agents in background** for each file:
 
 ```
 Execute the implementation plan on your assigned file.
@@ -83,12 +83,16 @@ Execute the implementation plan on your assigned file.
 Plan file: <plan-file-path>
 Your assigned file: <file-path>
 
-Read the plan file first, find your file's section in the Implementation Plan, and implement ALL changes precisely.
+Read the plan file first, find your file's section in the Implementation Plan. Your section will be marked either `[edit]` or `[create]`:
+- For `[edit]`: Use the Edit tool to modify the existing file precisely
+- For `[create]`: Use the Write tool to create a new, complete, functional file with all imports, types, implementation, and exports
+
+Implement ALL changes precisely as specified in the plan.
 
 **CRITICAL**: You MUST implement ALL changes listed in TOTAL CHANGES for your file.
 
 When complete, report back with:
-1. File path
+1. File path and action type (edit/create)
 2. **CHANGES COMPLETED**: [X] / [Y] (must match TOTAL CHANGES from plan)
 3. Summary of each change made (numbered)
 4. Regression check results
@@ -190,12 +194,12 @@ After all agents complete and verification runs, provide a summary:
 - **Task**: [brief description]
 - **Risk Level**: [Low/Medium/High]
 
-### Files Modified: [count]
+### Files Modified/Created: [count]
 
-| File | Status | Changes |
-|------|--------|---------|
-| [path] | ✓ Complete | [brief summary] |
-| [path] | ✓ Complete | [brief summary] |
+| File | Action | Status | Changes |
+|------|--------|--------|---------|
+| [path] | edit | ✓ Complete | [brief summary] |
+| [path] | create | ✓ Complete | [brief summary] |
 
 ### Change Verification Results
 
