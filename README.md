@@ -4,77 +4,67 @@ A comprehensive multi-agent orchestration framework for Claude Code. Features de
 
 ## Core Concept: Multi-Agent Workflows
 
-### Plan-Driven Workflow (Two Implementation Modes)
+### Plan-Driven Workflow (with File-Editor Orchestration)
 
 ```mermaid
 flowchart TD
     subgraph commands["🎯 USER COMMANDS"]
         planner_cmd["/planner<br/>Create implementation plan"]
-        editor_cmd["/editor<br/>Batch: all files in parallel"]
-        issue_cmd["/issue-builder ⭐ NEW<br/>Iterative: one issue at a time"]
+        editor_cmd["/editor<br/>Execute existing plan"]
+        issue_cmd["/issue-builder<br/>Iterative implementation"]
         bug_cmd["/bug-scout<br/>Investigate + fix bugs"]
         quality_cmd["/code-quality<br/>Standard analysis"]
         serena_cmd["/code-quality-serena<br/>LSP semantic analysis"]
     end
 
     subgraph analysis["📊 ANALYSIS AGENTS"]
-        planner_agent["planner-default<br/>Investigate codebase<br/>Research docs<br/>Create plan<br/>→ Guides user to choose /editor or /issue-builder"]
+        planner_agent["planner-default<br/>Investigate codebase<br/>Research docs<br/>Create implementation plan"]
+        issue_agent["issue-builder-default<br/>Break plan into issues<br/>Orchestrate iteratively"]
         bug_agent["bug-scout-default<br/>Analyze logs/errors<br/>Trace code paths<br/>Create fix plan"]
         quality_agent["code-quality-default<br/>Read/Glob/Grep analysis<br/>11-dimension scoring<br/>Create improvement plan"]
         serena_agent["code-quality-serena<br/>LSP semantic navigation<br/>Symbol + reference analysis<br/>Create improvement plan"]
     end
 
-    subgraph storage["💾 STORAGE"]
-        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• issues-{hash}.json ⭐<br/>• bug-scout-{id}-plan.md<br/>• code-quality-{file}-plan.md")]
+    subgraph storage["💾 PLAN STORAGE"]
+        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• issues-{hash}.json<br/>• bug-scout-{id}-plan.md<br/>• code-quality-{file}-plan.md<br/>• code-quality-serena-{file}-plan.md")]
     end
 
-    subgraph batch["⚙️ BATCH MODE (/editor)"]
-        batch_orch["Reads plan<br/>Spawns ALL file-editors in parallel"]
-        batch_ed1["file-editor-default<br/>File 1 [edit/create]"]
-        batch_ed2["file-editor-default<br/>File 2 [edit/create]"]
-        batch_ed3["file-editor-default<br/>File N [edit/create]"]
-    end
-
-    subgraph iterative["🔄 ITERATIVE MODE (/issue-builder) ⭐"]
-        issue_agent["issue-builder-default<br/>1. Reads plan<br/>2. Creates issues.json<br/>3. Enters orchestration loop"]
-        issue_present["Present Issue 1<br/>to user for approval"]
-        issue_ed1["Spawn file-editors<br/>for Issue 1"]
-        issue_next["Verify completion<br/>Move to Issue 2..."]
+    subgraph execution["⚙️ FILE-EDITOR ORCHESTRATION"]
+        orchestrator["File-Editor Orchestrator<br/>Reads plan file<br/>Identifies files to edit/create<br/>Spawns parallel agents"]
+        editor1["file-editor-default<br/>File: src/auth/handler.ts [edit]<br/>Changes: 6 fixes"]
+        editor2["file-editor-default<br/>File: src/auth/middleware.ts [edit]<br/>Changes: 4 fixes"]
+        editor3["file-editor-default<br/>File: src/auth/oauth.ts [create]<br/>New file with complete content"]
     end
 
     planner_cmd --> planner_agent
+    issue_cmd --> issue_agent
     bug_cmd --> bug_agent
     quality_cmd --> quality_agent
     serena_cmd --> serena_agent
 
     planner_agent -->|"writes plan"| plans
+    issue_agent -->|"writes issues.json"| plans
     bug_agent -->|"writes plan"| plans
     quality_agent -->|"writes plan"| plans
     serena_agent -->|"writes plan"| plans
 
-    planner_agent -.->|"guides user"| editor_cmd
-    planner_agent -.->|"guides user"| issue_cmd
-
     editor_cmd -->|"reads plan"| plans
-    plans -->|"plan content"| batch_orch
-    batch_orch -->|"parallel"| batch_ed1
-    batch_orch -->|"parallel"| batch_ed2
-    batch_orch -->|"parallel"| batch_ed3
+    issue_agent -->|"reads plan"| plans
+    plans -->|"plan content"| orchestrator
 
-    issue_cmd --> issue_agent
-    issue_agent -->|"reads"| plans
-    issue_agent -->|"writes"| plans
-    issue_agent --> issue_present
-    issue_present -->|"user approves"| issue_ed1
-    issue_ed1 --> issue_next
-    issue_next -.->|"loop"| issue_present
+    orchestrator -->|"parallel spawn"| editor1
+    orchestrator -->|"parallel spawn"| editor2
+    orchestrator -->|"parallel spawn"| editor3
+
+    editor1 -.->|"reports completion"| orchestrator
+    editor2 -.->|"reports completion"| orchestrator
+    editor3 -.->|"reports completion"| orchestrator
 
     style commands fill:#1e40af,stroke:#3b82f6,stroke-width:3px,color:#fff
     style analysis fill:#b45309,stroke:#f59e0b,stroke-width:3px,color:#fff
     style storage fill:#6b21a8,stroke:#a855f7,stroke-width:3px,color:#fff
-    style batch fill:#065f46,stroke:#10b981,stroke-width:3px,color:#fff
-    style iterative fill:#7c2d12,stroke:#ea580c,stroke-width:3px,color:#fff
-    style issue_agent fill:#9a3412,stroke:#ea580c,stroke-width:2px,color:#fff
+    style execution fill:#065f46,stroke:#10b981,stroke-width:3px,color:#fff
+    style orchestrator fill:#047857,stroke:#10b981,stroke-width:2px,color:#fff
     style plans fill:#7c3aed,stroke:#a855f7,stroke-width:2px,color:#fff
 ```
 
