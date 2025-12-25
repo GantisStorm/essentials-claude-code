@@ -50,9 +50,9 @@ flowchart LR
 
     prompt_cmd --> prompt_agent
 
-    style commands fill:#e1f5ff
-    style agents fill:#fff4e1
-    style execution fill:#e8f5e9
+    style commands fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#fff
+    style agents fill:#b45309,stroke:#f59e0b,stroke-width:2px,color:#fff
+    style execution fill:#065f46,stroke:#10b981,stroke-width:2px,color:#fff
 ```
 
 ## Features
@@ -321,11 +321,11 @@ flowchart TD
     editor3 --> phase4
     phase4 --> phase5
 
-    style phase1 fill:#fff4e1
-    style phase2 fill:#e1f5ff
-    style phase3 fill:#e8f5e9
-    style phase4 fill:#ffe1e1
-    style phase5 fill:#f3e5f5
+    style phase1 fill:#b45309,stroke:#f59e0b,stroke-width:2px,color:#fff
+    style phase2 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#fff
+    style phase3 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#fff
+    style phase4 fill:#991b1b,stroke:#ef4444,stroke-width:2px,color:#fff
+    style phase5 fill:#6b21a8,stroke:#a855f7,stroke-width:2px,color:#fff
 ```
 
 ### Plan Storage
