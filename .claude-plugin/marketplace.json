@@ -1,6 +1,6 @@
 {
   "name": "essentials-claude-code",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Multi-agent orchestration framework for Claude Code with deep planning, bug investigation, code quality analysis, and parallel file editing capabilities",
   "author": "GantisStorm",
   "owner": {
