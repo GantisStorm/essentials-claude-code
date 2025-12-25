@@ -4,55 +4,88 @@ A comprehensive multi-agent orchestration framework for Claude Code. Features de
 
 ## Core Concept: Multi-Agent Workflows
 
+### Plan-Driven Workflow (with File-Editor Orchestration)
+
 ```mermaid
-flowchart LR
-    subgraph commands["USER COMMANDS"]
-        planner_cmd["/planner<br/>Architecture +<br/>Implementation"]
-        editor_cmd["/editor<br/>Execute Plans<br/>on Files"]
-        bug_cmd["/bug-scout<br/>Investigate +<br/>Fix Bugs"]
-        quality_cmd["/code-quality<br/>Standard Tools<br/>Analysis"]
-        serena_cmd["/code-quality-serena<br/>LSP Semantic<br/>Navigation"]
-        prompt_cmd["/prompt-builder<br/>Vibe → Prompt"]
+flowchart TD
+    subgraph commands["🎯 USER COMMANDS"]
+        planner_cmd["/planner<br/>Create implementation plan"]
+        editor_cmd["/editor<br/>Execute existing plan"]
+        bug_cmd["/bug-scout<br/>Investigate + fix bugs"]
+        quality_cmd["/code-quality<br/>Standard analysis"]
+        serena_cmd["/code-quality-serena<br/>LSP semantic analysis"]
     end
 
-    subgraph agents["ANALYSIS AGENTS"]
-        planner_agent["planner-default<br/>(investigate +<br/>create plan)"]
-        plan_reader["Reads Plan File<br/>.claude/plans/<br/>*-plan.md"]
-        bug_agent["bug-scout-default<br/>(logs → fix plan)"]
-        quality_agent["code-quality-default<br/>(Read/Glob/Grep)"]
-        serena_agent["code-quality-serena<br/>(LSP-powered<br/>semantic analysis)"]
-        prompt_agent["prompt-builder-default<br/>(iterative<br/>refinement)"]
+    subgraph analysis["📊 ANALYSIS AGENTS"]
+        planner_agent["planner-default<br/>Investigate codebase<br/>Research docs<br/>Create implementation plan"]
+        bug_agent["bug-scout-default<br/>Analyze logs/errors<br/>Trace code paths<br/>Create fix plan"]
+        quality_agent["code-quality-default<br/>Read/Glob/Grep analysis<br/>11-dimension scoring<br/>Create improvement plan"]
+        serena_agent["code-quality-serena<br/>LSP semantic navigation<br/>Symbol + reference analysis<br/>Create improvement plan"]
     end
 
-    subgraph execution["EXECUTION AGENTS"]
-        editor1["file-editor<br/>(file1)"]
-        editor2["file-editor<br/>(file2)"]
-        editor3["file-editor<br/>(file3)"]
-        editor_pool["file-editor agents<br/>(implement fixes)"]
+    subgraph storage["💾 PLAN STORAGE"]
+        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• bug-scout-{id}-plan.md<br/>• code-quality-{file}-plan.md")]
+    end
+
+    subgraph execution["⚙️ FILE-EDITOR ORCHESTRATION"]
+        orchestrator["File-Editor Orchestrator<br/>Reads plan file<br/>Identifies files to edit<br/>Spawns parallel agents"]
+        editor1["file-editor-default<br/>File: src/auth/handler.ts<br/>Changes: 6 fixes"]
+        editor2["file-editor-default<br/>File: src/auth/middleware.ts<br/>Changes: 4 fixes"]
+        editor3["file-editor-default<br/>File: src/models/user.ts<br/>Changes: 8 fixes"]
     end
 
     planner_cmd --> planner_agent
-    planner_agent -->|"creates plan file<br/>.claude/plans/"| plan_reader
-
-    editor_cmd --> plan_reader
-    plan_reader -->|"parallel spawns"| editor1
-    plan_reader --> editor2
-    plan_reader --> editor3
-
     bug_cmd --> bug_agent
-    bug_agent -->|"auto-spawns"| editor_pool
-
     quality_cmd --> quality_agent
-    quality_agent -->|"spawns"| editor_pool
-
     serena_cmd --> serena_agent
-    serena_agent -->|"spawns"| editor_pool
+
+    planner_agent -->|"writes plan"| plans
+    bug_agent -->|"writes plan"| plans
+    quality_agent -->|"writes plan"| plans
+    serena_agent -->|"writes plan"| plans
+
+    editor_cmd -->|"reads plan"| plans
+    plans -->|"plan content"| orchestrator
+
+    orchestrator -->|"parallel spawn"| editor1
+    orchestrator -->|"parallel spawn"| editor2
+    orchestrator -->|"parallel spawn"| editor3
+
+    editor1 -.->|"reports completion"| orchestrator
+    editor2 -.->|"reports completion"| orchestrator
+    editor3 -.->|"reports completion"| orchestrator
+
+    style commands fill:#1e40af,stroke:#3b82f6,stroke-width:3px,color:#fff
+    style analysis fill:#b45309,stroke:#f59e0b,stroke-width:3px,color:#fff
+    style storage fill:#6b21a8,stroke:#a855f7,stroke-width:3px,color:#fff
+    style execution fill:#065f46,stroke:#10b981,stroke-width:3px,color:#fff
+    style orchestrator fill:#047857,stroke:#10b981,stroke-width:2px,color:#fff
+    style plans fill:#7c3aed,stroke:#a855f7,stroke-width:2px,color:#fff
+```
+
+### Independent Workflow (No File-Editor)
+
+```mermaid
+flowchart LR
+    subgraph standalone["✨ STANDALONE AGENTS"]
+        prompt_cmd["/prompt-builder<br/>Transform vibe → prompt"]
+    end
+
+    subgraph prompt_work["📝 PROMPT ENGINEERING"]
+        prompt_agent["prompt-builder-default<br/><br/>1. Parse vibe description<br/>2. Generate structured prompt<br/>3. Iterate with user feedback<br/>4. Save to .claude/plans/"]
+    end
+
+    subgraph prompt_storage["💾 PROMPT STORAGE"]
+        prompt_files[(".claude/plans/<br/><br/>• prompt-builder-{slug}-draft.md<br/>• Multiple revision passes<br/>• User reviews in chat")]
+    end
 
     prompt_cmd --> prompt_agent
+    prompt_agent -->|"saves drafts"| prompt_files
+    prompt_files -.->|"user reviews"| prompt_agent
 
-    style commands fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#fff
-    style agents fill:#b45309,stroke:#f59e0b,stroke-width:2px,color:#fff
-    style execution fill:#065f46,stroke:#10b981,stroke-width:2px,color:#fff
+    style standalone fill:#6b21a8,stroke:#a855f7,stroke-width:3px,color:#fff
+    style prompt_work fill:#b45309,stroke:#f59e0b,stroke-width:3px,color:#fff
+    style prompt_storage fill:#1e40af,stroke:#3b82f6,stroke-width:3px,color:#fff
 ```
 
 ## Features
