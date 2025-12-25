@@ -308,59 +308,6 @@ Orchestrator Commands
     └── prompt-builder-default (iterative refinement)
 ```
 
-### Code Quality Analysis Workflow
-
-```mermaid
-flowchart TD
-    user["USER: /code-quality-serena file1.ts file2.ts file3.ts"]
-
-    subgraph phase1["PHASE 1: PARALLEL ANALYSIS"]
-        agent1["code-quality-serena Agent 1<br/>Analyzes: file1.ts<br/><br/>Using LSP:<br/>• get_symbols_overview<br/>• find_symbol<br/>• find_referencing_symbols<br/>• search_for_pattern"]
-        agent2["code-quality-serena Agent 2<br/>Analyzes: file2.ts<br/><br/>Using LSP:<br/>• get_symbols_overview<br/>• find_symbol<br/>• find_referencing_symbols<br/>• search_for_pattern"]
-        agent3["code-quality-serena Agent 3<br/>Analyzes: file3.ts<br/><br/>Using LSP:<br/>• get_symbols_overview<br/>• find_symbol<br/>• find_referencing_symbols<br/>• search_for_pattern"]
-        plan1[".claude/plans/<br/>code-quality-file1-plan.md"]
-        plan2[".claude/plans/<br/>code-quality-file2-plan.md"]
-        plan3[".claude/plans/<br/>code-quality-file3-plan.md"]
-    end
-
-    subgraph phase2["PHASE 2: PARSE RESULTS"]
-        parse["Orchestrator reads each plan file:<br/>• Extract: File path, quality score, TOTAL CHANGES<br/>• Group: Needs Changes vs Clean<br/>• LSP Stats: Symbols analyzed, references checked"]
-    end
-
-    subgraph phase3["PHASE 3: PARALLEL IMPLEMENTATION"]
-        editor1["file-editor-default<br/>Reads Plan: code-quality-file1-plan.md<br/>Implements: All 6 fixes from plan"]
-        editor2["file-editor-default<br/>Reads Plan: code-quality-file2-plan.md<br/>Implements: All 4 fixes from plan"]
-        editor3["file-editor-default<br/>Reads Plan: code-quality-file3-plan.md<br/>Implements: All 8 fixes from plan"]
-    end
-
-    subgraph phase4["PHASE 4: VERIFICATION"]
-        verify["For each file, compare:<br/>• TOTAL CHANGES (from analysis plan)<br/>• CHANGES COMPLETED (from editor report)<br/><br/>If mismatch: Re-dispatch file-editor<br/>Repeat until CHANGES COMPLETED == TOTAL CHANGES"]
-    end
-
-    subgraph phase5["PHASE 5: COMPREHENSIVE SUMMARY"]
-        summary["Code Quality Analysis Summary (LSP-Powered)<br/><br/>Files Analyzed: 3<br/>LSP Symbols Analyzed: 47<br/>References Checked: 183<br/>Unused Elements Found: 8<br/><br/>Files Modified: 3<br/>Total Fixes Applied: 18<br/><br/>Quality Scores:<br/>• file1.ts: 6.8 → 9.2 ✓<br/>• file2.ts: 7.5 → 9.3 ✓<br/>• file3.ts: 8.1 → 9.4 ✓<br/><br/>All files meet 9.1/10 threshold"]
-    end
-
-    user --> phase1
-    agent1 --> plan1
-    agent2 --> plan2
-    agent3 --> plan3
-    plan1 --> phase2
-    plan2 --> phase2
-    plan3 --> phase2
-    phase2 --> phase3
-    editor1 --> phase4
-    editor2 --> phase4
-    editor3 --> phase4
-    phase4 --> phase5
-
-    style phase1 fill:#b45309,stroke:#f59e0b,stroke-width:2px,color:#fff
-    style phase2 fill:#1e40af,stroke:#3b82f6,stroke-width:2px,color:#fff
-    style phase3 fill:#065f46,stroke:#10b981,stroke-width:2px,color:#fff
-    style phase4 fill:#991b1b,stroke:#ef4444,stroke-width:2px,color:#fff
-    style phase5 fill:#6b21a8,stroke:#a855f7,stroke-width:2px,color:#fff
-```
-
 ### Plan Storage
 
 All plans are stored in **your project's** `.claude/plans/` directory (not the plugin):
