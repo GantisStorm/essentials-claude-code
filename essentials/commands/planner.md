@@ -49,6 +49,14 @@ From the planner's output, extract the plan file path and present the user with 
 **Files to Modify**: [count]
 **Quality Score**: [XX]/50
 
+### Review & Optimize (Optional)
+
+**Plan Optimizer (`/plan-optimizer`)** - Refine the plan before implementation
+- Add missing details, reorganize sections, update requirements
+- Tracks changes with git-style revision history
+- Command: `/plan-optimizer .claude/plans/{plan-file} "<your changes>"`
+- Use when: Plan needs refinement or additional details
+
 ### Choose Your Implementation Approach
 
 **Option 1: Direct File Editing (`/editor`)** - Batch mode, all files in parallel
@@ -64,8 +72,8 @@ From the planner's output, extract the plan file path and present the user with 
 ### Next Steps
 
 1. Review the plan: Open `.claude/plans/{plan-file}`
-2. Choose your approach above
-3. Or review/edit the plan first if needed
+2. (Optional) Optimize: `/plan-optimizer` if plan needs refinement
+3. Choose implementation approach: `/editor` or `/issue-builder`
 ```
 
 ## Workflow Diagram

@@ -10,6 +10,7 @@ A comprehensive multi-agent orchestration framework for Claude Code. Features de
 flowchart TD
     subgraph commands["🎯 USER COMMANDS"]
         planner_cmd["/planner<br/>Create implementation plan"]
+        optimizer_cmd["/plan-optimizer<br/>Refine existing plan"]
         editor_cmd["/editor<br/>Execute existing plan"]
         issue_cmd["/issue-builder<br/>Iterative implementation"]
         bug_cmd["/bug-scout<br/>Investigate + fix bugs"]
@@ -19,6 +20,7 @@ flowchart TD
 
     subgraph analysis["📊 ANALYSIS AGENTS"]
         planner_agent["planner-default<br/>Investigate codebase<br/>Research docs<br/>Create implementation plan"]
+        optimizer_agent["plan-optimizer-default<br/>Apply user changes<br/>Ask clarifying questions<br/>Track git-style revisions"]
         issue_agent["issue-builder-default<br/>Break plan into issues<br/>Orchestrate iteratively"]
         bug_agent["bug-scout-default<br/>Analyze logs/errors<br/>Trace code paths<br/>Create fix plan"]
         quality_agent["code-quality-default<br/>Read/Glob/Grep analysis<br/>11-dimension scoring<br/>Create improvement plan"]
@@ -37,12 +39,15 @@ flowchart TD
     end
 
     planner_cmd --> planner_agent
+    optimizer_cmd --> optimizer_agent
     issue_cmd --> issue_agent
     bug_cmd --> bug_agent
     quality_cmd --> quality_agent
     serena_cmd --> serena_agent
 
     planner_agent -->|"writes plan"| plans
+    optimizer_agent -->|"reads plan"| plans
+    optimizer_agent -->|"updates plan"| plans
     issue_agent -->|"writes issues.json"| plans
     bug_agent -->|"writes plan"| plans
     quality_agent -->|"writes plan"| plans
@@ -169,7 +174,17 @@ Issue-based iterative implementation with granular control:
 - Complete audit trail in issues.json
 - **Best for**: Complex plans (>5 files), unclear dependencies, resumable work
 
-### 6. **Prompt Builder** (`/prompt-builder`)
+### 6. **Plan Optimizer** (`/plan-optimizer`) ⭐ NEW
+User-guided plan refinement with comprehensive revision tracking:
+- Apply user-requested changes to existing implementation plans
+- **Interactive clarification**: Asks questions when instructions are ambiguous
+- **Surgical precision**: Changes only what's requested, plus cascading updates
+- **Git-style revision history**: Shows exact adds/deletes with context lines
+- **Integrity validation**: Ensures changes don't break plan consistency
+- **Quality preservation**: Maintains or improves plan quality scores
+- **Best for**: Iterative plan refinement, adding missing details, reorganizing sections
+
+### 7. **Prompt Builder** (`/prompt-builder`)
 Iterative prompt engineering from vibe descriptions:
 - Transforms rough ideas into structured prompts
 - Anti-pattern elimination (no vague phrases)
@@ -256,7 +271,11 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 # Create an implementation plan
 /planner Add OAuth2 authentication with Google login
 
-# After planning, choose implementation approach:
+# (Optional) Optimize/refine the plan before implementation
+/plan-optimizer .claude/plans/oauth2-a3f9e-plan.md "Add error handling details to auth handler section"
+/plan-optimizer .claude/plans/oauth2-a3f9e-plan.md "Update implementation order to do database setup first"
+
+# After planning (and optional optimization), choose implementation approach:
 
 # Option 1: Batch mode - all files in parallel
 /editor .claude/plans/oauth2-a3f9e-plan.md src/auth/handler src/auth/middleware src/auth/oauth_provider
@@ -312,7 +331,10 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 ```
 Orchestrator Commands
 ├── /planner
-│   └── planner-default (investigation + planning → guides user to choose /editor or /issue-builder)
+│   └── planner-default (investigation + planning → guides user to /plan-optimizer, /editor, or /issue-builder)
+│
+├── /plan-optimizer ⭐ NEW
+│   └── plan-optimizer-default (user-guided plan refinement with git-style revision tracking)
 │
 ├── /editor
 │   └── file-editor-default (parallel, per-file, batch mode)
@@ -341,6 +363,7 @@ Orchestrator Commands
 
 All plans are stored in **your project's** `.claude/plans/` directory (not the plugin):
 - `{task-slug}-{hash5}-plan.md` - Implementation plans (from /planner)
+  - **Modified by /plan-optimizer**: Revisions tracked in git-style format at end of file ⭐ NEW
 - `issues-{hash5}.json` - Issue breakdown files (from /issue-builder) ⭐ NEW
 - `bug-scout-{identifier}-{hash5}-plan.md` - Bug fix plans (from /bug-scout)
 - `code-quality-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality standard)
@@ -357,6 +380,7 @@ essentials/
 │   ├── code-quality-serena.md      # Code analysis agent (LSP-powered) ⭐
 │   ├── file-editor-default.md      # File modification agent
 │   ├── issue-builder-default.md    # Issue-based implementation agent ⭐ NEW
+│   ├── plan-optimizer-default.md   # Plan refinement agent ⭐ NEW
 │   ├── planner-default.md          # Planning agent
 │   └── prompt-builder-default.md   # Prompt engineering agent
 └── commands/
@@ -365,6 +389,7 @@ essentials/
     ├── code-quality-serena.md      # /code-quality-serena command ⭐
     ├── editor.md                   # /editor command
     ├── issue-builder.md            # /issue-builder command ⭐ NEW
+    ├── plan-optimizer.md           # /plan-optimizer command ⭐ NEW
     ├── planner.md                  # /planner command
     └── prompt-builder.md           # /prompt-builder command
 ```

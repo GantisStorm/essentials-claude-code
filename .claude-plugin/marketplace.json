@@ -1,7 +1,7 @@
 {
   "name": "essentials-claude-code",
-  "version": "2.3.0",
-  "description": "Multi-agent orchestration framework for Claude Code with deep planning, bug investigation, code quality analysis (standard + LSP-powered), issue-based iterative implementation, and parallel file editing/creation capabilities",
+  "version": "2.4.0",
+  "description": "Multi-agent orchestration framework for Claude Code with deep planning, plan optimization with git-style revision tracking, bug investigation, code quality analysis (standard + LSP-powered), issue-based iterative implementation, and parallel file editing/creation capabilities",
   "author": "GantisStorm",
   "owner": {
     "name": "GantisStorm"
@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "essentials",
-      "version": "2.3.0",
-      "description": "Essential agents for Claude Code: planner, bug-scout, code-quality (standard + Serena LSP), file-editor (edit + create), issue-builder (iterative implementation), and prompt-builder",
+      "version": "2.4.0",
+      "description": "Essential agents for Claude Code: planner, plan-optimizer (user-guided refinement), bug-scout, code-quality (standard + Serena LSP), file-editor (edit + create), issue-builder (iterative implementation), and prompt-builder",
       "source": "./essentials"
     }
   ]
