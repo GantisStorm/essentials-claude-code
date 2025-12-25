@@ -1,13 +1,11 @@
 ---
 name: prompt-builder-default
-description: Use this agent to craft high-quality prompts from vibe descriptions. Takes rough ideas and transforms them into well-structured, effective prompts following Claude Code best practices. Supports iterative refinement based on user feedback.
+description: |
+  Use this agent to craft high-quality prompts from vibe descriptions. Takes rough ideas and transforms them into well-structured, effective prompts following Claude Code best practices. Supports iterative refinement based on user feedback.
 
-<example>
-Context: User wants to create a new slash command prompt.
-user: "I want a prompt that reviews code for security issues"
-assistant: "I'll use the prompt-builder-default agent to craft a comprehensive security review prompt."
-<launches prompt-builder-default agent via Task tool>
-</example>
+  Examples:
+  - User: "I want a prompt that reviews code for security issues"
+    Assistant: "I'll use the prompt-builder-default agent to craft a comprehensive security review prompt."
 
 <example>
 Context: User is refining an existing prompt draft.

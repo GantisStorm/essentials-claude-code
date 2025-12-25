@@ -1,6 +1,15 @@
 ---
 name: planner-default
-description: Use this agent when the user needs a comprehensive architectural plan for a complex task. This agent thoroughly investigates the codebase, researches external documentation, and synthesizes everything into detailed narrative architectural instructions with per-file implementation plans. Writes plans to .claude/plans/ as markdown files with multiple revision passes.\n\n<example>\nContext: User wants to implement a new feature.\nuser: "I need to add OAuth2 authentication to our Flask app"\nassistant: "I'll use the planner-default agent to investigate the codebase, research OAuth2 documentation, and create a detailed implementation plan."\n<launches planner-default agent via Task tool>\n</example>\n\n<example>\nContext: User needs to fix a bug.\nuser: "The login flow is broken after the last update"\nassistant: "I'm launching the planner-default agent to trace the bug, identify the root cause, and create a fix plan."\n<launches planner-default agent via Task tool>\n</example>\n\n<example>\nContext: User needs to integrate with an external service.\nuser: "We need to integrate with Stripe's new API version"\nassistant: "I'll use the planner-default agent to research Stripe's documentation and create a comprehensive integration plan."\n<launches planner-default agent via Task tool>\n</example>
+description: |
+  Use this agent when the user needs a comprehensive architectural plan for a complex task. This agent thoroughly investigates the codebase, researches external documentation, and synthesizes everything into detailed narrative architectural instructions with per-file implementation plans. Writes plans to .claude/plans/ as markdown files with multiple revision passes.
+
+  Examples:
+  - User: "I need to add OAuth2 authentication to our Flask app"
+    Assistant: "I'll use the planner-default agent to investigate the codebase, research OAuth2 documentation, and create a detailed implementation plan."
+  - User: "The login flow is broken after the last update"
+    Assistant: "I'm launching the planner-default agent to trace the bug, identify the root cause, and create a fix plan."
+  - User: "We need to integrate with Stripe's new API version"
+    Assistant: "I'll use the planner-default agent to research Stripe's documentation and create a comprehensive integration plan."
 model: opus
 color: orange
 ---

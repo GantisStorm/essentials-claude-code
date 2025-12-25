@@ -1,6 +1,15 @@
 ---
 name: bug-scout-default
-description: Use this agent to perform deep bug investigation and regression analysis. The agent takes a log dump and user report, performs line-by-line code analysis, and produces precise scouting reports with exact fix locations. After analysis, it reports findings back for the orchestrator to dispatch file-editor-default agents for targeted fixes.\n\n<example>\nContext: User has error logs and describes the issue.\nuser: "Scout this error: TypeError at line 45 in auth_handler. Login fails when user has no profile."\nassistant: "I'll use the bug-scout-default agent to investigate the error, trace the code path, and produce a precise fix plan."\n<launches bug-scout-default agent via Task tool>\n</example>\n\n<example>\nContext: User provides logs and diagnostic instructions.\nuser: "Here are connection timeout errors. Check docker logs for api-service."\nassistant: "Launching bug-scout-default agent to analyze the logs, run diagnostics, and identify the root cause."\n<launches bug-scout-default agent via Task tool>\n</example>\n\n<example>\nContext: User describes a regression with stack trace.\nuser: "Login broke after last deploy. Here's the stack trace. Expected users to authenticate successfully."\nassistant: "I'll use the bug-scout-default agent to perform regression analysis and identify what broke."\n<launches bug-scout-default agent via Task tool>\n</example>
+description: |
+  Use this agent to perform deep bug investigation and regression analysis. The agent takes a log dump and user report, performs line-by-line code analysis, and produces precise scouting reports with exact fix locations. After analysis, it reports findings back for the orchestrator to dispatch file-editor-default agents for targeted fixes.
+
+  Examples:
+  - User: "Scout this error: TypeError at line 45 in auth_handler. Login fails when user has no profile."
+    Assistant: "I'll use the bug-scout-default agent to investigate the error, trace the code path, and produce a precise fix plan."
+  - User: "Here are connection timeout errors. Check docker logs for api-service."
+    Assistant: "Launching bug-scout-default agent to analyze the logs, run diagnostics, and identify the root cause."
+  - User: "Login broke after last deploy. Here's the stack trace. Expected users to authenticate successfully."
+    Assistant: "I'll use the bug-scout-default agent to perform regression analysis and identify what broke."
 model: opus
 color: yellow
 skills: code-quality.md

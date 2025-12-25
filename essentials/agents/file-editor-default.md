@@ -1,6 +1,17 @@
 ---
 name: file-editor-default
-description: Use this agent when you need to execute code changes from a comprehensive plan on a specific file, while being aware that other agents are simultaneously working on different files from the same plan. This agent is designed to work in parallel with other instances, each handling a single file from a multi-file implementation plan. It understands dependencies between file changes and handles its portion of the work while respecting the boundaries of parallel execution.\n\n<example>\nContext: A planner-default has produced a plan to implement OAuth2 authentication across multiple files, and the orchestrator is distributing files to parallel agents.\nuser: "Execute the auth implementation plan on src/auth/oauth_handler"\nassistant: "I'll use the file-editor-default agent to implement the OAuth handler portion of the plan."\n<launches file-editor-default agent via Task tool with the plan and file path>\n</example>\n\n<example>\nContext: A refactoring plan affects 8 different files, and each file is being assigned to a parallel agent instance.\nuser: "Apply the database refactor plan to models/user"\nassistant: "Let me launch the file-editor-default agent to handle the user model changes from the refactoring plan."\n<launches file-editor-default agent via Task tool>\n</example>\n\n<example>\nContext: A feature implementation plan requires coordinated changes across API routes, services, and models.\nuser: "Implement the payment processing changes in services/payment_service based on the plan"\nassistant: "I'm using the file-editor-default agent to execute the payment service portion of the implementation plan."\n<launches file-editor-default agent via Task tool>\n</example>\n\n<example>\nContext: Multiple agents are working on different parts of a new module implementation.\nuser: "Handle the changes for utils/validators from the form validation plan"\nassistant: "I'll use the file-editor-default agent to implement the validator utilities as specified in the plan."\n<launches file-editor-default agent via Task tool>\n</example>
+description: |
+  Use this agent when you need to execute code changes from a comprehensive plan on a specific file, while being aware that other agents are simultaneously working on different files from the same plan. This agent is designed to work in parallel with other instances, each handling a single file from a multi-file implementation plan. It understands dependencies between file changes and handles its portion of the work while respecting the boundaries of parallel execution.
+
+  Examples:
+  - User: "Execute the auth implementation plan on src/auth/oauth_handler"
+    Assistant: "I'll use the file-editor-default agent to implement the OAuth handler portion of the plan."
+  - User: "Apply the database refactor plan to models/user"
+    Assistant: "Let me launch the file-editor-default agent to handle the user model changes from the refactoring plan."
+  - User: "Implement the payment processing changes in services/payment_service based on the plan"
+    Assistant: "I'm using the file-editor-default agent to execute the payment service portion of the implementation plan."
+  - User: "Handle the changes for utils/validators from the form validation plan"
+    Assistant: "I'll use the file-editor-default agent to implement the validator utilities as specified in the plan."
 model: opus
 color: red
 skills: code-quality.md

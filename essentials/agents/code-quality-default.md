@@ -1,6 +1,13 @@
 ---
 name: code-quality-default
-description: Use this agent to perform comprehensive code quality analysis on a single file. The agent creates a complete outline of all code elements, checks scope correctness, builds call hierarchies, identifies unused or poorly structured code, and generates a detailed improvement plan. After analysis, it reports findings back for the orchestrator to dispatch file-editor-default agents for implementation.\n\n<example>\nContext: User wants to analyze code quality of a source file.\nuser: "Analyze code quality for src/services/auth_service"\nassistant: "I'll use the code-quality-default agent to analyze the file's structure, scope usage, and generate improvement suggestions."\n<launches code-quality-default agent via Task tool>\n</example>\n\n<example>\nContext: Orchestrator is running parallel quality checks on multiple files.\nuser: "Analyze code quality for agent/prompts/manager"\nassistant: "Launching code-quality-default agent to analyze the prompt manager file."\n<launches code-quality-default agent via Task tool>\n</example>
+description: |
+  Use this agent to perform comprehensive code quality analysis on a single file. The agent creates a complete outline of all code elements, checks scope correctness, builds call hierarchies, identifies unused or poorly structured code, and generates a detailed improvement plan. After analysis, it reports findings back for the orchestrator to dispatch file-editor-default agents for implementation.
+
+  Examples:
+  - User: "Analyze code quality for src/services/auth_service"
+    Assistant: "I'll use the code-quality-default agent to analyze the file's structure, scope usage, and generate improvement suggestions."
+  - User: "Analyze code quality for agent/prompts/manager"
+    Assistant: "Launching code-quality-default agent to analyze the prompt manager file."
 model: opus
 color: cyan
 skills: code-quality.md
