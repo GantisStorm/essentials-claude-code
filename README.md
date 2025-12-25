@@ -4,61 +4,55 @@ A comprehensive multi-agent orchestration framework for Claude Code. Features de
 
 ## Core Concept: Multi-Agent Workflows
 
-```
-┌───────────────────────────────────────────────────────────────────────────────────────┐
-│                           ESSENTIALS FRAMEWORK                                        │
-│                                                                                       │
-│  USER COMMANDS                    ANALYSIS AGENTS                 EXECUTION AGENTS   │
-│  ──────────────                   ───────────────                 ────────────────   │
-│                                                                                       │
-│  ┌─────────────────┐              ┌──────────────────┐                               │
-│  │   /planner      │──────────────│ planner-default  │                               │
-│  │                 │              │ (investigate +   │                               │
-│  │ Architecture +  │              │  create plan)    │                               │
-│  │ Implementation  │              └────────┬─────────┘                               │
-│  └─────────────────┘                       │                                         │
-│                                            │ creates plan file                       │
-│                                            │ .claude/plans/                          │
-│                                            ▼                                         │
-│  ┌─────────────────┐              ┌──────────────────┐           ┌────────────────┐ │
-│  │   /editor       │──────────────│  Reads Plan File │──────────►│ file-editor    │ │
-│  │                 │              │                  │  parallel │ (file1)        │ │
-│  │ Execute Plans   │              │ .claude/plans/   │──────────►│ file-editor    │ │
-│  │ on Files        │              │ *-plan.md        │  spawns  │ (file2)        │ │
-│  └─────────────────┘              └──────────────────┘──────────►│ file-editor    │ │
-│                                                                   │ (file3)        │ │
-│                                                                   └────────────────┘ │
-│  ┌─────────────────┐              ┌──────────────────┐                               │
-│  │  /bug-scout     │──────────────│ bug-scout-       │                               │
-│  │                 │              │ default          │                               │
-│  │ Investigate +   │              │ (logs → fix      │──┐                            │
-│  │ Fix Bugs        │              │  plan)           │  │ auto-spawns                │
-│  └─────────────────┘              └──────────────────┘  │ file-editors               │
-│                                                          │                            │
-│                                                          ▼                            │
-│  ┌─────────────────┐              ┌──────────────────┐  │         ┌────────────────┐ │
-│  │ /code-quality   │──────────────│ code-quality-    │  │         │ file-editor    │ │
-│  │                 │              │ default          │  └────────►│ agents         │ │
-│  │ Standard Tools  │              │ (Read/Glob/Grep) │  parallel │ (implement     │ │
-│  │ Analysis        │              └──────────────────┘  execution │  fixes)        │ │
-│  └─────────────────┘                                               └────────────────┘ │
-│                                                          ▲                            │
-│  ┌─────────────────┐              ┌──────────────────┐  │                            │
-│  │/code-quality    │              │ code-quality-    │  │                            │
-│  │     -serena     │──────────────│ serena           │  │                            │
-│  │                 │              │ (LSP-powered     │──┘                            │
-│  │ LSP Semantic    │              │  semantic        │                               │
-│  │ Navigation      │              │  analysis)       │                               │
-│  └─────────────────┘              └──────────────────┘                               │
-│                                                                                       │
-│  ┌─────────────────┐              ┌──────────────────┐                               │
-│  │/prompt-builder  │──────────────│ prompt-builder-  │                               │
-│  │                 │              │ default          │                               │
-│  │ Vibe → Prompt   │              │ (iterative       │                               │
-│  │                 │              │  refinement)     │                               │
-│  └─────────────────┘              └──────────────────┘                               │
-│                                                                                       │
-└───────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph commands["USER COMMANDS"]
+        planner_cmd["/planner<br/>Architecture +<br/>Implementation"]
+        editor_cmd["/editor<br/>Execute Plans<br/>on Files"]
+        bug_cmd["/bug-scout<br/>Investigate +<br/>Fix Bugs"]
+        quality_cmd["/code-quality<br/>Standard Tools<br/>Analysis"]
+        serena_cmd["/code-quality-serena<br/>LSP Semantic<br/>Navigation"]
+        prompt_cmd["/prompt-builder<br/>Vibe → Prompt"]
+    end
+
+    subgraph agents["ANALYSIS AGENTS"]
+        planner_agent["planner-default<br/>(investigate +<br/>create plan)"]
+        plan_reader["Reads Plan File<br/>.claude/plans/<br/>*-plan.md"]
+        bug_agent["bug-scout-default<br/>(logs → fix plan)"]
+        quality_agent["code-quality-default<br/>(Read/Glob/Grep)"]
+        serena_agent["code-quality-serena<br/>(LSP-powered<br/>semantic analysis)"]
+        prompt_agent["prompt-builder-default<br/>(iterative<br/>refinement)"]
+    end
+
+    subgraph execution["EXECUTION AGENTS"]
+        editor1["file-editor<br/>(file1)"]
+        editor2["file-editor<br/>(file2)"]
+        editor3["file-editor<br/>(file3)"]
+        editor_pool["file-editor agents<br/>(implement fixes)"]
+    end
+
+    planner_cmd --> planner_agent
+    planner_agent -->|"creates plan file<br/>.claude/plans/"| plan_reader
+
+    editor_cmd --> plan_reader
+    plan_reader -->|"parallel spawns"| editor1
+    plan_reader --> editor2
+    plan_reader --> editor3
+
+    bug_cmd --> bug_agent
+    bug_agent -->|"auto-spawns"| editor_pool
+
+    quality_cmd --> quality_agent
+    quality_agent -->|"spawns"| editor_pool
+
+    serena_cmd --> serena_agent
+    serena_agent -->|"spawns"| editor_pool
+
+    prompt_cmd --> prompt_agent
+
+    style commands fill:#e1f5ff
+    style agents fill:#fff4e1
+    style execution fill:#e8f5e9
 ```
 
 ## Features
@@ -283,115 +277,55 @@ Orchestrator Commands
 
 ### Code Quality Analysis Workflow
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                     CODE QUALITY ANALYSIS WORKFLOW                           │
-└──────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    user["USER: /code-quality-serena file1.ts file2.ts file3.ts"]
 
-USER: /code-quality-serena file1.ts file2.ts file3.ts
-  │
-  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ PHASE 1: PARALLEL ANALYSIS (Background)                                │
-│                                                                         │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐      │
-│  │ code-quality-    │  │ code-quality-    │  │ code-quality-    │      │
-│  │ serena           │  │ serena           │  │ serena           │      │
-│  │ Agent 1          │  │ Agent 2          │  │ Agent 3          │      │
-│  │                  │  │                  │  │                  │      │
-│  │ Analyzes:        │  │ Analyzes:        │  │ Analyzes:        │      │
-│  │ file1.ts         │  │ file2.ts         │  │ file3.ts         │      │
-│  │                  │  │                  │  │                  │      │
-│  │ Using LSP:       │  │ Using LSP:       │  │ Using LSP:       │      │
-│  │ • get_symbols_   │  │ • get_symbols_   │  │ • get_symbols_   │      │
-│  │   overview       │  │   overview       │  │   overview       │      │
-│  │ • find_symbol    │  │ • find_symbol    │  │ • find_symbol    │      │
-│  │ • find_          │  │ • find_          │  │ • find_          │      │
-│  │   referencing_   │  │   referencing_   │  │   referencing_   │      │
-│  │   symbols        │  │   symbols        │  │   symbols        │      │
-│  │ • search_for_    │  │ • search_for_    │  │ • search_for_    │      │
-│  │   pattern        │  │   pattern        │  │   pattern        │      │
-│  └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘      │
-│           │                     │                     │                │
-│           │ Writes Plan         │ Writes Plan         │ Writes Plan    │
-│           ▼                     ▼                     ▼                │
-│  .claude/plans/        .claude/plans/        .claude/plans/           │
-│  code-quality-         code-quality-         code-quality-            │
-│  file1-plan.md         file2-plan.md         file3-plan.md            │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-  │
-  │ All analyses complete
-  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ PHASE 2: PARSE RESULTS                                                 │
-│                                                                         │
-│  Orchestrator reads each plan file:                                    │
-│  • Extract: File path, quality score, TOTAL CHANGES                    │
-│  • Group: Needs Changes (score < 9.1) vs Clean (score ≥ 9.1)          │
-│  • LSP Stats: Symbols analyzed, references checked, unused found       │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-  │
-  │ Files needing changes identified
-  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ PHASE 3: PARALLEL IMPLEMENTATION (Background)                          │
-│                                                                         │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐      │
-│  │ file-editor-     │  │ file-editor-     │  │ file-editor-     │      │
-│  │ default          │  │ default          │  │ default          │      │
-│  │                  │  │                  │  │                  │      │
-│  │ Reads Plan:      │  │ Reads Plan:      │  │ Reads Plan:      │      │
-│  │ code-quality-    │  │ code-quality-    │  │ code-quality-    │      │
-│  │ file1-plan.md    │  │ file2-plan.md    │  │ file3-plan.md    │      │
-│  │                  │  │                  │  │                  │      │
-│  │ Implements:      │  │ Implements:      │  │ Implements:      │      │
-│  │ All 6 fixes      │  │ All 4 fixes      │  │ All 8 fixes      │      │
-│  │ from plan        │  │ from plan        │  │ from plan        │      │
-│  └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘      │
-│           │                     │                     │                │
-│           └─────────────────────┴─────────────────────┘                │
-│                                 │                                      │
-└─────────────────────────────────┼──────────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ PHASE 4: VERIFICATION                                                  │
-│                                                                         │
-│  For each file, compare:                                               │
-│  • TOTAL CHANGES (from analysis plan)                                  │
-│  • CHANGES COMPLETED (from editor report)                              │
-│                                                                         │
-│  If mismatch:                                                          │
-│  • Re-dispatch file-editor with missed fixes only                      │
-│  • Repeat until CHANGES COMPLETED == TOTAL CHANGES                     │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-  │
-  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ PHASE 5: COMPREHENSIVE SUMMARY                                         │
-│                                                                         │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │ Code Quality Analysis & Implementation Summary (LSP-Powered)    │  │
-│  │                                                                  │  │
-│  │ Files Analyzed: 3                                                │  │
-│  │ LSP Symbols Analyzed: 47 (classes, methods, functions)          │  │
-│  │ References Checked: 183                                          │  │
-│  │ Unused Elements Found: 8                                         │  │
-│  │                                                                  │  │
-│  │ Files Modified: 3                                                │  │
-│  │ Total Fixes Applied: 18 (verified complete)                     │  │
-│  │                                                                  │  │
-│  │ Quality Scores:                                                  │  │
-│  │ • file1.ts: 6.8 → 9.2 ✓                                         │  │
-│  │ • file2.ts: 7.5 → 9.3 ✓                                         │  │
-│  │ • file3.ts: 8.1 → 9.4 ✓                                         │  │
-│  │                                                                  │  │
-│  │ All files meet 9.1/10 threshold                                  │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
+    subgraph phase1["PHASE 1: PARALLEL ANALYSIS"]
+        agent1["code-quality-serena Agent 1<br/>Analyzes: file1.ts<br/><br/>Using LSP:<br/>• get_symbols_overview<br/>• find_symbol<br/>• find_referencing_symbols<br/>• search_for_pattern"]
+        agent2["code-quality-serena Agent 2<br/>Analyzes: file2.ts<br/><br/>Using LSP:<br/>• get_symbols_overview<br/>• find_symbol<br/>• find_referencing_symbols<br/>• search_for_pattern"]
+        agent3["code-quality-serena Agent 3<br/>Analyzes: file3.ts<br/><br/>Using LSP:<br/>• get_symbols_overview<br/>• find_symbol<br/>• find_referencing_symbols<br/>• search_for_pattern"]
+        plan1[".claude/plans/<br/>code-quality-file1-plan.md"]
+        plan2[".claude/plans/<br/>code-quality-file2-plan.md"]
+        plan3[".claude/plans/<br/>code-quality-file3-plan.md"]
+    end
+
+    subgraph phase2["PHASE 2: PARSE RESULTS"]
+        parse["Orchestrator reads each plan file:<br/>• Extract: File path, quality score, TOTAL CHANGES<br/>• Group: Needs Changes vs Clean<br/>• LSP Stats: Symbols analyzed, references checked"]
+    end
+
+    subgraph phase3["PHASE 3: PARALLEL IMPLEMENTATION"]
+        editor1["file-editor-default<br/>Reads Plan: code-quality-file1-plan.md<br/>Implements: All 6 fixes from plan"]
+        editor2["file-editor-default<br/>Reads Plan: code-quality-file2-plan.md<br/>Implements: All 4 fixes from plan"]
+        editor3["file-editor-default<br/>Reads Plan: code-quality-file3-plan.md<br/>Implements: All 8 fixes from plan"]
+    end
+
+    subgraph phase4["PHASE 4: VERIFICATION"]
+        verify["For each file, compare:<br/>• TOTAL CHANGES (from analysis plan)<br/>• CHANGES COMPLETED (from editor report)<br/><br/>If mismatch: Re-dispatch file-editor<br/>Repeat until CHANGES COMPLETED == TOTAL CHANGES"]
+    end
+
+    subgraph phase5["PHASE 5: COMPREHENSIVE SUMMARY"]
+        summary["Code Quality Analysis Summary (LSP-Powered)<br/><br/>Files Analyzed: 3<br/>LSP Symbols Analyzed: 47<br/>References Checked: 183<br/>Unused Elements Found: 8<br/><br/>Files Modified: 3<br/>Total Fixes Applied: 18<br/><br/>Quality Scores:<br/>• file1.ts: 6.8 → 9.2 ✓<br/>• file2.ts: 7.5 → 9.3 ✓<br/>• file3.ts: 8.1 → 9.4 ✓<br/><br/>All files meet 9.1/10 threshold"]
+    end
+
+    user --> phase1
+    agent1 --> plan1
+    agent2 --> plan2
+    agent3 --> plan3
+    plan1 --> phase2
+    plan2 --> phase2
+    plan3 --> phase2
+    phase2 --> phase3
+    editor1 --> phase4
+    editor2 --> phase4
+    editor3 --> phase4
+    phase4 --> phase5
+
+    style phase1 fill:#fff4e1
+    style phase2 fill:#e1f5ff
+    style phase3 fill:#e8f5e9
+    style phase4 fill:#ffe1e1
+    style phase5 fill:#f3e5f5
 ```
 
 ### Plan Storage
