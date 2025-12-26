@@ -26,7 +26,7 @@ flowchart LR
         bug_agent["bug-scout-default<br/>Investigate & plan fixes"]
         quality_agent["code-quality-default<br/>11-dimension analysis"]
         serena_agent["code-quality-serena<br/>LSP semantic analysis"]
-        issue_agent["task-builder-default<br/>Break into issues"]
+        issue_agent["task-builder-default<br/>Break into tasks"]
     end
 
     subgraph storage["💾 PLAN STORAGE"]
@@ -172,14 +172,16 @@ Parallel file editing and creation from implementation plans:
 - **Best for**: Simple plans (<5 files), batch execution, single session
 
 ### 5. **Task Builder** (`/task-builder`) ⭐ NEW
-Issue-based iterative implementation with granular control:
-- Breaks plans into trackable, atomic issues
-- Creates `issues-{hash}.json` with dependency graph
-- **Iterative workflow**: Implement one issue at a time with user approval
-- Resume capability if interrupted (`--resume` flag)
-- Full verification per issue (CHANGES COMPLETED == TOTAL CHANGES)
+Task-based iterative implementation with parallel file editing:
+- Breaks plans into trackable, atomic tasks
+- Creates `tasks-{hash}.json` with dependency graph and complete context
+- **Iterative workflow**: Present one task at a time with user approval
+- **Parallel execution**: Spawns file-editor agents in parallel (one per file in task)
+- **User control**: After each task, choose to continue/pause/compact/abort
+- **Pause/Resume**: Can pause, run `/compact`, then resume exactly where you left off
+- Full verification per task (CHANGES COMPLETED == TOTAL CHANGES)
 - Complete audit trail in tasks.json
-- **Best for**: Complex plans (>5 files), unclear dependencies, resumable work
+- **Best for**: Complex plans (>5 files), unclear dependencies, resumable work, context management
 
 ### 6. **Plan Optimizer** (`/plan-builder`) ⭐ NEW
 User-guided plan refinement with comprehensive revision tracking:
@@ -287,11 +289,13 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 # Option 1: Batch mode - all files in parallel
 /editor .claude/plans/oauth2-a3f9e-plan.md src/auth/handler src/auth/middleware src/auth/oauth_provider
 
-# Option 2: Iterative mode - one issue at a time with user approval
+# Option 2: Iterative mode - one task at a time with user control
+# Creates tasks.json and presents each task for approval
+# After each task: choose to continue/pause/compact/abort
 /task-builder .claude/plans/oauth2-a3f9e-plan.md
 
-# Resume interrupted issue-based implementation
-/task-builder .claude/plans/oauth2-a3f9e-plan.md --resume
+# Resume interrupted task-based implementation (pass tasks.json, not plan!)
+/task-builder .claude/plans/tasks-a3f9e.json
 ```
 
 ### Bug Investigation
@@ -347,8 +351,8 @@ Orchestrator Commands
 │   └── file-editor-default (parallel, per-file, batch mode)
 │
 ├── /task-builder ⭐ NEW
-│   ├── task-builder-default (breaks plan into issues, iterative orchestration)
-│   └── file-editor-default (per issue, one at a time with user approval)
+│   ├── task-builder-default (breaks plan into tasks, iterative orchestration with user control)
+│   └── file-editor-default (parallel per task: one file-editor agent per file)
 │
 ├── /bug-scout
 │   ├── bug-scout-default (investigation + fix plan)
@@ -371,7 +375,7 @@ Orchestrator Commands
 All plans are stored in **your project's** `.claude/plans/` directory (not the plugin):
 - `{task-slug}-{hash5}-plan.md` - Implementation plans (from /planner)
   - **Modified by /plan-builder**: Revisions tracked in git-style format at end of file ⭐ NEW
-- `tasks-{hash5}.json` - Issue breakdown files (from /task-builder) ⭐ NEW
+- `tasks-{hash5}.json` - Task breakdown files (from /task-builder) ⭐ NEW
 - `bug-scout-{identifier}-{hash5}-plan.md` - Bug fix plans (from /bug-scout)
 - `code-quality-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality standard)
 - `code-quality-serena-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality-serena LSP)
@@ -386,7 +390,7 @@ essentials/
 │   ├── code-quality-default.md     # Code analysis agent (standard)
 │   ├── code-quality-serena.md      # Code analysis agent (LSP-powered) ⭐
 │   ├── file-editor-default.md      # File modification agent
-│   ├── task-builder-default.md    # Issue-based implementation agent ⭐ NEW
+│   ├── task-builder-default.md    # Task-based implementation agent ⭐ NEW
 │   ├── plan-builder-default.md   # Plan refinement agent ⭐ NEW
 │   ├── planner-default.md          # Planning agent
 │   └── prompt-builder-default.md   # Prompt engineering agent
