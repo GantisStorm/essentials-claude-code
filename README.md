@@ -111,21 +111,41 @@ Agents with **"-builder"** in their name follow an **iterative loop pattern with
 
 ### Builder Meta-Loop Pattern
 
-All builders implement a systematic **iterative refinement loop** where the user has control at each iteration:
+All builders implement a systematic **iterative refinement loop** with clear separation of concerns:
 
-| Agent | Loop Type | User Control Point | Iterations |
-|-------|-----------|-------------------|------------|
-| **`plan-builder`** | Multi-pass revision loop | After each revision pass (6-7 passes) | User reviews git-style diff for each pass, can request changes or skip to next |
-| **`task-builder`** | Task-by-task orchestration loop | After each task presented | User chooses: [1] Implement, [2] Skip, [3] View details, [4] Pause/Compact, [5] Abort |
-| **`prompt-builder`** | Iterative prompt refinement loop | After each draft revision | User provides feedback for next iteration or accepts current version |
+#### Architectural Pattern: Slash Commands Orchestrate, Agents Create Artifacts
+
+| Builder | **Slash Command Role** | **Agent Role** | User Control Point |
+|---------|------------------------|----------------|-------------------|
+| **`plan-builder`** | Orchestrates refinement loop | ONLY applies changes to plan file | After each refinement iteration |
+| **`task-builder`** | Orchestrates task-by-task implementation | ONLY creates/updates tasks.json | After each task presented: [1] Implement, [2] Skip, [3] View details, [4] Pause/Compact, [5] Abort |
+| **`prompt-builder`** | Orchestrates refinement loop | ONLY creates/updates prompt drafts | After each draft revision |
+
+**Critical Separation of Concerns:**
+- **Slash Commands (`.md` files in `commands/`)**: Handle ALL orchestration
+  - Run loops (present task → wait for user → act on choice → repeat)
+  - Use `AskUserQuestion` for user interaction
+  - Spawn agents in background with `run_in_background: true`
+  - Report minimal summaries to user
+- **Agents (`.md` files in `agents/`)**: ONLY create/update artifacts
+  - NO user interaction (never use `AskUserQuestion`)
+  - NO orchestration loops
+  - Apply changes, validate quality, write files
+  - Return structured results to slash command
+
+**Why This Pattern:**
+- **Prevents double orchestration**: Agent doesn't spawn sub-agents or run loops
+- **Clean resumability**: Slash command loads artifact state and resumes loop
+- **Minimal context usage**: Agents output minimal data, full details in files
+- **User control**: All interaction happens at command level
 
 **Key Characteristics of All Builders:**
 - **Iterative**: Work happens in discrete iterations/passes, not all at once
-- **User-Driven**: User explicitly approves/rejects each iteration
-- **Resumable**: Can pause and resume from any iteration
-- **Incremental Progress**: Each iteration builds on previous results
-- **Transparent**: User sees exactly what changed in each iteration
-- **Controllable**: User can abort, skip, or request modifications mid-loop
+- **User-Driven**: User explicitly approves/rejects each iteration (via command's AskUserQuestion)
+- **Resumable**: Can pause and resume from any iteration (command re-loads artifact state)
+- **Incremental Progress**: Each iteration builds on previous results (artifacts updated in place)
+- **Transparent**: User sees exactly what changed in each iteration (git-style diffs, revision history)
+- **Controllable**: User can abort, skip, or request modifications mid-loop (command handles choices)
 
 This contrasts with **non-builder agents** (planner, bug-scout, code-quality) which run to completion and present a single result for user review.
 
@@ -274,41 +294,51 @@ Parallel file editing and creation from implementation plans:
 
 ### 5. **Task Builder** (`/task-builder`) ⭐ NEW
 Task-based iterative implementation with parallel file editing and comprehensive context:
+- **Orchestration Pattern**: Slash command orchestrates task-by-task loop, agent ONLY creates/updates tasks.json
+  - Command: Presents tasks to user (AskUserQuestion), spawns file-editors in parallel, verifies completion, manages state
+  - Agent (DECOMPOSE mode): Reads plan, breaks into self-contained tasks, writes tasks.json with 6-pass revision
+  - Agent (RESUME mode): Command skips agent entirely, loads tasks.json directly and orchestrates
 - **Plan Decomposition**: Breaks plans into trackable, atomic tasks with dependency graph
 - **Self-Contained Tasks**: Each task embeds COMPLETE implementation details from the plan:
   - Full code snippets (can be hundreds of lines per file)
   - Complete architectural context, requirements (R-IDs), and constraints (C-IDs)
   - Testing strategies, risk mitigations, and external documentation
   - File-editor agents never need to reference the original plan
-- **Iterative Workflow**: Present one task at a time with user approval
+- **Iterative Workflow**: Command presents one task at a time with user approval via AskUserQuestion
   - Options: [1] Implement, [2] Skip, [3] View details, [4] Pause/Compact, [5] Abort
-- **Parallel File-Editors**: Spawns file-editor agents in parallel (one per file in each task)
-- **User Control**: After each task, choose to continue/pause/compact/abort
-- **Pause/Resume**: Can pause, run `/compact`, then resume exactly where you left off
-- **Regression Testing**: Runs tests after each task to catch breakage early
-- **Full Verification**: Per task (CHANGES COMPLETED == TOTAL CHANGES)
-- **Complete Audit Trail**: All progress tracked in tasks.json
+- **Parallel File-Editors**: Command spawns file-editor agents in parallel (one per file in each task)
+- **User Control**: After each task, choose to continue/pause/compact/abort (command handles loop)
+- **Pause/Resume**: Can pause, run `/compact`, then resume exactly where you left off (command re-loads tasks.json)
+- **Regression Testing**: Command runs tests after each task to catch breakage early
+- **Full Verification**: Command verifies per task (CHANGES COMPLETED == TOTAL CHANGES)
+- **Complete Audit Trail**: All progress tracked in tasks.json (agent creates, command updates)
 - **Best for**: Complex plans (>5 files), unclear dependencies, resumable work, context management
 
 ### 6. **Plan Builder** (`/plan-builder`) ⭐ NEW
 Iterative plan refinement with surgical precision and git-style revision tracking:
+- **Orchestration Pattern**: Slash command orchestrates, agent ONLY applies changes to plan
+  - Command: Handles user interaction, can add validation for empty instructions
+  - Agent: Reads plan, applies changes, validates, writes updated plan with revision history
 - **Multi-pass revision workflow**: Analyzes impact, applies changes through structured validation passes with reflection checkpoints (ReAct loops)
-- **Interactive clarification**: Proactively asks questions via AskUserQuestion when instructions are ambiguous or conflicts detected
 - **Surgical precision**: Changes only what's requested, plus necessary cascading updates to maintain consistency across all plan sections
 - **Git-style revision history**: Complete audit trail with diff notation (+/-), context lines, impact summaries, quality score tracking, and validation status
 - **Integrity validation**: Multi-pass validation ensures dependencies, requirements traceability, and structural consistency remain intact
 - **Quality preservation**: Re-scores plans after changes, maintains minimum 40/50 quality threshold across 5 dimensions
+- **Agent makes best judgment**: If instructions ambiguous, agent interprets and documents assumptions in revision notes (no AskUserQuestion in agent)
 - **Best for**: Iterative plan refinement, adding missing details, reorganizing sections, tracking plan evolution over multiple revisions
 
 ### 7. **Prompt Builder** (`/prompt-builder`)
 Iterative prompt engineering from vibe descriptions with multi-pass quality validation:
+- **Orchestration Pattern**: Slash command orchestrates refinement loop, agent ONLY creates/updates prompts
+  - Command: Validates vibe input (AskUserQuestion if too short), orchestrates refinement loop, reports updates
+  - Agent: Transforms vibe into prompt, applies 6-pass validation, updates draft based on feedback
 - **Vibe transformation**: Transforms rough ideas into high-quality, structured prompts
 - **Anti-pattern elimination**: Removes vague phrases like "as needed", "etc.", "handle appropriately"
 - **6-pass validation process**: Structural validation, anti-pattern scan, consumer simulation, quality scoring (≥40/50 target), final review
 - **Reflection checkpoints**: ReAct reasoning loops validate clarity and actionability before proceeding
-- **Iterative refinement**: User provides feedback, agent re-runs validation passes, updates draft in place
+- **Iterative refinement**: User provides feedback in chat, command launches agent to refine, agent re-runs validation passes, updates draft
 - **Quality scoring**: 5-dimension assessment (Clarity, Specificity, Completeness, Actionability, Best Practices)
-- **Minimal output**: Drafts saved to `.claude/plans/`, user reviews file directly
+- **Minimal output**: Agent returns only DRAFT_FILE, ITERATION, STATUS - user reviews file directly, no bloat in chat
 - **Best for**: Creating Claude Code slash commands, subagent prompts, prompt engineering with systematic quality control
 
 ## Installation

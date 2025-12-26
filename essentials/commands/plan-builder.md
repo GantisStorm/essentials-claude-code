@@ -1,14 +1,14 @@
 ---
-allowed-tools: Task, TaskOutput, Read, AskUserQuestion
+allowed-tools: Task, TaskOutput, Bash, Read
 argument-hint: <plan-file-path> "<user instructions>"
-description: Build on or refine existing implementation plans using multi-pass revision with git-style tracking (project)
+description: Apply user-requested refinements to implementation plans with git-style revision tracking (project)
 ---
 
-Build on or refine existing implementation plans created by planner. The plan-builder follows user instructions precisely using iterative multi-pass revision, asks clarifying questions when needed, applies changes through structured validation passes (including reflection checkpoints), and maintains a comprehensive git-style revision history showing all changes.
+Apply user-requested refinements to existing implementation plans created by planner. The slash command orchestrates the process while the plan-builder-default agent applies changes precisely using multi-pass revision and maintains a comprehensive git-style revision history.
+
+**IMPORTANT**: The SLASH COMMAND handles ALL orchestration. The agent ONLY applies changes to the plan.
 
 **IMPORTANT**: Keep orchestrator output minimal. User reviews the updated plan FILE directly.
-
-**Note**: The plan-builder may ask clarification questions via AskUserQuestion if instructions are ambiguous or conflicts are detected. Changes are applied through a meta builder pattern with reflection checkpoints and quality validation.
 
 ## Arguments
 
@@ -17,23 +17,30 @@ Build on or refine existing implementation plans created by planner. The plan-bu
 
 ## Instructions
 
-### Step 1: Parse Arguments
+### Step 1: Parse and Validate Arguments
 
 Parse `$ARGUMENTS` to extract:
 1. Plan file path (first argument)
 2. User instructions (all remaining arguments, may be quoted or unquoted)
 
 **Validation:**
-- Verify plan file exists (use Read tool to check)
-- Ensure user instructions are clear and not empty
-- If arguments malformed, report error and usage example
+```bash
+# Verify plan file exists
+ls <plan-file-path>
+```
 
-### Step 2: Launch Plan Builder in Background
+- If plan file missing: Report error and stop
+- If user instructions empty: Report error with usage example
+- If arguments malformed: Report error and stop
+
+### Step 2: Launch Plan Builder Agent
+
+**CRITICAL**: The SLASH COMMAND orchestrates, the agent ONLY applies changes.
 
 Launch the `plan-builder-default` agent **in the background** using the Task tool with `run_in_background: true`:
 
 ```
-Apply the following user-requested changes to the implementation plan:
+Apply user-requested changes to the implementation plan.
 
 Plan file: <plan-file-path>
 
@@ -42,70 +49,110 @@ User instructions:
 
 ## Your Task
 
-1. Read the plan file completely
-2. Understand the user's requested changes
-3. Apply changes precisely as requested
-4. Update all affected sections to maintain consistency
-5. Validate plan integrity after changes
-6. Append git-style revision entry to Revision History
-7. Write updated plan back to file
+You are ONLY responsible for applying changes to the plan. You do NOT orchestrate or interact with the user.
 
-Follow the user's instructions exactly. Make only the changes they requested, plus any cascading updates needed to maintain plan consistency.
+1. PLAN ANALYSIS:
+   - Read the plan file completely
+   - Parse plan structure and metadata
+   - Understand user's requested changes
+
+2. IMPACT ANALYSIS:
+   - Identify affected sections
+   - Validate change feasibility
+   - Determine cascading updates needed
+
+3. REFLECTION CHECKPOINT:
+   - Verify impact completeness
+   - Confirm no dependency breakages
+   - Validate alignment with user intent
+
+4. APPLY CHANGES:
+   - Make requested changes precisely
+   - Apply cascading updates for consistency
+   - Update metadata (increment revision)
+
+5. META BUILDER VALIDATION:
+   - Pass 1: Structural integrity
+   - Pass 2: Consistency check
+   - Pass 3: Quality re-assessment (if needed)
+   - Pass 4: Anti-pattern scan
+
+6. REVISION HISTORY:
+   - Create git-style diffs showing all changes
+   - Document impact summary
+   - Add validation checkmarks
+
+7. WRITE & REPORT:
+   - Write updated plan to file
+   - Report structured summary back to command
+
+Follow user instructions precisely. If instructions are ambiguous, make best judgment and document assumptions in revision notes.
+
+DO NOT use AskUserQuestion. DO NOT orchestrate. The slash command handles all user interaction.
 ```
 
 Use `subagent_type: "plan-builder-default"` when invoking the Task tool.
 
 ### Step 3: Wait for Completion
 
-Use `TaskOutput` with `block: true` to wait for the plan-builder agent to complete. The plan-builder will:
-1. Read and analyze the current plan
-2. Apply user-requested changes precisely
-3. Update all affected sections for consistency
-4. Validate plan integrity
-5. Add git-style revision entry showing changes
-6. Write updated plan to file
-7. Return summary of changes made
+Use `TaskOutput` with `block: true` to wait for the plan-builder agent to complete.
+
+Collect agent output:
+- Plan file path
+- Revision number (before/after)
+- Sections modified
+- Lines added/removed
+- Quality score change
+- Validation results
+- Any warnings or issues
 
 ### Step 4: Report Summary
 
 After the agent completes, provide a minimal summary:
 
 ```
-## Plan Builder Summary
+═══════════════════════════════════════════════════════════════
+PLAN BUILDER: CHANGES APPLIED
+═══════════════════════════════════════════════════════════════
 
-**Plan**: .claude/plans/{task-slug}-{hash5}-plan.md
-**Revision**: [N] (was [N-1])
+Plan: .claude/plans/{task-slug}-{hash5}-plan.md
+Revision: [N] (was [N-1])
 
-### Changes Applied
+USER REQUEST:
+[user instructions]
 
-**Request**: [user instructions]
-
-**Modifications**:
+MODIFICATIONS:
 - Sections updated: [count]
 - Lines added: [count]
 - Lines removed: [count]
 - Requirements affected: [count]
 - Dependencies affected: [count]
 
-**Quality Score**: [XX]/50 (was [YY]/50, [+/-N])
+QUALITY SCORE: [XX]/50 (was [YY]/50, [+/-N])
 
-### Affected Sections
-
+AFFECTED SECTIONS:
 - [Section 1]: [brief change description]
 - [Section 2]: [brief change description]
+...
 
-### Validation
-
+VALIDATION:
 - [✓] Plan structure intact
 - [✓] Dependencies consistent
 - [✓] Requirements traceable
 - [✓] Quality maintained
 
-### Next Steps
+REVISION HISTORY:
+Git-style diffs showing all changes have been added to the plan file.
 
-- Review updated plan and revision history in `.claude/plans/{plan-file}`
-- Make additional refinements: `/plan-builder <plan-file> "<instructions>"`
-- Proceed with implementation: `/editor` or `/issue-builder`
+═══════════════════════════════════════════════════════════════
+NEXT STEPS
+═══════════════════════════════════════════════════════════════
+
+1. Review updated plan: .claude/plans/{plan-file}
+2. Check revision history at end of file for detailed change tracking
+3. Make additional refinements: /plan-builder <plan-file> "<instructions>"
+4. Proceed with implementation: /editor or /task-builder
+═══════════════════════════════════════════════════════════════
 ```
 
 ## Workflow Diagram
@@ -122,38 +169,15 @@ After the agent completes, provide a minimal summary:
     ▼
 ┌──────────────────────────────────────────────────┐
 │ Launch plan-builder-default                      │◄── run_in_background: true
+│ (apply changes ONLY)                             │
 │                                                  │
 │  PHASE 1: Plan Analysis                          │
-│    - Read plan file                              │
-│    - Understand user instructions                │
-│    - Check for ambiguities                       │
-│                                                  │
 │  PHASE 2: Impact Analysis                        │
-│    - Identify affected sections                  │
-│    - Validate change feasibility                 │
-│                                                  │
-│  PHASE 2.5: Reflection Checkpoint (ReAct)        │◄── Meta builder pattern
-│    - Verify impact completeness                  │
-│    - Confirm no breakages                        │
-│    - Validate user intent alignment              │
-│                                                  │
+│  PHASE 2.5: Reflection Checkpoint (ReAct)        │
 │  PHASE 3: Apply Changes                          │
-│    - Make requested changes                      │
-│    - Apply cascading updates                     │
-│                                                  │
-│  PHASE 4: Meta Builder Validation                │
-│    - Pass 1: Structural Integrity                │
-│    - Pass 2: Consistency Check                   │
-│    - Pass 3: Quality Re-assessment               │
-│    - Pass 4: Anti-Pattern Scan                   │
-│                                                  │
-│  PHASE 5: Revision History                       │
-│    - Create git-style diffs                      │
-│    - Document impact summary                     │
-│                                                  │
+│  PHASE 4: Meta Builder Validation (4 passes)     │
+│  PHASE 5: Revision History (git-style diffs)     │
 │  PHASE 6-7: Write & Output                       │
-│    - Write updated plan                          │
-│    - Provide structured summary                  │
 └──────────────────────────────────────────────────┘
     │
     ▼
@@ -167,15 +191,25 @@ After the agent completes, provide a minimal summary:
 └─────────────────────┘
 ```
 
+## Key Architecture Points
+
+1. **Slash Command Orchestrates**: The command file (plan-builder.md) handles minimal orchestration
+2. **Agent Only Applies Changes**: The agent (plan-builder-default.md) ONLY applies changes to plan
+3. **No User Interaction in Agent**: Agent never uses AskUserQuestion
+4. **Single-Pass Execution**: No loops, just launch agent and report
+5. **Git-Style Revision Tracking**: All changes documented with diffs
+6. **Multi-Pass Validation**: 4 validation passes ensure plan integrity
+
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
-| Plan file missing | Report error with correct path format |
-| User instructions empty | Report error, show usage example |
-| Plan malformed | Report structural issues found |
-| Changes conflict with plan | Report conflict, suggest resolution |
-| Quality degradation | Warn user, suggest improvements |
+| Plan file missing | Report error with correct path format, stop |
+| User instructions empty | Report error, show usage example, stop |
+| Plan malformed | Report structural issues found by agent |
+| Changes conflict with plan | Agent documents conflict in revision notes |
+| Quality degradation | Agent warns in output, suggests improvements |
+| Agent fails | Report error, suggest checking plan file |
 
 ## Example Usage
 
@@ -239,4 +273,4 @@ Plan Builder works with plans created by:
 After building on a plan, proceed with:
 - `/plan-builder` - Additional refinements (can be used multiple times)
 - `/editor` - Batch implementation
-- `/issue-builder` - Iterative implementation
+- `/task-builder` - Iterative implementation
