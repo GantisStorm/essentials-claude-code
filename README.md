@@ -326,7 +326,11 @@ Comprehensive architectural planning agent with complete end-to-end planning wor
 ### 2. **Bug Scout** (`/bug-scout`)
 Deep bug investigation with systematic analysis and automatic fix implementation:
 
-**Investigation Process:**
+**Orchestration Pattern**: Slash command orchestrates, agent ONLY investigates and creates plan
+- **Command**: Parses log dumps/files, executes diagnostics, spawns `bug-scout-default` agent in background, waits for completion, validates risk gate, auto-dispatches `file-editor-default` agents in parallel, verifies all fixes implemented
+- **Agent**: Investigates bug through 7 phases (0-7), writes plan to `.claude/plans/`, returns minimal output (severity, confidence, plan file path)
+
+**Investigation Process (Agent - Phases 0-7):**
 - **Phase 0: Error Signal Extraction** - Parse logs, stack traces, and diagnostic output to extract error signals
 - **Phase 1: Project Context Gathering** - Read documentation (CLAUDE.md, README) and analyze recent git changes (view-only)
 - **Phase 2: Code Path Tracing** - Map complete execution path from entry point to failure, track data flow
@@ -338,19 +342,25 @@ Deep bug investigation with systematic analysis and automatic fix implementation
 - **Phase 6: Write Plan to File** - Save comprehensive plan to `.claude/plans/bug-scout-{identifier}-{hash5}-plan.md`
 - **Phase 7: Minimal Report to Orchestrator** - Return only essential metadata (severity, confidence, plan file path)
 
-**Orchestration Workflow:**
-- **Diagnostic Execution**: Runs user-requested commands (docker logs, journalctl, custom diagnostics)
-- **Risk Validation Gate**: User confirmation required for CRITICAL severity or LOW confidence findings
-- **Auto-Fix Implementation**: Spawns file-editor agents in parallel to apply fixes
-- **Verification Loop**: Ensures all fixes match TOTAL CHANGES count, re-dispatches if incomplete
-- **Quality Scoring**: 6-dimension rubric (Error Signal Extraction 15%, Code Path Tracing 20%, Line-by-Line Depth 20%, Regression Analysis 15%, Root Cause Confidence 15%, Fix Precision 15%) targeting 9-10/10
+**Orchestration Workflow (Command - 9 Steps):**
+- **Step 1: Parse and Validate Input** - Parse log dump (inline or file path), execute user-requested diagnostic commands (docker logs, journalctl, PID checks)
+- **Step 2: Launch Specialist Agent** - Spawn `bug-scout-default` agent in background with `run_in_background: true`
+- **Step 3: Wait for Completion** - Use `TaskOutput` with `block: true` to wait for investigation completion
+- **Step 4: Risk Validation Gate** - Ask user confirmation if CRITICAL severity OR LOW confidence (auto-proceed otherwise)
+- **Step 5: Auto-Dispatch File Editors** - Spawn `file-editor-default` agents in parallel (one per file, all in single message)
+- **Step 6: Collect Editor Results** - Use `TaskOutput` to wait for each editor, collect CHANGES COMPLETED counts
+- **Step 7: VERIFY ALL FIXES IMPLEMENTED** - Compare TOTAL CHANGES (plan) vs CHANGES COMPLETED (editors), re-dispatch for missed fixes, loop until counts match
+- **Step 8: Aggregated Verification** - Run linters, formatters, type checkers (if specified in CLAUDE.md)
+- **Step 9: Report Summary** - Comprehensive table of files modified, verification status, rollback instructions
 
 **Key Features:**
-- Evidence-based conclusions with concrete proof (stack trace + code analysis + git history)
-- Self-critique at reflection checkpoints to avoid premature conclusions
-- Severity levels (Critical/High/Medium/Low) and confidence tracking (High/Medium/Low)
-- View-only git commands (diff, status, log, blame) - never modifies repository state
-- Minimal context pollution - all investigation details stay in plan file
+- **Evidence-based conclusions**: Concrete proof (stack trace + code analysis + git history)
+- **ReAct loops at checkpoints**: Self-critique at Phase 2.5 and 4.5 to avoid premature conclusions
+- **Quality scoring**: 6-dimension rubric (Error Signal Extraction 15%, Code Path Tracing 20%, Line-by-Line Depth 20%, Regression Analysis 15%, Root Cause Confidence 15%, Fix Precision 15%) targeting 9-10/10
+- **Severity levels**: Critical/High/Medium/Low with confidence tracking (High/Medium/Low)
+- **View-only git commands**: diff, status, log, blame - never modifies repository state
+- **Minimal context pollution**: All investigation details stay in plan file, orchestrator only passes plan file path to editors
+
 
 ### 3. **Code Quality** (`/code-quality` and `/code-quality-serena`)
 
@@ -428,57 +438,69 @@ Advanced semantic code navigation using Serena LSP tools for comprehensive analy
 - `list_dir(relative_path, recursive)` - Find sibling files in same directory
 - `read_file(relative_path, start_line, end_line)` - Read file contents with line ranges
 
-**7-Phase Analysis Process with ReAct Reflection Checkpoints:**
-- **Phase 0: Project-Wide Context Gathering**
-  - Uses `find_file` to locate CLAUDE.md, README.md, CONTRIBUTING.md
+**8-Phase LSP Workflow with ReAct Reflection Checkpoints:**
+- **Phase 0: Context Gathering (using Serena tools)**
+  - Uses `find_file` to locate CLAUDE.md, README.md, CONTRIBUTING.md, devguides
   - Uses `search_for_pattern` to find files importing the target (consumer analysis)
   - Uses `list_dir` to find sibling files for consistency checking
-  - Extracts coding conventions, naming standards, required/forbidden patterns
-- **Phase 1: LSP-Powered Symbol Discovery**
-  - Uses `get_symbols_overview` to catalog ALL symbols with exact line ranges
+  - Uses `find_file` to locate test files
+  - Extracts coding conventions, naming standards, required/forbidden patterns from project docs
+- **Phase 1: Code Element Extraction with LSP**
+  - Uses `get_symbols_overview` to catalog ALL symbols with exact line ranges and symbol kinds
   - Type-aware analysis with LSP symbol kinds (5=Class, 6=Method, 11=Interface, 12=Function, 13=Variable)
   - Complete symbol hierarchy extraction with configurable depth
   - Uses `find_symbol` to analyze each symbol's signature, parameters, and body
-- **Phase 2: Scope & Visibility Analysis**
+  - Catalogs imports, classes (with methods/properties), functions, interfaces/types, global variables
+- **Phase 2: Scope & Visibility Analysis with LSP**
   - Uses `find_referencing_symbols` for each public element to verify actual usage
   - Detects unused public API (verified against consumers from Phase 0)
   - Identifies scope violations with LSP-verified reference tracking
   - Cross-references with consumer imports to validate external API usage
-- **Phase 3: Call Hierarchy Mapping**
+  - Finds unused elements including interfaces/types only referenced in unused parameter signatures
+- **Phase 3: Call Hierarchy Mapping with LSP**
   - Uses `find_referencing_symbols` to build accurate call graphs
   - Entry point identification (functions with no callers)
-  - Orphaned code detection (unreachable functions, unused interfaces)
-  - Even detects interfaces only used in unused parameter signatures
+  - Orphaned code detection (unreachable functions, unused interfaces, dead code)
+  - Circular/recursive call detection
 - **Phase 3.5: ReAct Reflection Checkpoint**
-  - Self-verification: element mapping complete? scope analysis accurate? call hierarchy correct? context aligned?
-  - Validates LSP data completeness before proceeding to quality analysis
+  - Self-verification: element mapping complete with LSP? scope analysis accurate? call hierarchy correct? context aligned?
+  - Validates LSP data completeness (all symbols found, all references checked)
   - Re-checks with LSP tools if gaps detected
+  - Documents decision to proceed with quality issue identification
 - **Phase 4: Quality Issue Identification (11 Dimensions)**
   - Code smells detection using LSP data (god classes via method counts, function complexity via symbol analysis)
-  - Type safety analysis with LSP symbol signatures
-  - Performance issues (memory leaks via reference tracking, N+1 queries via `search_for_pattern`)
-  - Concurrency & thread safety (race conditions, deadlocks)
-  - Test quality & coverage using LSP to find untested symbols
-  - Architectural quality (coupling via `find_referencing_symbols`, cohesion via LSP)
-  - Security analysis using `search_for_pattern` for OWASP Top 10 vulnerability patterns
-  - Advanced metrics with LSP data: Halstead (Volume, Difficulty, Effort, Bugs), ABC (Assignment/Branch/Condition), CBO (coupling), LCOM (cohesion), RFC, WMC
+  - Type safety analysis with LSP symbol signatures (missing types, inconsistencies)
+  - Performance issues (memory leaks via reference tracking, N+1 queries via `search_for_pattern`, algorithm complexity)
+  - Concurrency & thread safety (race conditions, deadlocks, async patterns)
+  - Test quality & coverage using LSP to find untested symbols (>80% target)
+  - Architectural quality (coupling via `find_referencing_symbols`, cohesion via LCOM with LSP)
+  - Security analysis using `search_for_pattern` for OWASP Top 10 vulnerability patterns (injection, auth, data exposure)
+  - Advanced metrics with LSP data: Halstead (Volume, Difficulty, Effort, Bugs), ABC (Assignment/Branch/Condition), CBO (coupling), LCOM (cohesion), RFC, WMC, Maintainability Index
+  - Project standards compliance (from Phase 0 context: documentation format, naming conventions, required/forbidden patterns)
+  - Cross-file consistency (pattern alignment with dependencies, consumers, and sibling files)
   - Evidence-based findings with exact file:line references from LSP tools
 - **Phase 4.5: ReAct Reflection Checkpoint**
   - Validate: all 11 dimensions checked? every finding has LSP-verified evidence? false positives eliminated? improvements feasible?
   - Self-critique before generating improvement plan
   - Verifies improvement suggestions won't break dependencies (checks with `find_referencing_symbols`)
+  - Documents analysis confidence level and justification
 - **Phase 5: Improvement Plan Generation**
   - Prioritized issues (Critical/High/Medium/Low) with before/after code examples
   - LSP tool attribution for each finding (e.g., "found via find_referencing_symbols showed zero usage")
   - **Minimum 9.1/10 Target**: Adds fixes iteratively until projected score reaches threshold
   - Consumer-first thinking: ensures file-editors can implement without questions
+  - Includes summary statistics (Critical/High/Medium/Low counts, unused elements, dead code, scope violations)
 - **Phase 6: Write Plan to File**
-  - Saves to `.claude/plans/code-quality-serena-{filename}-{hash5}-plan.md`
-  - Includes LSP analysis stats (symbols analyzed, references checked, unused elements)
+  - Saves to `.claude/plans/code-quality-serena-{filename}-{hash5}-plan.md` (5-character random hash)
+  - Includes LSP analysis summary (symbols found by type, references checked, unused elements)
   - Complete context for file-editors (no need to reference original file)
-- **Phase 7: Minimal Report to Orchestrator**
-  - Returns only plan file path, quality scores, and change counts
-  - Avoids context pollution - all details stay in plan file
+  - Implementation plan with per-file changes, TOTAL CHANGES count, dependencies, exact line numbers
+  - Quality scores table (current vs projected after fixes, must be ≥9.1)
+- **Phase 7: Report to Orchestrator (Minimal Output)**
+  - Returns only essential metadata: plan file path, current score, projected score, TOTAL CHANGES count, priority level
+  - Structured format with LSP analysis stats (symbols analyzed, references checked, unused elements found)
+  - Avoids context pollution - all investigation details stay in plan file
+  - Includes declaration checklist: analysis complete, ready for file-editor-default
 
 **LSP Advantages Over Standard Analysis:**
 - **Semantic accuracy**: Understands language structure via LSP, not just text patterns
