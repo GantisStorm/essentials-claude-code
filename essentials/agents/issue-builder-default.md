@@ -99,26 +99,209 @@ PLAN METADATA:
 - Task title: [from plan header]
 - Mode: [informational|directional]
 - Total files to modify: [count]
+- Quality scores: [from Quality Scores section if present]
 
-ARCHITECTURAL CONTEXT:
-- Task description: [from ### Task section]
-- Key requirements: [from ### Requirements section]
-- Constraints: [from ### Constraints section]
-- Dependencies: [from ### Relationships section]
+ARCHITECTURAL CONTEXT (extract ALL for embedding in issues):
+- Task description: [COMPLETE ### Task section]
+- Architecture overview: [COMPLETE ### Architecture section with file:line refs]
+- Selected Context: [ALL relevant files with their purposes]
+- Relationships: [COMPLETE dependency and data flow descriptions]
+- External Context: [ALL API documentation, library details, examples]
+- Implementation Notes: [ALL patterns, edge cases, guidance]
+- Ambiguities: [ALL open questions or decisions made]
 
-IMPLEMENTATION SCOPE:
+REQUIREMENTS (extract ALL with IDs):
+From ### Requirements section:
+- R1: [full requirement text]
+- R2: [full requirement text]
+... [ALL requirements with their IDs]
+
+CONSTRAINTS (extract ALL with IDs):
+From ### Constraints section:
+- C1: [full constraint text]
+- C2: [full constraint text]
+... [ALL constraints with their IDs]
+
+RISK ANALYSIS (extract relevant items):
+From ## Risk Analysis sections:
+- Technical risks relevant to each file/issue
+- Integration risks relevant to each file/issue
+- Mitigation strategies for each risk
+
+TESTING STRATEGY (extract relevant sections):
+From ## Testing Strategy:
+- Unit tests required for files in this issue
+- Integration tests required
+- Manual verification steps
+- Test coverage requirements
+
+IMPLEMENTATION SCOPE (extract COMPLETE file details):
 Files to Edit:
-- [file1]: [changes count] changes
-- [file2]: [changes count] changes
+For EACH file, extract:
+- File path
+- **Purpose**: [full purpose description]
+- **TOTAL CHANGES**: [number]
+- **Changes**: [ALL numbered changes with details]
+- **Implementation Details**: [COMPLETE section with ALL code]
+- **Code Pattern/Snippets**: [ALL code blocks in full]
+- **Dependencies**: [complete dependency description]
+- **Provides**: [complete provides description]
 
 Files to Create:
-- [file1]: [purpose]
-- [file2]: [purpose]
+For EACH file, extract:
+- File path
+- **Purpose**: [full purpose description]
+- **TOTAL CHANGES**: [number]
+- **Changes**: [ALL numbered changes]
+- **Implementation Details**: [COMPLETE section with ALL code snippets]
+- **Code Pattern/Snippets**: [ALL code blocks - can be hundreds of lines]
+- **Dependencies**: [complete dependency description]
+- **Provides**: [complete provides description]
 
 Total Planned Changes: [sum of TOTAL CHANGES from all files]
 ```
 
-## 1.2 Dependency Graph Construction
+**CRITICAL EXTRACTION RULES**:
+1. Do NOT summarize or truncate code snippets - copy them IN FULL
+2. Do NOT paraphrase Implementation Details - copy them VERBATIM
+3. Extract COMPLETE descriptions, not summaries
+4. Include ALL file:line references from Architecture section
+5. Copy ALL code patterns and examples completely
+6. Extract ALL requirements with their R-IDs (R1, R2, etc.)
+7. Extract ALL constraints with their C-IDs (C1, C2, etc.)
+8. Include ALL external documentation excerpts
+9. Extract ALL testing requirements
+10. Include ALL risk mitigations
+
+## 1.2 Constructing Self-Contained Issue Content
+
+After extracting all plan data, construct comprehensive issue fields:
+
+### full_description Field Construction
+
+Build a multi-paragraph description that includes:
+
+```
+Paragraph 1: Task Overview
+[Copy the first paragraph from plan's ### Task section]
+
+Paragraph 2: Architectural Context
+[Summarize relevant architecture from plan's ### Architecture section]
+[Include file:line references if relevant to this issue]
+
+Paragraph 3: What This Issue Implements
+[Describe what files this issue creates/modifies and why]
+[List the specific changes being made]
+
+Paragraph 4: Integration Points
+[From plan's ### Relationships section, describe how these files integrate]
+[Mention dependencies on other issues if any]
+
+Paragraph 5: Implementation Approach
+[From plan's ### Implementation Notes, summarize the approach]
+[Mention any patterns to follow or pitfalls to avoid]
+
+This full_description should be 5-10 paragraphs and completely self-contained.
+```
+
+### File-Level Detail Extraction
+
+For each file in the issue, populate ALL fields:
+
+```python
+{
+  "path": "src/path/to/file",
+  "action": "create|edit",
+  "purpose": "[Copy verbatim from plan's **Purpose** for this file]",
+  "changes_planned": [TOTAL CHANGES number from plan],
+  "changes_completed": 0,
+  "changes_list": [
+    "[Copy EVERY numbered change from plan's **Changes** section]",
+    "[Include line numbers if present]",
+    "[Include exact function signatures mentioned]"
+  ],
+  "implementation_details": """
+[Copy the ENTIRE **Implementation Details** section from plan]
+[Include ALL paragraphs]
+[Include ALL function signatures]
+[Include ALL integration points mentioned]
+[Include ALL error handling requirements]
+[Do NOT truncate or summarize - copy VERBATIM]
+  """,
+  "code_snippets": [
+    """[Copy COMPLETE code blocks from plan's Implementation Details]
+[If plan has a 200-line code example, include ALL 200 lines]
+[Do NOT use ellipsis or truncation]
+[Preserve all formatting, comments, imports]
+    """,
+    """[Include EVERY code snippet for this file]"""
+  ],
+  "dependencies_detail": "[Copy verbatim from plan's **Dependencies** for this file]",
+  "provides_detail": "[Copy verbatim from plan's **Provides** for this file]"
+}
+```
+
+### Issue-Level Context Extraction
+
+```python
+{
+  "requirements_addressed": [
+    "[Extract requirement IDs and full text: 'R1: Users must...']",
+    "[Include EVERY requirement this issue satisfies]"
+  ],
+  "constraints_applicable": [
+    "[Extract constraint IDs and full text: 'C1: Must use Python 3.11+']",
+    "[Include EVERY constraint that applies to this issue]"
+  ],
+  "architectural_context": """
+[Extract relevant sections from plan's ### Architecture]
+[Extract relevant sections from plan's ### Selected Context]
+[Extract relevant sections from plan's ### Relationships]
+[Include file:line references]
+[Be comprehensive - this should be several paragraphs]
+  """,
+  "implementation_notes": """
+[Copy ALL relevant guidance from plan's ### Implementation Notes]
+[Include patterns to follow with examples]
+[Include edge cases to handle]
+[Include what NOT to change]
+  """,
+  "testing_strategy": """
+[Extract from plan's ## Testing Strategy]
+[List specific unit tests required for this issue's files]
+[List integration tests required]
+[Include test coverage requirements]
+[Include manual verification steps]
+  """,
+  "risk_mitigations": """
+[Extract from plan's ## Risk Analysis]
+[List technical risks relevant to this issue]
+[List integration risks relevant to this issue]
+[Include mitigation strategies for each risk]
+  """,
+  "external_context": """
+[Extract from plan's ## External Context OR ### External Context]
+[Include API documentation excerpts]
+[Include library usage examples]
+[Include best practices mentioned]
+[Include common pitfalls to avoid]
+  """
+}
+```
+
+**SIZE EXPECTATIONS**:
+- full_description: 1000-3000 characters (5-10 paragraphs)
+- implementation_details per file: 500-5000+ characters (can be very long)
+- code_snippets per file: Can be 10-1000+ lines of code each
+- architectural_context: 500-2000 characters
+- implementation_notes: 300-1500 characters
+- testing_strategy: 200-1000 characters
+- risk_mitigations: 200-800 characters
+- external_context: 500-2000 characters
+
+**The goal is COMPREHENSIVE, SELF-CONTAINED issues that include EVERYTHING needed to implement without referencing the plan.**
+
+## 1.3 Dependency Graph Construction
 
 Build a dependency graph of all file changes:
 
@@ -176,6 +359,7 @@ Each issue follows this structure:
   "issue_id": "ISS-001",
   "title": "Implement OAuth2 authentication handler",
   "description": "Create the OAuth2Provider class with token validation and user authentication",
+  "full_description": "COMPREHENSIVE MULTI-PARAGRAPH DESCRIPTION INCLUDING ALL CONTEXT",
   "priority": "P1",
   "status": "pending",
   "layer": 0,
@@ -183,23 +367,47 @@ Each issue follows this structure:
     {
       "path": "src/auth/oauth_handler",
       "action": "create",
+      "purpose": "OAuth2 authentication provider for Google login",
       "changes_planned": 4,
-      "changes_completed": 0
+      "changes_completed": 0,
+      "changes_list": [
+        "Change 1: Create OAuth2Provider class with authenticate() method",
+        "Change 2: Add token validation helper",
+        "Change 3: Implement user profile fetching",
+        "Change 4: Add error handling for auth failures"
+      ],
+      "implementation_details": "FULL IMPLEMENTATION DETAILS WITH CODE SNIPPETS FROM PLAN",
+      "code_snippets": [
+        "```python\n# Full code from plan\nclass OAuth2Provider:\n    ...\n```"
+      ],
+      "dependencies_detail": "What this file needs from other files",
+      "provides_detail": "What other files depend on from this file"
     }
   ],
   "dependencies": [],
   "depends_on_issues": [],
   "provides_for_issues": ["ISS-002", "ISS-003"],
   "requirements_addressed": [
-    "Users must authenticate via OAuth2 Google login",
-    "Token validation must verify signature and expiry"
+    "R1: Users must authenticate via OAuth2 Google login",
+    "R2: Token validation must verify signature and expiry"
   ],
+  "constraints_applicable": [
+    "C1: Must use Python 3.11+",
+    "C2: Follow project code style from CLAUDE.md"
+  ],
+  "architectural_context": "RELEVANT ARCHITECTURE INFO FROM PLAN",
+  "implementation_notes": "SPECIFIC GUIDANCE FROM PLAN",
   "verification_criteria": [
     "OAuth2Provider class created with authenticate() method",
     "Token validation helper implemented",
-    "All 4 planned changes completed"
+    "All 4 planned changes completed",
+    "Tests pass: test_oauth_authentication",
+    "Type checker clean for this file"
   ],
+  "testing_strategy": "Unit tests for OAuth2Provider, integration test for full auth flow",
+  "risk_mitigations": "Error handling for network failures, token expiry edge cases",
   "estimated_complexity": "medium",
+  "external_context": "RELEVANT API DOCS/LIBRARY INFO FROM PLAN",
   "notes": ""
 }
 ```
@@ -230,11 +438,51 @@ Apply these rules when creating issues:
 - Criteria include change counts for validation
 ```
 
-### Traceability
+###Traceability
 ```
 - Each issue maps to specific plan requirements
-- requirements_addressed lists exact requirement text from plan
+- requirements_addressed lists exact requirement IDs and text from plan
+- constraints_applicable lists all constraints from plan that apply to this issue
 - Each file in issue lists changes_planned from plan's TOTAL CHANGES
+- full_description includes ALL context from plan so no need to reference plan
+- implementation_details includes COMPLETE code snippets from Implementation Details sections
+- code_snippets contains FULL code blocks from plan (can be hundreds of lines)
+- architectural_context extracted from plan's Architectural Narrative
+- external_context extracted from plan's External Context section
+- implementation_notes extracted from plan's Implementation Notes
+- testing_strategy extracted from plan's Testing Strategy
+- risk_mitigations extracted from plan's Risk Analysis
+```
+
+### Self-Contained Issues
+```
+CRITICAL: Issues MUST be completely self-contained. The file-editor agent should NEVER
+need to reference the plan file. Extract and embed ALL relevant detail:
+
+For each file in the issue:
+- Copy the ENTIRE "Implementation Details" section from the plan
+- Include ALL code snippets (complete, not truncated)
+- Copy the full "Purpose" description
+- Copy all numbered "Changes" items
+- Copy "Dependencies" and "Provides" verbatim
+- If plan has code patterns/examples, include them in full
+
+For the issue overall:
+- Extract all relevant architectural context from plan's narrative sections
+- Include all applicable requirements (with R-IDs: R1, R2, etc.)
+- Include all applicable constraints (with C-IDs: C1, C2, etc.)
+- Copy relevant external documentation from plan's External Context
+- Copy relevant implementation guidance from plan's Implementation Notes
+- Extract testing requirements from plan's Testing Strategy
+- Extract risk mitigations from plan's Risk Analysis
+
+The resulting issue JSON should be so complete that:
+- A developer could implement it without ever opening the plan file
+- All code patterns and examples are embedded
+- All architectural context is present
+- All requirements and constraints are explicit
+- Testing approach is clear
+- Risks and mitigations are documented
 ```
 
 ## 2.3 Issues File Format
@@ -399,31 +647,43 @@ Layer: [N]
 Complexity: [low|medium|high]
 
 Description:
-[Full description from issue]
+[One-line description from issue.description]
+
+Full Context:
+[First 200 chars of issue.full_description]... (complete details in issues JSON)
 
 Files to Modify:
 - [file1] ([action: edit|create]): [X] changes planned
+  Purpose: [file.purpose]
 - [file2] ([action: edit|create]): [Y] changes planned
+  Purpose: [file.purpose]
 
 Dependencies:
 [List of depends_on_issues, or "None - ready to implement"]
 
 Requirements Addressed:
-1. [Requirement 1 from plan]
-2. [Requirement 2 from plan]
+[List requirement IDs: R1, R2, R3, etc.]
+
+Constraints Applicable:
+[List constraint IDs: C1, C2, C3, etc.]
 
 Verification Criteria:
 1. [Criterion 1]
 2. [Criterion 2]
+[...]
 
 ═══════════════════════════════════════════════════════════════
 Progress: [X] / [N] issues completed ([Z]% overall completion)
 ═══════════════════════════════════════════════════════════════
 
+NOTE: This issue is FULLY SELF-CONTAINED with complete implementation
+details, code snippets, architectural context, and requirements.
+No need to reference the plan file.
+
 Options:
 [1] Implement this issue now
 [2] Skip this issue (mark as deferred)
-[3] View issue details in plan file
+[3] View complete issue details (show full JSON)
 [4] Abort and exit orchestrator loop
 
 Your choice:
@@ -457,10 +717,65 @@ IMPLEMENTING ISSUE: ISS-XXX
 2. Launch file-editor-default agents in parallel (one per file in issue):
 
 For each file in issue.files:
-  Launch file-editor-default with:
-    - Plan file: [plan_reference from issues.json]
-    - Assigned file: [file.path]
-    - Expected changes: [file.changes_planned]
+  Launch file-editor-default with COMPREHENSIVE CONTEXT from the issue:
+
+  Prompt:
+  """
+  Implement the following file as part of issue ISS-XXX: [issue.title]
+
+  ## File Information
+  Path: [file.path]
+  Action: [file.action]
+  Purpose: [file.purpose]
+  Expected Changes: [file.changes_planned]
+
+  ## Changes to Implement
+  [Include ALL items from file.changes_list]
+
+  ## Complete Implementation Details
+  [Include FULL file.implementation_details - do NOT truncate]
+
+  ## Code Patterns and Examples
+  [Include ALL code_snippets from file.code_snippets]
+
+  ## Dependencies
+  This file depends on:
+  [file.dependencies_detail]
+
+  ## Provides
+  This file provides to other files:
+  [file.provides_detail]
+
+  ## Architectural Context
+  [Include issue.architectural_context]
+
+  ## Implementation Guidance
+  [Include issue.implementation_notes]
+
+  ## Requirements to Satisfy
+  [List all items from issue.requirements_addressed]
+
+  ## Constraints to Follow
+  [List all items from issue.constraints_applicable]
+
+  ## Testing Requirements
+  [Include issue.testing_strategy relevant to this file]
+
+  ## Risk Mitigations
+  [Include issue.risk_mitigations relevant to this file]
+
+  ## External Documentation
+  [Include issue.external_context if relevant to this file]
+
+  ## Verification Criteria
+  When you're done, verify:
+  [List verification_criteria from issue that apply to this file]
+
+  IMPORTANT: This is a self-contained specification. You have ALL the information
+  needed to implement this file. Do NOT reference the plan file.
+
+  Report back with CHANGES COMPLETED: [X]/[Y] when done.
+  """
 
 3. Wait for all file-editor agents to complete (TaskOutput with block=true)
 
@@ -470,6 +785,9 @@ For each file in issue.files:
    - Security assessment
    - Issues encountered
 ```
+
+**CRITICAL**: The file-editor agents receive EVERYTHING from the issue JSON.
+They should NEVER need to read the plan file. The issue contains all details.
 
 ### Step 4: Verify Issue Completion
 

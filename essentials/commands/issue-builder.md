@@ -4,9 +4,19 @@ argument-hint: <plan-file-path> [--resume]
 description: Break down a plan into granular issues and orchestrate iterative implementation (project)
 ---
 
-Break down implementation plans into trackable issues and orchestrate user-driven iterative implementation. Creates an issues.json file that decomposes the plan into logical, atomic work units, then manages implementation one issue at a time with full verification.
+Break down implementation plans into trackable issues and orchestrate user-driven iterative implementation. Creates a comprehensive issues.json file that decomposes the plan into logical, atomic work units with COMPLETE implementation details, code snippets, architectural context, requirements, and constraints embedded in each issue. Issues are fully self-contained so file-editor agents never need to reference the plan. Then manages implementation one issue at a time with full verification.
 
 **IMPORTANT**: Keep orchestrator output minimal. User reviews the issues file directly, not in chat.
+
+**KEY FEATURE**: Issues extract and embed ALL detail from the plan including:
+- Complete code snippets (can be hundreds of lines per file)
+- Full implementation details verbatim from plan
+- All architectural context and relationships
+- All requirements (with R-IDs) and constraints (with C-IDs)
+- Testing strategies and risk mitigations
+- External documentation and API details
+
+This makes issues completely self-contained for implementation.
 
 ## Arguments
 
@@ -45,29 +55,49 @@ Mode: DECOMPOSE+ORCHESTRATE
 
 PHASE 1: DECOMPOSITION (create issues.json)
 
-1. PLAN ANALYSIS:
+1. PLAN ANALYSIS (COMPREHENSIVE EXTRACTION):
    - Read the plan file completely
-   - Extract plan metadata (hash, title, files, requirements)
+   - Extract plan metadata (hash, title, files, requirements, constraints, quality scores)
+   - Extract ALL architectural context (Task, Architecture, Relationships, Selected Context)
+   - Extract ALL external context (API docs, library details, examples, best practices)
+   - Extract ALL implementation notes (patterns, edge cases, guidance)
+   - Extract ALL testing strategy details
+   - Extract ALL risk analysis and mitigations
    - Build dependency graph of all file changes
-   - Identify implementation layers (files with no deps → files depending on those → etc.)
+   - Identify implementation layers
 
-2. ISSUE DECOMPOSITION:
+2. ISSUE DECOMPOSITION WITH FULL DETAIL EMBEDDING:
    - Break plan into logical, atomic issues
    - Strategy: layer-based (one issue per dependency layer) OR file-based OR feature-based
+   - For EACH issue, embed COMPLETE details:
+     * full_description: Multi-paragraph context (1000-3000 chars)
+     * For each file:
+       - Complete implementation_details from plan (500-5000+ chars)
+       - ALL code_snippets from plan (can be hundreds of lines each)
+       - Complete changes_list, purpose, dependencies, provides
+     * requirements_addressed: ALL requirements with R-IDs
+     * constraints_applicable: ALL constraints with C-IDs
+     * architectural_context: Relevant architecture sections
+     * implementation_notes: Patterns, guidance from plan
+     * testing_strategy: Test requirements for this issue
+     * risk_mitigations: Risks and how to mitigate
+     * external_context: Relevant API docs and examples
    - Each issue must be:
      - Atomic: Independently implementable (within its layer)
+     - Self-Contained: Has ALL detail needed, no plan reference required
      - Testable: Clear verification criteria
      - Reversible: Can be rolled back without breaking others
-     - Traceable: Maps to specific plan requirements
+     - Traceable: Maps to specific plan requirements with IDs
 
-3. CREATE ISSUES FILE:
+3. CREATE COMPREHENSIVE ISSUES FILE:
    - Write to: .claude/plans/issues-{plan-hash5}.json
    - Use same 5-char hash from plan filename
    - Structure: version, plan_reference, issues array, completion_summary
-   - Each issue: id, title, description, priority, status, layer, files, dependencies, verification_criteria
+   - Each issue contains 15+ fields with complete details
+   - File-editor agents will receive ALL context from issues, never read plan
 
 4. QUALITY SCORING:
-   - Score decomposition on: atomicity, dependency accuracy, requirement coverage, verification clarity, granularity
+   - Score decomposition on: atomicity, dependency accuracy, requirement coverage, verification clarity, granularity, self-containment
    - Minimum: 40/50 with no dimension <8
    - Revise if score too low
 
@@ -77,8 +107,13 @@ PHASE 2: ORCHESTRATION LOOP (immediately after creating issues.json)
    - For each issue (in dependency order):
      a. Present issue to user with AskUserQuestion (options: implement/skip/view details/abort)
      b. If user approves: spawn file-editor-default agents for issue's files
+        - Pass COMPLETE context from issue to each file-editor
+        - Include: implementation_details, code_snippets, changes_list, purpose,
+          dependencies, provides, architectural_context, implementation_notes,
+          requirements, constraints, testing_strategy, risk_mitigations, external_context
+        - File-editors receive EVERYTHING, never need to read plan
      c. Verify ALL changes completed (CHANGES COMPLETED == TOTAL CHANGES from plan)
-     d. Re-dispatch if changes incomplete
+     d. Re-dispatch if changes incomplete (with same complete context)
      e. Update issues.json with completion status
      f. Move to next issue
 
@@ -86,6 +121,8 @@ PHASE 2: ORCHESTRATION LOOP (immediately after creating issues.json)
    - Create issues.json THEN immediately start orchestration (don't wait for user)
    - ONE issue at a time (never parallel issue execution)
    - User approval required for EACH issue (use AskUserQuestion)
+   - File-editors get ALL details from issue JSON, not from plan
+   - Issues are self-contained with complete implementation specs
    - Verify completion before moving to next
    - Update issues.json after every status change
    - NO state-modifying git commands
@@ -286,7 +323,14 @@ The issues file provides:
 - **Granular tracking**: Progress at issue level, not just file level
 - **Dependency management**: Visual graph prevents implementation ordering mistakes
 - **Resume capability**: If interrupted, resume exactly where you left off
-- **Requirement traceability**: Every issue maps to specific plan requirements
+- **Requirement traceability**: Every issue maps to specific plan requirements with R-IDs
 - **Audit trail**: Complete history of what was implemented when
+- **Self-contained specs**: Each issue has COMPLETE implementation details
+- **No plan dependency**: File-editors never need to reference the plan file
+- **Comprehensive context**: Issues embed all code snippets, architectural context, requirements, constraints, testing strategy, and risk mitigations
+
+**Issue Size**: Issues are intentionally large and comprehensive (often 5-50KB each)
+to provide complete implementation specifications. This eliminates the need for
+file-editor agents to read or parse the plan file.
 
 Located at: `.claude/plans/issues-{plan-hash5}.json`
