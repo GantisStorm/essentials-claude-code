@@ -219,30 +219,54 @@ Deep bug investigation with systematic analysis and automatic fix implementation
 Two complementary approaches for comprehensive code analysis:
 
 #### **Standard Analysis** (`/code-quality`)
-Comprehensive file-based code quality analysis with systematic multi-phase process:
+Comprehensive file-based code quality analysis with systematic 8-phase process (Phase 0 through Phase 7):
 
-**7-Phase Analysis Process:**
-- **Phase 0: Context Gathering** - Read project docs (CLAUDE.md, README, devguides), find consumers (who imports this file), analyze sibling files and tests, extract project coding standards
-- **Phase 1: Code Element Extraction** - Catalog ALL code elements: imports (with usage tracking), globals/constants, classes (with methods and variables), functions (with parameters and locals), type definitions
-- **Phase 2: Scope & Visibility Analysis** - Check private element usage correctness, audit public elements (used externally?), detect unused elements (including unused interfaces/types)
-- **Phase 3: Call Hierarchy Mapping** - Build complete call graph, identify entry points, find orphaned/dead code, detect circular dependencies
-- **Phase 3.5: ReAct Reflection Checkpoint** - Self-verification: element mapping complete? scope analysis accurate? call hierarchy correct? context aligned with project standards?
-- **Phase 4: Quality Issue Identification** - Scan 15+ categories including code smells, SOLID violations, DRY/KISS/YAGNI, security (OWASP Top 10), performance, concurrency, test quality, project standards compliance, cross-file consistency
-- **Phase 4.5: ReAct Reflection Checkpoint** - Validate: all 11 quality dimensions checked? every finding has evidence? false positives eliminated? improvements feasible?
-- **Phase 5: Improvement Plan Generation** - Prioritize issues (Critical/High/Medium/Low), create specific fixes with exact line numbers and before/after code examples
-- **Phase 6: Write Plan to File** - Save complete analysis to `.claude/plans/code-quality-{filename}-{hash5}-plan.md` with all context, scores, and implementation steps
-- **Phase 7: Minimal Report to Orchestrator** - Return only plan file path and summary stats (avoids context pollution)
+**8-Phase Analysis Process:**
+- **Phase 0: Context Gathering** - Read project docs (CLAUDE.md, README, CONTRIBUTING, devguides), find consumers (files that import this), analyze sibling files and test files, extract project coding standards (naming, patterns, forbidden practices)
+- **Phase 1: Code Element Extraction** - Catalog ALL code elements: imports (with usage tracking), globals/constants, classes (with methods, variables, decorators), functions (with parameters, locals, return types), type definitions (aliases, interfaces, protocols, enums)
+- **Phase 2: Scope & Visibility Analysis** - Check private element usage correctness (underscore-prefixed, private keyword), audit public elements (actually used externally?), detect unused elements (including unused interfaces/types only referenced in unused parameters)
+- **Phase 3: Call Hierarchy Mapping** - Build complete call graph (what calls what), identify entry points (not called by anything), find orphaned/dead code (defined but never called), detect circular/recursive dependencies
+- **Phase 3.5: ReAct Reflection Checkpoint** - Self-verification before quality checks: element mapping complete? scope analysis accurate? call hierarchy correct? context aligned with project standards?
+- **Phase 4: Quality Issue Identification** - Scan 16 categories across 11 quality dimensions:
+  - Code smells (complexity, god class, feature envy, data class, naming issues, duplication, redundant conditionals, magic numbers)
+  - Inheritance & composition analysis (depth, LSP violations, composition vs inheritance)
+  - Type safety (missing types, inconsistencies, optional without null checks)
+  - Best practices violations (language idioms, modern features, error handling, resource management)
+  - SOLID principles (SRP, OCP, LSP, ISP, DIP)
+  - DRY/KISS/YAGNI violations (duplication, over-engineering, speculative generality)
+  - Performance & efficiency (memory leaks, algorithm complexity, N+1 queries, caching opportunities)
+  - Concurrency & thread safety (race conditions, deadlock potential, async patterns)
+  - Security vulnerabilities (OWASP Top 10: injection, auth, data exposure, input validation, dangerous functions)
+  - Test quality & coverage (untested functions, test naming, flaky tests, >80% coverage target)
+  - Architectural & design quality (coupling, cohesion, pattern violations, layer bypassing)
+  - Documentation quality (API docs, code comments, module docs, staleness)
+  - Code churn & stability metrics (high-churn files, hotspots, defect density)
+  - Advanced code metrics (Halstead Volume/Difficulty/Effort/Bugs, ABC metrics, Maintainability Index, Depth of Inheritance, CBO, LCOM, RFC, WMC)
+  - Technical debt estimation (code/design/test/doc debt, remediation hours, debt ratio, priority matrix)
+  - Data flow & taint analysis (untrusted sources → sensitive sinks, sanitization gaps)
+  - Project standards compliance (from Phase 0 context: documentation format, naming conventions, required/forbidden patterns)
+  - Cross-file consistency (pattern alignment with dependencies, consumers, and sibling files)
+- **Phase 4.5: ReAct Reflection Checkpoint** - Validate before generating plan: all 11 quality dimensions checked? every finding has evidence (file:line + code snippet)? false positives eliminated? improvements feasible for file-editors?
+- **Phase 5: Improvement Plan Generation** - Prioritize issues (Critical/High/Medium/Low) by impact, create specific fixes with exact line numbers, include before/after code examples for complex changes
+- **Phase 6: Write Plan to File** - Save complete analysis to `.claude/plans/code-quality-{filename}-{hash5}-plan.md` with all context, quality scores table, complexity metrics, code elements summary, issues categorized by priority, and per-file implementation steps with TOTAL CHANGES count
+- **Phase 7: Minimal Report to Orchestrator** - Return only plan file path, current score, projected score, TOTAL CHANGES count, and priority level (avoids context pollution, full details in plan file)
+
+**Core Principles:**
+- **Context-driven analysis** - Always gather project standards before analyzing code
+- **Comprehensive element mapping** - Outline ALL code elements (functions, classes, variables, imports)
+- **Multi-dimensional quality assessment** - Evaluate across 11 quality dimensions (SOLID, DRY, KISS, YAGNI, OWASP, etc.)
+- **ReAct reasoning loops** - Reason → Act → Observe → Repeat at each phase
+- **Self-critique ruthlessly** - Question findings, verify with evidence, test alternatives
+- **Evidence-based scoring** - Every quality issue must have concrete code examples
+- **Project standards first** - Prioritize project conventions over generic best practices
+- **Security awareness** - Always check for OWASP Top 10 vulnerabilities
+- **Quality scoring validation** - Score on 11 dimensions, maintain minimum 9.1/10 target
+- **Actionable recommendations** - Every suggestion must be specific with exact file:line locations
 
 **Quality Scoring & Metrics:**
 - **11-Dimension Scoring**: Code Organization (12%), Naming Quality (10%), Scope Correctness (10%), Type Safety (12%), No Dead Code (8%), No Duplication/DRY (8%), Error Handling (10%), Modern Patterns (5%), SOLID Principles (10%), Security/OWASP (10%), Cognitive Complexity (5%)
 - **Advanced Metrics**: Cyclomatic complexity, Halstead metrics (Volume, Difficulty, Effort, Predicted Bugs), ABC metrics (Assignment/Branch/Condition), Maintainability Index, CBO (Coupling Between Objects), LCOM (Lack of Cohesion in Methods), RFC (Response for Complexity), WMC (Weighted Methods per Class)
 - **Minimum 9.1/10 Target**: Adds fixes iteratively until projected score reaches threshold
-
-**Comprehensive Analysis Features:**
-- **Project Standards Compliance**: Validates naming conventions, documentation format, required/forbidden patterns from CLAUDE.md and devguides
-- **Cross-File Consistency**: Ensures patterns match sibling files, consumer expectations, and dependency patterns
-- **Security Analysis**: OWASP Top 10 vulnerability patterns (injection, auth, data exposure, XSS, deserialization), data flow taint analysis (source → sink tracking)
-- **Technical Debt Estimation**: Categorized by type (code/design/test/doc debt), hours of remediation, debt ratio calculation, priority matrix
 
 **Auto-Implementation Workflow:**
 - Spawns parallel file-editor agents (one per file needing fixes)
@@ -252,31 +276,95 @@ Comprehensive file-based code quality analysis with systematic multi-phase proce
 
 #### **LSP Semantic Analysis** (`/code-quality-serena`) ⭐ NEW
 Advanced semantic code navigation using Serena LSP tools for comprehensive analysis:
-- **LSP-Powered Symbol Discovery**: Uses `get_symbols_overview` and `find_symbol` to understand code structure
-  - Classes, methods, functions, interfaces with exact line ranges
-  - Type-aware analysis with LSP symbol kinds (5=Class, 6=Method, 11=Interface, 12=Function, 13=Variable)
-  - Complete symbol hierarchy extraction with configurable depth
-- **Precise Reference Tracking**: Uses `find_referencing_symbols` to build accurate call hierarchies
-  - Cross-file reference checking to find who calls what
-  - Entry point identification (functions with no callers)
-  - Consumer usage verification (files importing the target)
-- **Better Dead Code Detection**: LSP verifies zero-reference symbols with semantic accuracy
-  - Unused public API detection (verified against actual consumers from Phase 0)
-  - Orphaned code identification (unreachable functions, unused interfaces)
-  - Even detects interfaces only used in unused parameter signatures
-- **Project-Wide Context Gathering** (Phase 0): Before analyzing, collects project standards
+
+**Orchestration Pattern**: Slash command orchestrates, agent ONLY creates artifact
+- **Command**: Validates files, spawns parallel `code-quality-serena` agents in background, waits for completions, dispatches `file-editor-default` agents for improvements, verifies all fixes implemented
+- **Agent**: Gathers context using LSP, analyzes file quality with semantic navigation, creates improvement plan file, returns minimal output (plan path + quality score)
+
+**Core Serena LSP Tools Used:**
+- `get_symbols_overview(relative_path, depth)` - Extract class/function hierarchy with line ranges and symbol kinds
+- `find_symbol(name_path_pattern, include_kinds, include_body)` - Get specific symbol details with body content
+- `find_referencing_symbols(name_path, relative_path)` - Find all uses of a symbol across files (cross-file references)
+- `search_for_pattern(substring_pattern, relative_path)` - Regex search for code patterns (security, magic numbers, etc.)
+- `find_file(file_mask, relative_path)` - Locate documentation and related files
+- `list_dir(relative_path, recursive)` - Find sibling files in same directory
+- `read_file(relative_path, start_line, end_line)` - Read file contents with line ranges
+
+**7-Phase Analysis Process with ReAct Reflection Checkpoints:**
+- **Phase 0: Project-Wide Context Gathering**
   - Uses `find_file` to locate CLAUDE.md, README.md, CONTRIBUTING.md
   - Uses `search_for_pattern` to find files importing the target (consumer analysis)
   - Uses `list_dir` to find sibling files for consistency checking
   - Extracts coding conventions, naming standards, required/forbidden patterns
-- **Advanced Metrics with LSP Data**: Halstead complexity, ABC metrics, CBO (coupling), LCOM (cohesion), RFC, WMC
-- **7-Phase Analysis Process**: Context gathering → Element extraction → Scope analysis → Call hierarchy → Quality issues → Improvement plan → File output
-- All standard features (11-dimension scoring: SOLID, DRY, KISS, YAGNI, OWASP, cognitive/cyclomatic complexity)
-- Targets 9.1/10 minimum quality score with auto-fix workflow via file-editor agents
+- **Phase 1: LSP-Powered Symbol Discovery**
+  - Uses `get_symbols_overview` to catalog ALL symbols with exact line ranges
+  - Type-aware analysis with LSP symbol kinds (5=Class, 6=Method, 11=Interface, 12=Function, 13=Variable)
+  - Complete symbol hierarchy extraction with configurable depth
+  - Uses `find_symbol` to analyze each symbol's signature, parameters, and body
+- **Phase 2: Scope & Visibility Analysis**
+  - Uses `find_referencing_symbols` for each public element to verify actual usage
+  - Detects unused public API (verified against consumers from Phase 0)
+  - Identifies scope violations with LSP-verified reference tracking
+  - Cross-references with consumer imports to validate external API usage
+- **Phase 3: Call Hierarchy Mapping**
+  - Uses `find_referencing_symbols` to build accurate call graphs
+  - Entry point identification (functions with no callers)
+  - Orphaned code detection (unreachable functions, unused interfaces)
+  - Even detects interfaces only used in unused parameter signatures
+- **Phase 3.5: ReAct Reflection Checkpoint**
+  - Self-verification: element mapping complete? scope analysis accurate? call hierarchy correct? context aligned?
+  - Validates LSP data completeness before proceeding to quality analysis
+  - Re-checks with LSP tools if gaps detected
+- **Phase 4: Quality Issue Identification (11 Dimensions)**
+  - Code smells detection using LSP data (god classes via method counts, function complexity via symbol analysis)
+  - Type safety analysis with LSP symbol signatures
+  - Performance issues (memory leaks via reference tracking, N+1 queries via `search_for_pattern`)
+  - Concurrency & thread safety (race conditions, deadlocks)
+  - Test quality & coverage using LSP to find untested symbols
+  - Architectural quality (coupling via `find_referencing_symbols`, cohesion via LSP)
+  - Security analysis using `search_for_pattern` for OWASP Top 10 vulnerability patterns
+  - Advanced metrics with LSP data: Halstead (Volume, Difficulty, Effort, Bugs), ABC (Assignment/Branch/Condition), CBO (coupling), LCOM (cohesion), RFC, WMC
+  - Evidence-based findings with exact file:line references from LSP tools
+- **Phase 4.5: ReAct Reflection Checkpoint**
+  - Validate: all 11 dimensions checked? every finding has LSP-verified evidence? false positives eliminated? improvements feasible?
+  - Self-critique before generating improvement plan
+  - Verifies improvement suggestions won't break dependencies (checks with `find_referencing_symbols`)
+- **Phase 5: Improvement Plan Generation**
+  - Prioritized issues (Critical/High/Medium/Low) with before/after code examples
+  - LSP tool attribution for each finding (e.g., "found via find_referencing_symbols showed zero usage")
+  - **Minimum 9.1/10 Target**: Adds fixes iteratively until projected score reaches threshold
+  - Consumer-first thinking: ensures file-editors can implement without questions
+- **Phase 6: Write Plan to File**
+  - Saves to `.claude/plans/code-quality-serena-{filename}-{hash5}-plan.md`
+  - Includes LSP analysis stats (symbols analyzed, references checked, unused elements)
+  - Complete context for file-editors (no need to reference original file)
+- **Phase 7: Minimal Report to Orchestrator**
+  - Returns only plan file path, quality scores, and change counts
+  - Avoids context pollution - all details stay in plan file
+
+**LSP Advantages Over Standard Analysis:**
+- **Semantic accuracy**: Understands language structure via LSP, not just text patterns
+- **Cross-file reference tracking**: `find_referencing_symbols` finds all uses of a symbol across the codebase
+- **Zero false positives for dead code**: LSP verifies zero references with compiler-grade accuracy
+- **Consumer verification**: Checks if public API is actually used by importing files (Phase 0 consumer analysis)
+- **Better refactoring confidence**: Changes backed by precise LSP dependency data
+- **Type-aware analysis**: Leverages LSP symbol kinds for accurate classification
+- **Better dead code detection**: Even finds interfaces only used in unused parameter signatures
+
+**Quality Scoring (11 Dimensions):**
+- Same as standard analysis: Code Organization (12%), Naming Quality (10%), Scope Correctness (10%), Type Safety (12%), No Dead Code (8%), No Duplication/DRY (8%), Error Handling (10%), Modern Patterns (5%), SOLID Principles (10%), Security/OWASP (10%), Cognitive Complexity (5%)
+- All scores backed by LSP-verified evidence
+
+**Auto-Implementation Workflow:**
+- Spawns `code-quality-serena` agents in background (one per file)
+- Auto-dispatches `file-editor-default` agents in parallel for files needing fixes
+- Verification loop: CHANGES COMPLETED must equal TOTAL CHANGES
+- Re-dispatches for missed fixes with specific instructions
 
 **When to Use Each:**
 - **`/code-quality`**: Quick analysis, simpler projects, no LSP setup needed
 - **`/code-quality-serena`**: Larger codebases, accurate refactoring, semantic accuracy matters
+
 
 ### 4. **File Editor** (`/editor`)
 Parallel file editing and creation from implementation plans:
