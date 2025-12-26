@@ -1,6 +1,6 @@
 {
   "name": "essentials-claude-code",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "Multi-agent orchestration framework for Claude Code with deep planning, plan optimization with git-style revision tracking, bug investigation, code quality analysis (standard + LSP-powered), task-based iterative implementation with self-contained comprehensive tasks, and parallel file editing/creation capabilities. All agents upgraded with Core Principles, ReAct reasoning loops, reflection checkpoints, and comprehensive self-verification for maximum quality and reliability.",
   "author": "GantisStorm",
   "owner": {
@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "essentials",
-      "version": "2.7.0",
+      "version": "2.8.0",
       "description": "Essential agents for Claude Code with systematic quality validation: planner, plan-builder (multi-pass revision with reflection), bug-scout (evidence-based investigation with ReAct loops), code-quality (11-dimensional analysis with reflection checkpoints), code-quality-serena (LSP semantic analysis with reflection), file-editor (quality-first execution with pre-implementation reflection), task-builder (comprehensive self-contained tasks with proper resume from tasks.json), and prompt-builder (iterative refinement with anti-pattern elimination). All agents feature Core Principles, reflection checkpoints, and comprehensive self-verification.",
       "source": "./essentials"
     }
