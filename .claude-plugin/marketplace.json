@@ -11,7 +11,7 @@
     {
       "name": "essentials",
       "version": "2.7.0",
-      "description": "Essential agents for Claude Code with systematic quality validation: planner, plan-builder (multi-pass revision with reflection), bug-scout (evidence-based investigation with ReAct loops), code-quality (11-dimensional analysis with reflection checkpoints), code-quality-serena (LSP semantic analysis with reflection), file-editor (quality-first execution with pre-implementation reflection), issue-builder (comprehensive self-contained issues), and prompt-builder (iterative refinement with anti-pattern elimination). All agents feature Core Principles, reflection checkpoints, and comprehensive self-verification.",
+      "description": "Essential agents for Claude Code with systematic quality validation: planner, plan-builder (multi-pass revision with reflection), bug-scout (evidence-based investigation with ReAct loops), code-quality (11-dimensional analysis with reflection checkpoints), code-quality-serena (LSP semantic analysis with reflection), file-editor (quality-first execution with pre-implementation reflection), issue-builder (comprehensive self-contained issues with proper resume from issues.json), and prompt-builder (iterative refinement with anti-pattern elimination). All agents feature Core Principles, reflection checkpoints, and comprehensive self-verification.",
       "source": "./essentials"
     }
   ]

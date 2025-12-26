@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, TaskOutput, Bash, Read
-argument-hint: <plan-file-path> [--resume]
+argument-hint: <plan-file-path OR issues-file-path>
 description: Break down a plan into granular issues and orchestrate iterative implementation (project)
 ---
 
@@ -20,25 +20,30 @@ This makes issues completely self-contained for implementation.
 
 ## Arguments
 
-- **plan-file-path**: Path to plan file in `.claude/plans/` (e.g., `.claude/plans/oauth2-authentication-a3f9e-plan.md`)
-- **--resume** (optional): Resume from existing issues file instead of creating new issues.json
+**Two modes based on file type:**
+
+1. **DECOMPOSE MODE** - Pass a plan file:
+   - `<plan-file-path>`: Path to plan file in `.claude/plans/` (e.g., `.claude/plans/oauth2-authentication-a3f9e-plan.md`)
+   - Creates issues.json and starts orchestration
+
+2. **RESUME MODE** - Pass an issues file:
+   - `<issues-file-path>`: Path to existing issues file (e.g., `.claude/plans/issues-a3f9e.json`)
+   - Resumes from where it left off
 
 ## Instructions
 
 ### Step 1: Parse Arguments and Determine Mode
 
-Parse `$ARGUMENTS` to extract:
-1. Plan file path
-2. Mode flag (--resume or default to decompose+orchestrate)
+Parse `$ARGUMENTS` to extract the input file path.
 
-**Mode Detection:**
-- If `--resume` flag present: RESUME mode - Load existing `issues-{hash5}.json` and resume orchestration
-- Otherwise: DECOMPOSE+ORCHESTRATE mode - Create issues.json THEN automatically enter orchestration loop
+**Mode Detection (based on file extension):**
+- If file ends with `.md`: **DECOMPOSE mode** - Create issues.json from plan and start orchestration
+- If file ends with `.json` or contains `issues-`: **RESUME mode** - Load existing issues.json and resume orchestration
 
 **Validation:**
-- Verify plan file exists (use Bash: `ls <plan-path>`)
+- Verify input file exists (use Bash: `ls <file-path>`)
 - For DECOMPOSE mode: Verify plan status is "READY FOR IMPLEMENTATION"
-- For RESUME mode: Verify `issues-{hash5}.json` exists for this plan
+- For RESUME mode: Verify JSON structure is valid issues file
 
 ### Step 2: Launch Issue Builder in Background
 
@@ -134,28 +139,33 @@ Report back with minimal output: issues created, orchestration results, issues f
 ```
 Resume iterative implementation from existing issues file.
 
-Plan file: <plan-file-path>
+Issues file: <issues-file-path>
 Mode: RESUME
 
 ## Instructions
 
-1. FIND ISSUES FILE:
-   - Extract plan hash from plan filename
-   - Load: .claude/plans/issues-{plan-hash5}.json
+1. LOAD ISSUES FILE:
+   - Read the provided issues file: <issues-file-path>
    - Validate JSON structure and integrity
+   - Extract plan_reference to know which plan this came from
 
 2. ANALYZE STATE:
    - Parse completion status (completed/pending/failed/deferred)
    - Identify next issue to implement
-   - Validate dependencies are met
+   - Validate dependencies are met for next issue
    - Check for blockers
 
-3. ORCHESTRATOR LOOP:
+3. GET YOUR BEARINGS:
+   - Report to user: "Resuming from [issues-file-path]"
+   - Report: "[X] issues completed, [Y] remaining"
+   - Report: "Next issue: ISS-XXX [title]"
+
+4. ORCHESTRATOR LOOP:
    - Resume from next incomplete issue
    - Same workflow as DECOMPOSE mode (steps 5a-5f above)
    - Update issues.json as you progress
 
-4. HANDLE FAILURES:
+5. HANDLE FAILURES:
    - If failed issues block others: ask user how to proceed
    - If all issues blocked: report and stop
 
@@ -285,14 +295,14 @@ After the agent completes, provide a minimal summary:
 ## Example Usage
 
 ```bash
-# Create issues from plan and start implementation
+# DECOMPOSE MODE: Create issues from plan and start implementation
 /issue-builder .claude/plans/oauth2-authentication-a3f9e-plan.md
 
-# Resume from existing issues file
-/issue-builder .claude/plans/oauth2-authentication-a3f9e-plan.md --resume
+# RESUME MODE: Resume from existing issues file (NOTE: Pass the issues.json, not the plan!)
+/issue-builder .claude/plans/issues-a3f9e.json
 
-# After interruption, resume where you left off
-/issue-builder .claude/plans/payment-refactor-7k2m1-plan.md --resume
+# After interruption or /compact, resume where you left off
+/issue-builder .claude/plans/issues-7k2m1.json
 ```
 
 ## When to Use Issue Builder vs Direct Editor

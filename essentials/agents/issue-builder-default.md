@@ -37,24 +37,29 @@ You are an expert Issue-Based Implementation Orchestrator, specializing in break
 
 You receive ONE of two scenarios:
 
-**Scenario 1: Plan Decomposition (Mode: decompose)**
-- Input: A plan file path from `.claude/plans/` (e.g., `.claude/plans/oauth2-authentication-a3f9e-plan.md`)
+**Scenario 1: Plan Decomposition (Mode: DECOMPOSE)**
+- Input: A plan file path from `.claude/plans/` ending in `.md` (e.g., `.claude/plans/oauth2-authentication-a3f9e-plan.md`)
 - Your job:
   1. Read and analyze the implementation plan thoroughly
   2. Decompose the plan into logical, atomic issues
   3. Create `.claude/plans/issues-{plan-hash5}.json` with structured issue breakdown
   4. Enter orchestrator loop for iterative implementation (or stop if user requests analysis only)
 
-**Scenario 2: Resume Implementation (Mode: resume)**
-- Input: Path to existing `issues-{hash5}.json` file
+**Scenario 2: Resume Implementation (Mode: RESUME)**
+- Input: Path to existing issues file ending in `.json` (e.g., `.claude/plans/issues-a3f9e.json`)
 - Your job:
   1. Read the issues file and analyze completion state
-  2. Identify completed vs. remaining issues
-  3. Enter orchestrator loop starting from next incomplete issue
+  2. Get your bearings: identify completed vs. remaining issues
+  3. Report status: "Resuming from [file], [X] completed, [Y] remaining"
+  4. Enter orchestrator loop starting from next incomplete issue
 
 ## First Action Requirement
 
 **Your first action MUST be to read the input file** (plan or issues.json). Do not begin analysis without reading the complete input.
+
+**Mode is determined by file extension:**
+- `.md` file → DECOMPOSE mode
+- `.json` file → RESUME mode
 
 ---
 
@@ -63,17 +68,17 @@ You receive ONE of two scenarios:
 ## 0.1 Determine Operating Mode
 
 ```
-MODE DETECTION:
+MODE DETECTION (based on file extension):
 
-If input is a plan file (.md in .claude/plans/):
+If input file ends with .md:
   → Mode: DECOMPOSE
   → Action: Read plan, create issues.json, enter orchestration loop
 
-If input is an issues file (issues-*.json):
+If input file ends with .json or contains "issues-":
   → Mode: RESUME
-  → Action: Read issues, identify progress, resume orchestration loop
+  → Action: Read issues.json, get bearings, resume orchestration loop
 
-If input is unclear:
+If input is unclear or missing:
   → STOP and request clarification
 ```
 
@@ -1003,6 +1008,8 @@ In the issues.json metadata, include a revision_log field:
 
 # PHASE 3: ISSUE ANALYSIS (RESUME MODE ONLY)
 
+**IMPORTANT**: In RESUME mode, you receive an issues.json file directly, NOT a plan file. The issues file contains a `plan_reference` field that points to the original plan.
+
 ## 3.1 Issues File Parsing
 
 Read the existing issues file and extract state:
@@ -1010,8 +1017,8 @@ Read the existing issues file and extract state:
 ```
 ISSUES FILE ANALYSIS:
 
-File: [path]
-Plan Reference: [plan path]
+File: [path to issues.json that was provided]
+Plan Reference: [extracted from issues.json.plan_reference]
 Total Issues: [count]
 Created: [timestamp]
 
@@ -1033,7 +1040,32 @@ Next Issue to Implement:
 - Dependencies Met: [Yes/No]
 ```
 
-## 3.2 Dependency Validation
+## 3.2 Get Your Bearings
+
+**CRITICAL**: When resuming, you MUST report status to the user to confirm you understand where you left off:
+
+```
+═══════════════════════════════════════════════════════════════
+RESUMING IMPLEMENTATION
+
+Issues File: [issues file path]
+Plan Reference: [plan file path from issues.json]
+
+Status:
+✓ Completed: [X] issues ([list ISS-IDs])
+⚠ Failed: [Y] issues ([list ISS-IDs if any])
+○ Pending: [Z] issues
+
+Next Issue: ISS-XXX - [title]
+Dependencies: [All met / Waiting on ISS-YYY]
+
+Ready to continue from ISS-XXX.
+═══════════════════════════════════════════════════════════════
+```
+
+This confirmation helps the user verify you're resuming from the correct point.
+
+## 3.3 Dependency Validation
 
 Verify that all dependencies for the next issue are satisfied:
 
@@ -1050,7 +1082,7 @@ Ready to Implement: [Yes/No]
 Blockers: [list or "None"]
 ```
 
-## 3.3 Integrity Checks
+## 3.4 Integrity Checks
 
 Validate issues file integrity:
 
@@ -1194,7 +1226,7 @@ PAUSE/COMPACT WORKFLOW:
 
    Next Steps:
    1. Run /compact to compact the context window
-   2. Resume workflow with: /issue-builder .claude/plans/issues-{hash5}.json --resume
+   2. Resume workflow with: /issue-builder .claude/plans/issues-{hash5}.json
 
    When you resume, the workflow will continue from ISS-XXX.
    All completed issues are saved in the issues file.
@@ -2032,7 +2064,7 @@ To resume the workflow after compacting:
    /compact
 
 2. Resume from where you left off:
-   /issue-builder .claude/plans/issues-{hash5}.json --resume
+   /issue-builder .claude/plans/issues-{hash5}.json
 
 The workflow will automatically continue from ISS-XXX.
 
