@@ -108,22 +108,67 @@ flowchart LR
 ## Features
 
 ### 1. **Planner** (`/planner`)
-Comprehensive architectural planning with multi-phase investigation:
-- Codebase investigation with file:line references
-- External documentation research (via MCP)
-- Risk analysis and mitigation planning
-- Per-file implementation instructions
-- 7-pass revision process for quality assurance
-- Guides user to choose implementation approach: `/editor` (batch) or `/task-builder` (iterative)
+Comprehensive architectural planning agent with complete end-to-end planning workflow:
+
+**Planning Process:**
+- **Phase 1: Code Investigation** - Systematic codebase exploration using Glob/Grep/Read with file:line references
+- **Phase 2: External Documentation Research** - MCP-based research (Context7, SearxNG) for API/library details
+- **Phase 3: Synthesis** - Transform findings into detailed architectural narrative with stakeholder analysis
+- **Phase 4: Per-File Instructions** - Precise implementation steps with exact signatures, line numbers, dependencies
+- **Phase 5: 7-Pass Revision Process** - Quality assurance through multiple validation passes:
+  - Pass 1: Initial Draft
+  - Pass 2: Structural Validation (all required sections present)
+  - Pass 3: Anti-Pattern Scan (eliminate vague phrases like "add appropriate", "as needed")
+  - Pass 4: Dependency Chain Validation (every Dependency has a Provider, exact signature matching)
+  - Pass 5: Consumer Simulation (file-editor agent perspective check)
+  - Pass 6: Requirements Traceability (every requirement maps to file changes)
+  - Pass 7: Final Quality Score (minimum 40/50 total, no dimension below 8/10)
+
+**Plan Content:**
+- Risk analysis with mitigation strategies and rollback plans
+- Alternative approaches considered with trade-offs
+- Testing strategy with unit/integration test requirements
+- Success metrics and verification checklist
+- Visual architecture diagrams (ASCII art)
+- Complete revision history documenting all 7 passes
+
+**Orchestration Workflow:**
+- Grammar/spell checks user's task description before planning
+- Launches `planner-default` agent in background
+- Writes comprehensive plan to `.claude/plans/{task-slug}-{hash5}-plan.md`
+- Guides user to choose implementation approach:
+  - **Option 1**: `/plan-builder` - Refine plan with git-style revision tracking (optional)
+  - **Option 2**: `/editor` - Batch mode for simple plans (<5 files)
+  - **Option 3**: `/issue-builder` - Iterative mode for complex plans (>5 files)
 
 ### 2. **Bug Scout** (`/bug-scout`)
-Deep bug investigation and automatic fix implementation:
-- Error signal extraction from logs/stack traces
-- Code path tracing from entry to failure
-- Line-by-line analysis of suspicious code
-- Regression analysis to find what broke
-- Precise fix plans with before/after code
-- Auto-spawns file-editor agents to apply fixes
+Deep bug investigation with systematic analysis and automatic fix implementation:
+
+**Investigation Process:**
+- **Phase 0: Error Signal Extraction** - Parse logs, stack traces, and diagnostic output to extract error signals
+- **Phase 1: Project Context Gathering** - Read documentation (CLAUDE.md, README) and analyze recent git changes (view-only)
+- **Phase 2: Code Path Tracing** - Map complete execution path from entry point to failure, track data flow
+- **Phase 2.5: Reflection Checkpoint** - ReAct reasoning loop validates call chain completeness, evidence sufficiency, and suspicious section identification
+- **Phase 3: Line-by-Line Deep Analysis** - Deep inspection of suspicious code sections with bug pattern detection (null checks, bounds, types, race conditions)
+- **Phase 4: Regression Analysis Loop** - Identify what changed that broke things using git history and change impact mapping
+- **Phase 4.5: Reflection Checkpoint** - ReAct reasoning loop validates root cause confidence (High/Medium/Low), evidence strength, and contributing factors
+- **Phase 5: Fix Plan Generation** - Select fix strategy, generate precise specifications with exact file:line locations and before/after code
+- **Phase 6: Write Plan to File** - Save comprehensive plan to `.claude/plans/bug-scout-{identifier}-{hash5}-plan.md`
+- **Phase 7: Minimal Report to Orchestrator** - Return only essential metadata (severity, confidence, plan file path)
+
+**Orchestration Workflow:**
+- **Diagnostic Execution**: Runs user-requested commands (docker logs, journalctl, custom diagnostics)
+- **Risk Validation Gate**: User confirmation required for CRITICAL severity or LOW confidence findings
+- **Auto-Fix Implementation**: Spawns file-editor agents in parallel to apply fixes
+- **Verification Loop**: Ensures all fixes match TOTAL CHANGES count, re-dispatches if incomplete
+- **Quality Scoring**: 6-dimension rubric (Error Signal Extraction 15%, Code Path Tracing 20%, Line-by-Line Depth 20%, Regression Analysis 15%, Root Cause Confidence 15%, Fix Precision 15%) targeting 9-10/10
+
+**Key Features:**
+- Evidence-based conclusions with concrete proof (stack trace + code analysis + git history)
+- Self-critique at reflection checkpoints to avoid premature conclusions
+- Severity levels (Critical/High/Medium/Low) and confidence tracking (High/Medium/Low)
+- View-only git commands (diff, status, log, blame) - never modifies repository state
+- Minimal context pollution - all investigation details stay in plan file
 
 ### 3. **Code Quality** (`/code-quality` and `/code-quality-serena`)
 
@@ -140,21 +185,28 @@ Traditional file-based analysis with standard tools:
 - Targets 9.1/10 minimum quality score
 
 #### **LSP Semantic Analysis** (`/code-quality-serena`) ⭐ NEW
-Advanced semantic code navigation using Serena LSP:
-- **Accurate Symbol Discovery**: Language server understands code structure
-  - Classes, methods, functions, interfaces with exact locations
-  - Type-aware analysis with LSP symbol kinds
-- **Precise Reference Tracking**: Who calls what, across the entire codebase
-  - `find_referencing_symbols` for accurate call hierarchy
-  - Cross-file reference checking
-- **Better Dead Code Detection**: LSP verifies zero-reference symbols
-  - Unused public API detection (verified against consumers)
-  - Orphaned code identification
-- **Project-Wide Context**: Semantic understanding beyond text search
-  - Consumer usage analysis (files importing the target)
-  - Sibling file consistency checking
-- All standard features (SOLID, DRY, KISS, YAGNI, OWASP, 9.1/10 target)
-- Same auto-fix workflow with file-editor agents
+Advanced semantic code navigation using Serena LSP tools for comprehensive analysis:
+- **LSP-Powered Symbol Discovery**: Uses `get_symbols_overview` and `find_symbol` to understand code structure
+  - Classes, methods, functions, interfaces with exact line ranges
+  - Type-aware analysis with LSP symbol kinds (5=Class, 6=Method, 11=Interface, 12=Function, 13=Variable)
+  - Complete symbol hierarchy extraction with configurable depth
+- **Precise Reference Tracking**: Uses `find_referencing_symbols` to build accurate call hierarchies
+  - Cross-file reference checking to find who calls what
+  - Entry point identification (functions with no callers)
+  - Consumer usage verification (files importing the target)
+- **Better Dead Code Detection**: LSP verifies zero-reference symbols with semantic accuracy
+  - Unused public API detection (verified against actual consumers from Phase 0)
+  - Orphaned code identification (unreachable functions, unused interfaces)
+  - Even detects interfaces only used in unused parameter signatures
+- **Project-Wide Context Gathering** (Phase 0): Before analyzing, collects project standards
+  - Uses `find_file` to locate CLAUDE.md, README.md, CONTRIBUTING.md
+  - Uses `search_for_pattern` to find files importing the target (consumer analysis)
+  - Uses `list_dir` to find sibling files for consistency checking
+  - Extracts coding conventions, naming standards, required/forbidden patterns
+- **Advanced Metrics with LSP Data**: Halstead complexity, ABC metrics, CBO (coupling), LCOM (cohesion), RFC, WMC
+- **7-Phase Analysis Process**: Context gathering → Element extraction → Scope analysis → Call hierarchy → Quality issues → Improvement plan → File output
+- All standard features (11-dimension scoring: SOLID, DRY, KISS, YAGNI, OWASP, cognitive/cyclomatic complexity)
+- Targets 9.1/10 minimum quality score with auto-fix workflow via file-editor agents
 
 **When to Use Each:**
 - **`/code-quality`**: Quick analysis, simpler projects, no LSP setup needed
@@ -162,43 +214,56 @@ Advanced semantic code navigation using Serena LSP:
 
 ### 4. **File Editor** (`/editor`)
 Parallel file editing and creation from implementation plans:
-- Reads plans from `.claude/plans/`
-- **Edits existing files** (`[edit]`) using precise modifications
-- **Creates new files** (`[create]`) with complete, functional content
-- Implements changes atomically and defensively
-- Security checklist verification
-- Regression loop to clean up artifacts
-- Detailed change tracking and rollback documentation
+- **Parallel execution**: Spawns multiple file-editor agents in the background, one per file
+- **Dual mode operation**:
+  - `[edit]` mode: Uses Edit tool for precise modifications to existing files
+  - `[create]` mode: Uses Write tool to generate complete, functional new files
+- **Pre-implementation validation**: Verifies file state before changes (existence checks, parent directory validation)
+- **Security-first**: Applies comprehensive security checklist (input validation, injection prevention, auth checks)
+- **Defensive coding**: Error handling standards, boundary checks, safe defaults
+- **Regression loop**: Mandatory post-edit cleanup (removes unused code, resolves TODOs, eliminates stale patterns)
+- **Verification workflow**: Compares CHANGES COMPLETED vs TOTAL CHANGES from plan, re-dispatches if mismatches found
+- **Detailed reporting**: Aggregates metrics (lines changed, security assessment, merge conflicts) from all parallel agents
 - **Best for**: Simple plans (<5 files), batch execution, single session
 
 ### 5. **Task Builder** (`/task-builder`) ⭐ NEW
-Task-based iterative implementation with parallel file editing:
-- Breaks plans into trackable, atomic tasks
-- Creates `tasks-{hash}.json` with dependency graph and complete context
-- **Iterative workflow**: Present one task at a time with user approval
-- **Parallel execution**: Spawns file-editor agents in parallel (one per file in task)
-- **User control**: After each task, choose to continue/pause/compact/abort
+Task-based iterative implementation with parallel file editing and comprehensive context:
+- **Plan Decomposition**: Breaks plans into trackable, atomic tasks with dependency graph
+- **Self-Contained Tasks**: Each task embeds COMPLETE implementation details from the plan:
+  - Full code snippets (can be hundreds of lines per file)
+  - Complete architectural context, requirements (R-IDs), and constraints (C-IDs)
+  - Testing strategies, risk mitigations, and external documentation
+  - File-editor agents never need to reference the original plan
+- **Iterative Workflow**: Present one task at a time with user approval
+  - Options: [1] Implement, [2] Skip, [3] View details, [4] Pause/Compact, [5] Abort
+- **Parallel File-Editors**: Spawns file-editor agents in parallel (one per file in each task)
+- **User Control**: After each task, choose to continue/pause/compact/abort
 - **Pause/Resume**: Can pause, run `/compact`, then resume exactly where you left off
-- Full verification per task (CHANGES COMPLETED == TOTAL CHANGES)
-- Complete audit trail in tasks.json
+- **Regression Testing**: Runs tests after each task to catch breakage early
+- **Full Verification**: Per task (CHANGES COMPLETED == TOTAL CHANGES)
+- **Complete Audit Trail**: All progress tracked in tasks.json
 - **Best for**: Complex plans (>5 files), unclear dependencies, resumable work, context management
 
-### 6. **Plan Optimizer** (`/plan-builder`) ⭐ NEW
-User-guided plan refinement with comprehensive revision tracking:
-- Apply user-requested changes to existing implementation plans
-- **Interactive clarification**: Asks questions when instructions are ambiguous
-- **Surgical precision**: Changes only what's requested, plus cascading updates
-- **Git-style revision history**: Shows exact adds/deletes with context lines
-- **Integrity validation**: Ensures changes don't break plan consistency
-- **Quality preservation**: Maintains or improves plan quality scores
-- **Best for**: Iterative plan refinement, adding missing details, reorganizing sections
+### 6. **Plan Builder** (`/plan-builder`) ⭐ NEW
+Iterative plan refinement with surgical precision and git-style revision tracking:
+- **Multi-pass revision workflow**: Analyzes impact, applies changes through structured validation passes with reflection checkpoints (ReAct loops)
+- **Interactive clarification**: Proactively asks questions via AskUserQuestion when instructions are ambiguous or conflicts detected
+- **Surgical precision**: Changes only what's requested, plus necessary cascading updates to maintain consistency across all plan sections
+- **Git-style revision history**: Complete audit trail with diff notation (+/-), context lines, impact summaries, quality score tracking, and validation status
+- **Integrity validation**: Multi-pass validation ensures dependencies, requirements traceability, and structural consistency remain intact
+- **Quality preservation**: Re-scores plans after changes, maintains minimum 40/50 quality threshold across 5 dimensions
+- **Best for**: Iterative plan refinement, adding missing details, reorganizing sections, tracking plan evolution over multiple revisions
 
 ### 7. **Prompt Builder** (`/prompt-builder`)
-Iterative prompt engineering from vibe descriptions:
-- Transforms rough ideas into structured prompts
-- Anti-pattern elimination (no vague phrases)
-- Multiple iteration support with user feedback
-- Drafts saved to `.claude/plans/`
+Iterative prompt engineering from vibe descriptions with multi-pass quality validation:
+- **Vibe transformation**: Transforms rough ideas into high-quality, structured prompts
+- **Anti-pattern elimination**: Removes vague phrases like "as needed", "etc.", "handle appropriately"
+- **6-pass validation process**: Structural validation, anti-pattern scan, consumer simulation, quality scoring (≥40/50 target), final review
+- **Reflection checkpoints**: ReAct reasoning loops validate clarity and actionability before proceeding
+- **Iterative refinement**: User provides feedback, agent re-runs validation passes, updates draft in place
+- **Quality scoring**: 5-dimension assessment (Clarity, Specificity, Completeness, Actionability, Best Practices)
+- **Minimal output**: Drafts saved to `.claude/plans/`, user reviews file directly
+- **Best for**: Creating Claude Code slash commands, subagent prompts, prompt engineering with systematic quality control
 
 ## Installation
 
