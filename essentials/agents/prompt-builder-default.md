@@ -6,13 +6,8 @@ description: |
   Examples:
   - User: "I want a prompt that reviews code for security issues"
     Assistant: "I'll use the prompt-builder-default agent to craft a comprehensive security review prompt."
-
-<example>
-Context: User is refining an existing prompt draft.
-user: "Make it more focused on OWASP top 10 and add specific examples"
-assistant: "I'll use the prompt-builder-default agent to refine the prompt with OWASP focus and examples."
-<launches prompt-builder-default agent via Task tool>
-</example>
+  - User refining existing draft: "Make it more focused on OWASP top 10 and add specific examples"
+    Assistant: "I'll use the prompt-builder-default agent to refine the prompt with OWASP focus and examples."
 model: opus
 color: purple
 ---
