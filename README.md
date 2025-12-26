@@ -105,6 +105,30 @@ flowchart LR
     style prompt_storage fill:#1e40af,stroke:#3b82f6,stroke-width:3px,color:#fff
 ```
 
+## Naming Pattern: Builder Agents
+
+Agents with **"-builder"** in their name follow an **iterative loop pattern with user control** at each iteration:
+
+### Builder Meta-Loop Pattern
+
+All builders implement a systematic **iterative refinement loop** where the user has control at each iteration:
+
+| Agent | Loop Type | User Control Point | Iterations |
+|-------|-----------|-------------------|------------|
+| **`plan-builder`** | Multi-pass revision loop | After each revision pass (6-7 passes) | User reviews git-style diff for each pass, can request changes or skip to next |
+| **`task-builder`** | Task-by-task orchestration loop | After each task presented | User chooses: [1] Implement, [2] Skip, [3] View details, [4] Pause/Compact, [5] Abort |
+| **`prompt-builder`** | Iterative prompt refinement loop | After each draft revision | User provides feedback for next iteration or accepts current version |
+
+**Key Characteristics of All Builders:**
+- **Iterative**: Work happens in discrete iterations/passes, not all at once
+- **User-Driven**: User explicitly approves/rejects each iteration
+- **Resumable**: Can pause and resume from any iteration
+- **Incremental Progress**: Each iteration builds on previous results
+- **Transparent**: User sees exactly what changed in each iteration
+- **Controllable**: User can abort, skip, or request modifications mid-loop
+
+This contrasts with **non-builder agents** (planner, bug-scout, code-quality) which run to completion and present a single result for user review.
+
 ## Features
 
 ### 1. **Planner** (`/planner`)
