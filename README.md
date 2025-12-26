@@ -175,14 +175,36 @@ Deep bug investigation with systematic analysis and automatic fix implementation
 Two complementary approaches for comprehensive code analysis:
 
 #### **Standard Analysis** (`/code-quality`)
-Traditional file-based analysis with standard tools:
-- Uses Read, Glob, Grep for code navigation
-- 11-dimension quality scoring (SOLID, DRY, KISS, YAGNI, OWASP)
-- Cognitive and cyclomatic complexity metrics
-- Technical debt estimation
-- Project standards compliance checking
-- Auto-spawns file-editor agents to implement fixes
-- Targets 9.1/10 minimum quality score
+Comprehensive file-based code quality analysis with systematic multi-phase process:
+
+**7-Phase Analysis Process:**
+- **Phase 0: Context Gathering** - Read project docs (CLAUDE.md, README, devguides), find consumers (who imports this file), analyze sibling files and tests, extract project coding standards
+- **Phase 1: Code Element Extraction** - Catalog ALL code elements: imports (with usage tracking), globals/constants, classes (with methods and variables), functions (with parameters and locals), type definitions
+- **Phase 2: Scope & Visibility Analysis** - Check private element usage correctness, audit public elements (used externally?), detect unused elements (including unused interfaces/types)
+- **Phase 3: Call Hierarchy Mapping** - Build complete call graph, identify entry points, find orphaned/dead code, detect circular dependencies
+- **Phase 3.5: ReAct Reflection Checkpoint** - Self-verification: element mapping complete? scope analysis accurate? call hierarchy correct? context aligned with project standards?
+- **Phase 4: Quality Issue Identification** - Scan 15+ categories including code smells, SOLID violations, DRY/KISS/YAGNI, security (OWASP Top 10), performance, concurrency, test quality, project standards compliance, cross-file consistency
+- **Phase 4.5: ReAct Reflection Checkpoint** - Validate: all 11 quality dimensions checked? every finding has evidence? false positives eliminated? improvements feasible?
+- **Phase 5: Improvement Plan Generation** - Prioritize issues (Critical/High/Medium/Low), create specific fixes with exact line numbers and before/after code examples
+- **Phase 6: Write Plan to File** - Save complete analysis to `.claude/plans/code-quality-{filename}-{hash5}-plan.md` with all context, scores, and implementation steps
+- **Phase 7: Minimal Report to Orchestrator** - Return only plan file path and summary stats (avoids context pollution)
+
+**Quality Scoring & Metrics:**
+- **11-Dimension Scoring**: Code Organization (12%), Naming Quality (10%), Scope Correctness (10%), Type Safety (12%), No Dead Code (8%), No Duplication/DRY (8%), Error Handling (10%), Modern Patterns (5%), SOLID Principles (10%), Security/OWASP (10%), Cognitive Complexity (5%)
+- **Advanced Metrics**: Cyclomatic complexity, Halstead metrics (Volume, Difficulty, Effort, Predicted Bugs), ABC metrics (Assignment/Branch/Condition), Maintainability Index, CBO (Coupling Between Objects), LCOM (Lack of Cohesion in Methods), RFC (Response for Complexity), WMC (Weighted Methods per Class)
+- **Minimum 9.1/10 Target**: Adds fixes iteratively until projected score reaches threshold
+
+**Comprehensive Analysis Features:**
+- **Project Standards Compliance**: Validates naming conventions, documentation format, required/forbidden patterns from CLAUDE.md and devguides
+- **Cross-File Consistency**: Ensures patterns match sibling files, consumer expectations, and dependency patterns
+- **Security Analysis**: OWASP Top 10 vulnerability patterns (injection, auth, data exposure, XSS, deserialization), data flow taint analysis (source → sink tracking)
+- **Technical Debt Estimation**: Categorized by type (code/design/test/doc debt), hours of remediation, debt ratio calculation, priority matrix
+
+**Auto-Implementation Workflow:**
+- Spawns parallel file-editor agents (one per file needing fixes)
+- Verification loop: CHANGES COMPLETED must equal TOTAL CHANGES from plan
+- Re-dispatches for missed fixes with specific instructions
+- Aggregated reporting with fix verification status
 
 #### **LSP Semantic Analysis** (`/code-quality-serena`) ⭐ NEW
 Advanced semantic code navigation using Serena LSP tools for comprehensive analysis:
