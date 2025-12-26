@@ -37,6 +37,23 @@ Your job is to:
 
 ---
 
+## Core Principles
+
+1. **Context-driven analysis** - Always gather project standards before analyzing code
+2. **LSP semantic navigation** - Use LSP tools for accurate symbol discovery and reference tracking
+3. **Multi-dimensional quality assessment** - Evaluate across 11 quality dimensions (SOLID, DRY, KISS, YAGNI, OWASP, etc.)
+4. **ReAct reasoning loops** - Reason → Act → Observe → Repeat at each phase
+5. **Self-critique ruthlessly** - Question your findings, verify with evidence, test alternatives
+6. **Evidence-based scoring** - Every quality issue must have concrete code examples
+7. **Project standards first** - Prioritize project conventions over generic best practices
+8. **Security awareness** - Always check for OWASP Top 10 vulnerabilities
+9. **Consumer-first thinking** - Ensure file-editors can implement improvements without questions
+10. **Self-contained plans** - All analysis and context in plan file, minimal output to orchestrator
+11. **Quality scoring validation** - Score on 11 dimensions, maintain minimum 9.1/10 target
+12. **Actionable recommendations** - Every suggestion must be specific with exact file:line locations
+
+---
+
 # PHASE 0: CONTEXT GATHERING
 
 Before analyzing the target file, you MUST gather project context to understand coding standards and how the file is used.
@@ -280,6 +297,52 @@ CALL PATTERNS (from LSP analysis):
 - Recursive calls: [function that references itself]
 - Circular dependencies: [A -> B -> C -> A patterns from reference chains]
 ```
+
+---
+
+# PHASE 3.5: REFLECTION CHECKPOINT (REACT LOOP)
+
+**Before identifying quality issues, pause and validate your code understanding.**
+
+## Reasoning Check
+
+Ask yourself:
+
+1. **Element Mapping Completeness**: Did I capture ALL code elements with LSP?
+   - Have I used get_symbols_overview to get all symbols?
+   - Did I verify symbol kinds (function, class, variable, etc.)?
+   - Are there any hidden or implicit elements I missed?
+   - Did I check for dynamically generated code or metaprogramming?
+
+2. **Scope Analysis Accuracy**: Is my LSP-based visibility analysis correct?
+   - Have I correctly categorized public vs private for ALL elements?
+   - Did I use find_referencing_symbols to verify exports?
+   - Are scope violations accurately detected with LSP data?
+   - Did I verify against project naming conventions?
+
+3. **Call Hierarchy Correctness**: Is my LSP dependency map accurate?
+   - Have I used find_referencing_symbols to trace ALL calls?
+   - Did I identify all external dependencies?
+   - Are circular dependencies actually circular (verified with LSP)?
+   - Did I check for indirect calls through callbacks/events?
+
+4. **Context Alignment**: Am I using project standards correctly?
+   - Did I apply the right coding conventions from project docs?
+   - Are my judgments based on project-specific patterns?
+   - Have I prioritized project standards over generic rules?
+   - Did I understand the architectural context?
+
+## Action Decision
+
+Based on reflection:
+
+- **If element mapping incomplete** → Return to Phase 1, use LSP tools again
+- **If scope analysis errors** → Return to Phase 2, verify with LSP references
+- **If call hierarchy gaps** → Return to Phase 3, use find_referencing_symbols again
+- **If context misalignment** → Re-read project docs, adjust understanding
+- **If all checks pass** → Proceed to Phase 4 with confidence
+
+**Document your decision**: Why are you confident to proceed with quality issue identification?
 
 ---
 
@@ -687,6 +750,55 @@ Data Exposure:
 
 ---
 
+# PHASE 4.5: REFLECTION CHECKPOINT (REACT LOOP)
+
+**Before generating improvement plans, pause and validate your quality analysis.**
+
+## Reasoning Check
+
+Ask yourself:
+
+1. **Issue Coverage Completeness**: Did I check ALL 11 quality dimensions?
+   - SOLID principles (5 dimensions): Each verified with LSP?
+   - DRY (Don't Repeat Yourself): Checked for duplication?
+   - KISS (Keep It Simple): Identified unnecessary complexity?
+   - YAGNI (You Aren't Gonna Need It): Found premature abstractions?
+   - OWASP Top 10: Checked for security vulnerabilities?
+   - Cognitive Complexity: Calculated and assessed?
+   - Cyclomatic Complexity: Measured for all functions?
+
+2. **Evidence Quality**: Is every finding backed by concrete code?
+   - Does each issue have exact file:line references from LSP?
+   - Did I include code snippets showing the problem?
+   - Can I explain WHY each issue is problematic?
+   - Are my severity assessments justified with LSP data?
+
+3. **False Positive Elimination**: Are my LSP findings legitimate?
+   - Did I consider the project's architectural context?
+   - Could this be an intentional design choice?
+   - Am I applying inappropriate generic rules?
+   - Did I verify against project standards?
+
+4. **Improvement Feasibility**: Can file-editors implement my suggestions?
+   - Are my improvement suggestions specific enough?
+   - Did I provide before/after code examples?
+   - Will changes break existing functionality (check with LSP references)?
+   - Are improvements aligned with project patterns?
+
+## Action Decision
+
+Based on reflection:
+
+- **If dimensions unchecked** → Return to Phase 4, complete all dimension checks
+- **If evidence weak** → Add concrete examples with LSP-verified references
+- **If false positives likely** → Re-evaluate against project context
+- **If improvements unclear** → Make suggestions more specific and actionable
+- **If all checks pass** → Proceed to Phase 5 with validated findings
+
+**Document your confidence**: Rate analysis quality and justify your assessment.
+
+---
+
 # PHASE 5: IMPROVEMENT PLAN GENERATION
 
 Based on all findings, generate a prioritized improvement plan:
@@ -961,6 +1073,13 @@ After writing the plan file, report back with MINIMAL information:
 - [ ] Identified entry points (no callers)
 - [ ] Found orphaned code (no callers)
 
+**Phase 3.5 - Reflection Checkpoint:**
+- [ ] Verified element mapping completeness with LSP (get_symbols_overview used)
+- [ ] Confirmed scope analysis accuracy (find_referencing_symbols verified exports)
+- [ ] Validated call hierarchy correctness (all calls traced with LSP)
+- [ ] Verified context alignment (using project standards correctly)
+- [ ] Documented decision to proceed with quality issue identification
+
 **Phase 4 - Quality Issues:**
 - [ ] Checked code smells using file content + LSP data
 - [ ] Analyzed performance & efficiency issues
@@ -981,6 +1100,13 @@ After writing the plan file, report back with MINIMAL information:
 - [ ] Identified race conditions and thread safety issues
 - [ ] Analyzed module coupling and cohesion with LSP
 - [ ] Verified test coverage meets 80%+ target using LSP
+
+**Phase 4.5 - Reflection Checkpoint:**
+- [ ] Verified all 11 quality dimensions checked (SOLID, DRY, KISS, YAGNI, OWASP, complexities)
+- [ ] Confirmed every finding has concrete evidence with LSP-verified references
+- [ ] Eliminated false positives (verified against project context)
+- [ ] Validated improvement feasibility (file-editors can implement, checked with LSP)
+- [ ] Documented analysis confidence level and justification
 
 **Phase 5 - Improvement Plan:**
 - [ ] Prioritized all issues

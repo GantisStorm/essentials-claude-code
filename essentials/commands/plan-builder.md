@@ -1,14 +1,14 @@
 ---
 allowed-tools: Task, TaskOutput, Read, AskUserQuestion
 argument-hint: <plan-file-path> "<user instructions>"
-description: Apply user-requested optimizations to an implementation plan with git-style revision tracking (project)
+description: Build on or refine existing implementation plans using multi-pass revision with git-style tracking (project)
 ---
 
-Apply user-requested changes and optimizations to an existing implementation plan. The optimizer follows user instructions precisely, asks clarifying questions when needed, updates the plan file, and maintains a comprehensive git-style revision history showing all changes.
+Build on or refine existing implementation plans created by planner. The plan-builder follows user instructions precisely using iterative multi-pass revision, asks clarifying questions when needed, applies changes through structured validation passes (including reflection checkpoints), and maintains a comprehensive git-style revision history showing all changes.
 
 **IMPORTANT**: Keep orchestrator output minimal. User reviews the updated plan FILE directly.
 
-**Note**: The optimizer may ask clarification questions via AskUserQuestion if instructions are ambiguous or conflicts are detected.
+**Note**: The plan-builder may ask clarification questions via AskUserQuestion if instructions are ambiguous or conflicts are detected. Changes are applied through a meta builder pattern with reflection checkpoints and quality validation.
 
 ## Arguments
 
@@ -28,9 +28,9 @@ Parse `$ARGUMENTS` to extract:
 - Ensure user instructions are clear and not empty
 - If arguments malformed, report error and usage example
 
-### Step 2: Launch Plan Optimizer in Background
+### Step 2: Launch Plan Builder in Background
 
-Launch the `plan-optimizer-default` agent **in the background** using the Task tool with `run_in_background: true`:
+Launch the `plan-builder-default` agent **in the background** using the Task tool with `run_in_background: true`:
 
 ```
 Apply the following user-requested changes to the implementation plan:
@@ -53,11 +53,11 @@ User instructions:
 Follow the user's instructions exactly. Make only the changes they requested, plus any cascading updates needed to maintain plan consistency.
 ```
 
-Use `subagent_type: "plan-optimizer-default"` when invoking the Task tool.
+Use `subagent_type: "plan-builder-default"` when invoking the Task tool.
 
 ### Step 3: Wait for Completion
 
-Use `TaskOutput` with `block: true` to wait for the plan-optimizer agent to complete. The optimizer will:
+Use `TaskOutput` with `block: true` to wait for the plan-builder agent to complete. The plan-builder will:
 1. Read and analyze the current plan
 2. Apply user-requested changes precisely
 3. Update all affected sections for consistency
@@ -71,7 +71,7 @@ Use `TaskOutput` with `block: true` to wait for the plan-optimizer agent to comp
 After the agent completes, provide a minimal summary:
 
 ```
-## Plan Optimizer Summary
+## Plan Builder Summary
 
 **Plan**: .claude/plans/{task-slug}-{hash5}-plan.md
 **Revision**: [N] (was [N-1])
@@ -104,14 +104,14 @@ After the agent completes, provide a minimal summary:
 ### Next Steps
 
 - Review updated plan and revision history in `.claude/plans/{plan-file}`
-- Make additional optimizations: `/plan-optimizer <plan-file> "<instructions>"`
+- Make additional refinements: `/plan-builder <plan-file> "<instructions>"`
 - Proceed with implementation: `/editor` or `/issue-builder`
 ```
 
 ## Workflow Diagram
 
 ```
-/plan-optimizer <plan-file> "<instructions>"
+/plan-builder <plan-file> "<instructions>"
     │
     ▼
 ┌─────────────────────┐
@@ -120,17 +120,41 @@ After the agent completes, provide a minimal summary:
 └─────────────────────┘
     │
     ▼
-┌─────────────────────────────────────────┐
-│ Launch plan-optimizer-default           │◄── run_in_background: true
-│                                         │
-│  1. Read plan file                      │
-│  2. Analyze user instructions           │
-│  3. Apply changes precisely             │
-│  4. Update cascading sections           │
-│  5. Validate integrity                  │
-│  6. Add git-style revision entry        │
-│  7. Write updated plan                  │
-└─────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│ Launch plan-builder-default                      │◄── run_in_background: true
+│                                                  │
+│  PHASE 1: Plan Analysis                          │
+│    - Read plan file                              │
+│    - Understand user instructions                │
+│    - Check for ambiguities                       │
+│                                                  │
+│  PHASE 2: Impact Analysis                        │
+│    - Identify affected sections                  │
+│    - Validate change feasibility                 │
+│                                                  │
+│  PHASE 2.5: Reflection Checkpoint (ReAct)        │◄── Meta builder pattern
+│    - Verify impact completeness                  │
+│    - Confirm no breakages                        │
+│    - Validate user intent alignment              │
+│                                                  │
+│  PHASE 3: Apply Changes                          │
+│    - Make requested changes                      │
+│    - Apply cascading updates                     │
+│                                                  │
+│  PHASE 4: Meta Builder Validation                │
+│    - Pass 1: Structural Integrity                │
+│    - Pass 2: Consistency Check                   │
+│    - Pass 3: Quality Re-assessment               │
+│    - Pass 4: Anti-Pattern Scan                   │
+│                                                  │
+│  PHASE 5: Revision History                       │
+│    - Create git-style diffs                      │
+│    - Document impact summary                     │
+│                                                  │
+│  PHASE 6-7: Write & Output                       │
+│    - Write updated plan                          │
+│    - Provide structured summary                  │
+└──────────────────────────────────────────────────┘
     │
     ▼
 ┌─────────────────────┐
@@ -157,27 +181,27 @@ After the agent completes, provide a minimal summary:
 
 ```bash
 # Add error handling details
-/plan-optimizer .claude/plans/oauth2-authentication-a3f9e-plan.md "Add error handling details to the auth handler section"
+/plan-builder .claude/plans/oauth2-authentication-a3f9e-plan.md "Add error handling details to the auth handler section"
 
 # Update implementation order
-/plan-optimizer .claude/plans/oauth2-authentication-a3f9e-plan.md "Change implementation order to do database migrations first"
+/plan-builder .claude/plans/oauth2-authentication-a3f9e-plan.md "Change implementation order to do database migrations first"
 
 # Add security considerations
-/plan-optimizer .claude/plans/payment-refactor-7k2m1-plan.md "Add security considerations for PCI compliance to payment processing section"
+/plan-builder .claude/plans/payment-refactor-7k2m1-plan.md "Add security considerations for PCI compliance to payment processing section"
 
 # Reorganize sections
-/plan-optimizer .claude/plans/api-redesign-3x9f2-plan.md "Move testing strategy before implementation plan section"
+/plan-builder .claude/plans/api-redesign-3x9f2-plan.md "Move testing strategy before implementation plan section"
 
 # Update requirements
-/plan-optimizer .claude/plans/user-auth-5m3k1-plan.md "Add requirement for password strength validation with specific rules"
+/plan-builder .claude/plans/user-auth-5m3k1-plan.md "Add requirement for password strength validation with specific rules"
 
 # Enhance specificity
-/plan-optimizer .claude/plans/cache-layer-2h8j4-plan.md "Add exact Redis configuration parameters to the cache setup section"
+/plan-builder .claude/plans/cache-layer-2h8j4-plan.md "Add exact Redis configuration parameters to the cache setup section"
 ```
 
-## When to Use Plan Optimizer
+## When to Use Plan Builder
 
-**Use `/plan-optimizer` when:**
+**Use `/plan-builder` when:**
 - Plan needs additional details or clarifications
 - Requirements changed after initial planning
 - Implementation approach needs adjustment
@@ -187,14 +211,14 @@ After the agent completes, provide a minimal summary:
 - Dependencies need adjustment
 - Want to track iterative plan refinements
 
-**Don't use `/plan-optimizer` when:**
+**Don't use `/plan-builder` when:**
 - Plan is fundamentally wrong (create new plan with `/planner`)
 - Major architectural change needed (create new plan)
 - Just want to review the plan (open file directly)
 
 ## Revision History Tracking
 
-The plan-optimizer maintains a complete audit trail:
+The plan-builder maintains a complete audit trail:
 
 - **Git-style diffs**: Shows exactly what was added (+) and removed (-)
 - **Context lines**: Includes surrounding unchanged lines for clarity
@@ -206,13 +230,13 @@ This makes plan evolution transparent and reviewable.
 
 ## Integration with Other Commands
 
-Plan Optimizer works with plans created by:
+Plan Builder works with plans created by:
 - `/planner` - Implementation plans
 - `/bug-scout` - Bug fix plans
 - `/code-quality` - Quality improvement plans
 - `/code-quality-serena` - LSP-based quality improvement plans
 
-After optimization, proceed with:
-- `/plan-optimizer` - Additional refinements (can be used multiple times)
+After building on a plan, proceed with:
+- `/plan-builder` - Additional refinements (can be used multiple times)
 - `/editor` - Batch implementation
 - `/issue-builder` - Iterative implementation

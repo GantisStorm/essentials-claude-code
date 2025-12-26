@@ -1,7 +1,7 @@
 {
   "name": "essentials-claude-code",
-  "version": "2.5.0",
-  "description": "Multi-agent orchestration framework for Claude Code with deep planning, plan optimization with git-style revision tracking, bug investigation, code quality analysis (standard + LSP-powered), issue-based iterative implementation with self-contained comprehensive issues, and parallel file editing/creation capabilities",
+  "version": "2.6.0",
+  "description": "Multi-agent orchestration framework for Claude Code with deep planning, plan optimization with git-style revision tracking, bug investigation, code quality analysis (standard + LSP-powered), issue-based iterative implementation with self-contained comprehensive issues, and parallel file editing/creation capabilities. All agents upgraded with Core Principles, ReAct reasoning loops, reflection checkpoints, and comprehensive self-verification for maximum quality and reliability.",
   "author": "GantisStorm",
   "owner": {
     "name": "GantisStorm"
@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "essentials",
-      "version": "2.5.0",
-      "description": "Essential agents for Claude Code: planner, plan-optimizer (user-guided refinement), bug-scout, code-quality (standard + Serena LSP), file-editor (edit + create), issue-builder (comprehensive self-contained issues), and prompt-builder",
+      "version": "2.6.0",
+      "description": "Essential agents for Claude Code with systematic quality validation: planner, plan-builder (multi-pass revision with reflection), bug-scout (evidence-based investigation with ReAct loops), code-quality (11-dimensional analysis with reflection checkpoints), code-quality-serena (LSP semantic analysis with reflection), file-editor (quality-first execution with pre-implementation reflection), issue-builder (comprehensive self-contained issues), and prompt-builder (iterative refinement with anti-pattern elimination). All agents feature Core Principles, reflection checkpoints, and comprehensive self-verification.",
       "source": "./essentials"
     }
   ]

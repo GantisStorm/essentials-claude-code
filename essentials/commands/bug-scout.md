@@ -50,7 +50,9 @@ Investigate the following bug and create a precise fix plan.
 
 ## Investigation Instructions
 
-Perform a comprehensive bug investigation following your 7-phase process:
+Perform a comprehensive bug investigation following your systematic process with reflection checkpoints:
+
+**Core Principles**: Evidence-based, systematic investigation with ReAct reasoning loops and self-critique at each phase.
 
 0. ERROR SIGNAL EXTRACTION
    - Parse error message, stack trace, error codes
@@ -67,6 +69,12 @@ Perform a comprehensive bug investigation following your 7-phase process:
    - Map complete call chain to failure
    - Track data flow through the path
 
+**2.5. REFLECTION CHECKPOINT (ReAct Loop)**
+   - Verify call chain completeness
+   - Confirm evidence sufficiency
+   - Validate suspicious section identification
+   - Document decision to proceed
+
 3. LINE-BY-LINE DEEP ANALYSIS
    - Mark suspicious code sections
    - Analyze every line in suspect areas
@@ -77,6 +85,12 @@ Perform a comprehensive bug investigation following your 7-phase process:
    - Test each regression hypothesis
    - Confirm root cause with evidence
 
+**4.5. REFLECTION CHECKPOINT (ReAct Loop)**
+   - Validate root cause confidence (High/Medium/Low)
+   - Verify evidence is conclusive
+   - Identify all contributing factors
+   - Document confidence level and justification
+
 5. FIX PLAN GENERATION
    - Select minimal vs comprehensive fix strategy
    - Specify exact changes with file:line locations
@@ -86,6 +100,7 @@ Perform a comprehensive bug investigation following your 7-phase process:
    - Write plan to .claude/plans/bug-scout-<identifier>-<hash5>-plan.md (with 5-char hash)
    - Include TOTAL CHANGES count
    - Format for file-editor-default consumption
+   - **Quality Score**: Rate investigation on 6 dimensions (Error Signal Extraction, Code Path Tracing, Line-by-Line Depth, Regression Analysis, Root Cause Confidence, Fix Precision)
 
 IMPORTANT: Your output MUST include:
 - Root cause identification with confidence level

@@ -29,7 +29,9 @@ Analyze code quality for the specified file.
 
 File to analyze: <file-path>
 
-Perform a comprehensive code quality analysis following your 7-phase process:
+Perform a comprehensive code quality analysis following your systematic process with reflection checkpoints:
+
+**Core Principles**: Context-driven, multi-dimensional quality assessment with ReAct reasoning loops and self-critique.
 
 0. CONTEXT GATHERING (Do this FIRST):
    - Read CLAUDE.md, README.md, and any devguides/style guides
@@ -41,6 +43,14 @@ Perform a comprehensive code quality analysis following your 7-phase process:
 1. CODE ELEMENT EXTRACTION - Catalog all imports, globals, classes, functions, types
 2. SCOPE & VISIBILITY ANALYSIS - Check private/public usage, detect unused elements
 3. CALL HIERARCHY MAPPING - Build call graph, find orphaned code
+
+**3.5. REFLECTION CHECKPOINT (ReAct Loop)**
+   - Verify element mapping completeness
+   - Confirm scope analysis accuracy
+   - Validate call hierarchy correctness
+   - Verify context alignment with project standards
+   - Document decision to proceed
+
 4. QUALITY ISSUE IDENTIFICATION - Including:
    - Code smells (complexity, design, naming, duplication)
    - SOLID principles violations (SRP, OCP, LSP, ISP, DIP)
@@ -51,8 +61,17 @@ Perform a comprehensive code quality analysis following your 7-phase process:
    - Cognitive complexity measurement
    - PROJECT STANDARDS COMPLIANCE (from context gathered in Phase 0)
    - CROSS-FILE CONSISTENCY (patterns match siblings/consumers)
+
+**4.5. REFLECTION CHECKPOINT (ReAct Loop)**
+   - Verify all 11 quality dimensions checked
+   - Confirm every finding has concrete evidence
+   - Eliminate false positives
+   - Validate improvement feasibility
+   - Document analysis confidence level
+
 5. IMPROVEMENT PLAN GENERATION - Prioritized fixes with before/after examples
-6. OUTPUT FORMAT - Structured report for orchestrator
+6. WRITE PLAN FILE - Write to .claude/plans/ with all findings
+7. OUTPUT FORMAT - Minimal structured report for orchestrator
 
 IMPORTANT: Your output MUST include:
 - Project context summary (standards found, related files analyzed)

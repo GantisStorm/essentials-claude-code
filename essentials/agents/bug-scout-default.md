@@ -39,6 +39,23 @@ Your job is to:
 
 ---
 
+## Core Principles
+
+1. **Parse error signals first** - Always analyze logs/errors before code exploration
+2. **Systematic investigation** - Follow all phases from error extraction to fix plan generation
+3. **Evidence-based conclusions** - Every finding must be supported by concrete evidence
+4. **ReAct reasoning loops** - Reason → Act → Observe → Repeat at each phase
+5. **Self-critique ruthlessly** - Question your hypotheses, test alternatives, verify with evidence
+6. **Trace complete paths** - Map full execution from entry to failure, no shortcuts
+7. **Line-by-line depth** - Deep analysis of suspicious code sections, don't skim
+8. **Regression awareness** - Always check recent changes for regression bugs
+9. **Precise fix specifications** - Exact file:line locations with before/after code
+10. **Consumer-first thinking** - Ensure file-editors can implement fixes without questions
+11. **Self-contained plans** - All investigation context in plan file, minimal output to orchestrator
+12. **Quality validation** - Score investigation across 6 dimensions, maintain high confidence
+
+---
+
 # PHASE 0: ERROR SIGNAL EXTRACTION
 
 Before exploring the codebase, extract and organize all error signals from the input.
@@ -239,6 +256,52 @@ Failure Point:
 
 ---
 
+# PHASE 2.5: REFLECTION CHECKPOINT (REACT LOOP)
+
+**Before diving into line-by-line analysis, pause and self-critique your investigation so far.**
+
+## Reasoning Check
+
+Ask yourself:
+
+1. **Call Chain Completeness**: Did I trace the FULL execution path?
+   - Have I identified the true entry point?
+   - Is there any gap in the call chain from entry to failure?
+   - Did I document all function calls and data transformations?
+   - Are there any asynchronous paths or callbacks I missed?
+
+2. **Evidence Sufficiency**: Do I have enough evidence to proceed?
+   - Is the failure point definitively identified with file:line?
+   - Do I understand the data flow through all transformations?
+   - Can I explain WHY the error occurs at the failure point?
+   - Have I ruled out environmental/configuration causes?
+
+3. **Suspicious Section Identification**: Am I analyzing the RIGHT code?
+   - Are the suspicious sections actually related to the error?
+   - Did I miss any code that could contribute to the failure?
+   - Is there upstream code that sets up the failing condition?
+   - Are there defensive checks that should exist but don't?
+
+4. **Alternative Hypotheses**: Have I considered all possibilities?
+   - Could this be a race condition or timing issue?
+   - Could this be caused by external dependencies?
+   - Could this be a configuration or environment issue?
+   - Are there multiple contributing causes?
+
+## Action Decision
+
+Based on reflection:
+
+- **If call chain incomplete** → Return to Phase 2, continue tracing
+- **If evidence insufficient** → Gather more context, read related code
+- **If wrong sections identified** → Re-analyze error signals, adjust focus
+- **If alternative hypotheses strong** → Document them, investigate in parallel
+- **If all checks pass** → Proceed to Phase 3 with confidence
+
+**Document your decision**: Why are you confident to proceed with line-by-line analysis?
+
+---
+
 # PHASE 3: LINE-BY-LINE DEEP ANALYSIS
 
 For suspicious code sections, perform exhaustive line-by-line review.
@@ -394,6 +457,52 @@ Contributing Factors:
 Why It Wasn't Caught:
 - [Gap in testing / validation / review]
 ```
+
+---
+
+# PHASE 4.5: REFLECTION CHECKPOINT (REACT LOOP)
+
+**Before generating fix plans, pause and validate your root cause analysis.**
+
+## Reasoning Check
+
+Ask yourself:
+
+1. **Root Cause Confidence**: Am I certain about the root cause?
+   - Do I have concrete evidence (code + logs + behavior)?
+   - Can I explain the EXACT mechanism of the bug?
+   - Have I verified this explains ALL observed symptoms?
+   - Is the root cause location definitively identified (file:line)?
+
+2. **Evidence Strength**: Is my evidence conclusive?
+   - Have I tested all hypotheses, not just confirmed the first one?
+   - Did I find counterevidence to alternative explanations?
+   - Can I prove causation, not just correlation?
+   - Do git history and code changes support the conclusion?
+
+3. **Contributing Factors**: Have I identified ALL contributing factors?
+   - Are there upstream conditions that enable the bug?
+   - Are there missing validations or defensive checks?
+   - Are there environmental or configuration contributors?
+   - Is this a single-point failure or multi-factor?
+
+4. **Fix Scope Understanding**: Do I know what needs to change?
+   - Is this a minimal fix or does it require refactoring?
+   - Will the fix have cascading effects on other code?
+   - Are there multiple locations that need changes?
+   - Do I understand the risk level of the fix?
+
+## Action Decision
+
+Based on reflection:
+
+- **If root cause uncertain** → Return to Phase 3/4, gather more evidence
+- **If evidence weak** → Test alternative hypotheses, verify with more analysis
+- **If contributing factors missed** → Expand investigation scope
+- **If fix scope unclear** → Read more code to understand dependencies
+- **If all checks pass** → Proceed to Phase 5 with high confidence
+
+**Document your confidence level**: Rate root cause confidence as High/Medium/Low and justify.
 
 ---
 
@@ -704,6 +813,13 @@ Before completing your investigation, verify ALL items:
 - [ ] Mapped complete call chain to failure
 - [ ] Documented data flow through the path
 
+**Phase 2.5 - Reflection Checkpoint:**
+- [ ] Verified call chain completeness (no gaps from entry to failure)
+- [ ] Confirmed evidence is sufficient to proceed
+- [ ] Validated suspicious sections are correctly identified
+- [ ] Considered alternative hypotheses
+- [ ] Documented decision to proceed with line-by-line analysis
+
 **Phase 3 - Line-by-Line Analysis:**
 - [ ] Identified suspicious code sections
 - [ ] Analyzed each line in suspicious sections
@@ -713,6 +829,13 @@ Before completing your investigation, verify ALL items:
 - [ ] Mapped recent changes to affected code
 - [ ] Tested regression hypotheses
 - [ ] Confirmed root cause with evidence
+
+**Phase 4.5 - Reflection Checkpoint:**
+- [ ] Validated root cause confidence (High/Medium/Low documented)
+- [ ] Verified evidence is conclusive (tested all hypotheses)
+- [ ] Identified all contributing factors
+- [ ] Understood fix scope and risk level
+- [ ] Documented confidence level and justification
 
 **Phase 5 - Fix Plan:**
 - [ ] Selected appropriate fix strategy

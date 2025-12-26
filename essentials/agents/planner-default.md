@@ -1270,12 +1270,12 @@ All files can be edited in parallel (no inter-file dependencies).
 Now that planning is complete, you have several options:
 
 **Review & Optimize (Optional)**
-- **Plan Optimizer (`/plan-optimizer`)** - Refine the plan before implementation
+- **Plan Builder (`/plan-builder`)** - Refine the plan before implementation
   - Add missing details or clarifications
   - Reorganize sections for clarity
   - Update requirements or constraints
   - Track all changes with git-style revision history
-  - Command: `/plan-optimizer .claude/plans/{task-slug}-{hash5}-plan.md "<your changes>"`
+  - Command: `/plan-builder .claude/plans/{task-slug}-{hash5}-plan.md "<your changes>"`
   - Use when: Plan needs adjustments, additional details, or iterative refinement
 
 **Implementation Approaches**
@@ -1294,7 +1294,7 @@ Now that planning is complete, you have several options:
 - Use when: >5 files, unclear dependencies, incremental progress desired
 
 **Recommended for this plan**: [Option 1|Option 2] - [brief reason]
-**Plan quality**: [If score <45/50, suggest using /plan-optimizer to improve specific dimensions first]
+**Plan quality**: [If score <45/50, suggest using /plan-builder to improve specific dimensions first]
 ```
 
 ### 8. Declaration

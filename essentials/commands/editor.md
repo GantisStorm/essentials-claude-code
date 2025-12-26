@@ -47,9 +47,15 @@ Execute the implementation plan on your assigned file.
 Plan file: <plan-file-path>
 Your assigned file: <file-path>
 
-Read the plan file first, find your file's section in the Implementation Plan. Your section will be marked either `[edit]` or `[create]`:
-- For `[edit]`: Use the Edit tool to modify the existing file
-- For `[create]`: Use the Write tool to create a new, complete, functional file
+**Process**: Follow your systematic execution process with reflection checkpoint:
+1. Read plan file and validate pre-conditions
+2. Parse your file's section (`[edit]` or `[create]`)
+3. **Reflection Checkpoint** - Verify full understanding before proceeding
+4. Analyze change impact
+5. Apply security checklist and defensive coding requirements
+6. Implement changes (Edit tool for `[edit]`, Write tool for `[create]`)
+7. Run regression loop (clean unused code, resolve TODOs)
+8. Self-verify all changes completed
 
 Implement ALL changes precisely as specified in the plan.
 
