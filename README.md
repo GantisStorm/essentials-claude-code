@@ -361,11 +361,6 @@ Advanced semantic code navigation using Serena LSP tools for comprehensive analy
 - Verification loop: CHANGES COMPLETED must equal TOTAL CHANGES
 - Re-dispatches for missed fixes with specific instructions
 
-**When to Use Each:**
-- **`/code-quality`**: Quick analysis, simpler projects, no LSP setup needed
-- **`/code-quality-serena`**: Larger codebases, accurate refactoring, semantic accuracy matters
-
-
 ### 4. **File Editor** (`/editor`)
 Parallel file editing and creation from implementation plans:
 - **Parallel execution**: Spawns multiple file-editor agents in the background, one per file
@@ -644,19 +639,6 @@ essentials/
 6. **No Git Modifications**: Agents never commit; user reviews and commits manually
 7. **Security-First**: All file edits include security checklist verification
 8. **Semantic Accuracy** (LSP): Use language servers for accurate code understanding
-
-## LSP vs Standard Analysis Comparison
-
-| Feature | Standard (`/code-quality`) | LSP Serena (`/code-quality-serena`) |
-|---------|----------------------------|-------------------------------------|
-| **Symbol Discovery** | Text search (Grep) | LSP semantic understanding |
-| **Reference Finding** | Pattern matching | Precise cross-file references |
-| **Dead Code Detection** | Heuristic-based | LSP-verified zero references |
-| **Type Awareness** | Text-based inference | Language server type info |
-| **Speed** | Fast (simple text ops) | Fast (LSP indexed) |
-| **Setup Required** | None | Serena MCP + LSP config |
-| **Accuracy** | Good for most cases | Excellent for refactoring |
-| **Best For** | Quick checks, simple projects | Large codebases, complex refactors |
 
 ## Requirements
 
