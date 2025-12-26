@@ -7,63 +7,70 @@ A comprehensive multi-agent orchestration framework for Claude Code. Features de
 ### Plan-Driven Workflow (with File-Editor Orchestration)
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph commands["🎯 USER COMMANDS"]
-        planner_cmd["/planner<br/>Create implementation plan"]
-        optimizer_cmd["/plan-builder<br/>Refine existing plan"]
-        editor_cmd["/editor<br/>Execute existing plan"]
-        issue_cmd["/issue-builder<br/>Iterative implementation"]
-        bug_cmd["/bug-scout<br/>Investigate + fix bugs"]
+        direction TB
+        planner_cmd["/planner<br/>Create plan"]
+        optimizer_cmd["/plan-builder<br/>Refine plan"]
+        bug_cmd["/bug-scout<br/>Fix bugs"]
         quality_cmd["/code-quality<br/>Standard analysis"]
-        serena_cmd["/code-quality-serena<br/>LSP semantic analysis"]
+        serena_cmd["/code-quality-serena<br/>LSP analysis"]
+        issue_cmd["/issue-builder<br/>Iterative mode"]
+        editor_cmd["/editor<br/>Batch mode"]
     end
 
     subgraph analysis["📊 ANALYSIS AGENTS"]
-        planner_agent["planner-default<br/>Investigate codebase<br/>Research docs<br/>Create implementation plan"]
-        optimizer_agent["plan-builder-default<br/>Apply user changes<br/>Ask clarifying questions<br/>Track git-style revisions"]
-        issue_agent["issue-builder-default<br/>Break plan into issues<br/>Orchestrate iteratively"]
-        bug_agent["bug-scout-default<br/>Analyze logs/errors<br/>Trace code paths<br/>Create fix plan"]
-        quality_agent["code-quality-default<br/>Read/Glob/Grep analysis<br/>11-dimension scoring<br/>Create improvement plan"]
-        serena_agent["code-quality-serena<br/>LSP semantic navigation<br/>Symbol + reference analysis<br/>Create improvement plan"]
+        direction TB
+        planner_agent["planner-default<br/>Create implementation plan"]
+        optimizer_agent["plan-builder-default<br/>Refine with revisions"]
+        bug_agent["bug-scout-default<br/>Investigate & plan fixes"]
+        quality_agent["code-quality-default<br/>11-dimension analysis"]
+        serena_agent["code-quality-serena<br/>LSP semantic analysis"]
+        issue_agent["issue-builder-default<br/>Break into issues"]
     end
 
     subgraph storage["💾 PLAN STORAGE"]
-        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• issues-{hash}.json<br/>• bug-scout-{id}-plan.md<br/>• code-quality-{file}-plan.md<br/>• code-quality-serena-{file}-plan.md")]
+        direction TB
+        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• issues-{hash}.json<br/>• bug-scout-plan.md<br/>• code-quality-plan.md")]
     end
 
     subgraph execution["⚙️ FILE-EDITOR ORCHESTRATION"]
-        orchestrator["File-Editor Orchestrator<br/>Reads plan file<br/>Identifies files to edit/create<br/>Spawns parallel agents"]
-        editor1["file-editor-default<br/>File: src/auth/handler.ts [edit]<br/>Changes: 6 fixes"]
-        editor2["file-editor-default<br/>File: src/auth/middleware.ts [edit]<br/>Changes: 4 fixes"]
-        editor3["file-editor-default<br/>File: src/auth/oauth.ts [create]<br/>New file with complete content"]
+        direction TB
+        orchestrator["File-Editor Orchestrator<br/>Spawns parallel agents"]
+        editor1["file-editor-default<br/>[edit] handler.ts"]
+        editor2["file-editor-default<br/>[edit] middleware.ts"]
+        editor3["file-editor-default<br/>[create] oauth.ts"]
     end
 
+    %% Command to Agent connections
     planner_cmd --> planner_agent
     optimizer_cmd --> optimizer_agent
-    issue_cmd --> issue_agent
     bug_cmd --> bug_agent
     quality_cmd --> quality_agent
     serena_cmd --> serena_agent
+    issue_cmd --> issue_agent
+    editor_cmd --> plans
 
-    planner_agent -->|"writes plan"| plans
-    optimizer_agent -->|"reads plan"| plans
-    optimizer_agent -->|"updates plan"| plans
-    issue_agent -->|"writes issues.json"| plans
-    bug_agent -->|"writes plan"| plans
-    quality_agent -->|"writes plan"| plans
-    serena_agent -->|"writes plan"| plans
+    %% Analysis agents to storage
+    planner_agent -->|"writes"| plans
+    optimizer_agent -->|"updates"| plans
+    bug_agent -->|"writes"| plans
+    quality_agent -->|"writes"| plans
+    serena_agent -->|"writes"| plans
+    issue_agent -->|"writes"| plans
 
-    editor_cmd -->|"reads plan"| plans
-    issue_agent -->|"reads plan"| plans
-    plans -->|"plan content"| orchestrator
+    %% Storage to execution
+    plans --> orchestrator
 
-    orchestrator -->|"parallel spawn"| editor1
-    orchestrator -->|"parallel spawn"| editor2
-    orchestrator -->|"parallel spawn"| editor3
+    %% Orchestrator to editors
+    orchestrator -->|"spawn"| editor1
+    orchestrator -->|"spawn"| editor2
+    orchestrator -->|"spawn"| editor3
 
-    editor1 -.->|"reports completion"| orchestrator
-    editor2 -.->|"reports completion"| orchestrator
-    editor3 -.->|"reports completion"| orchestrator
+    %% Editor feedback (dotted)
+    editor1 -.->|"done"| orchestrator
+    editor2 -.->|"done"| orchestrator
+    editor3 -.->|"done"| orchestrator
 
     style commands fill:#1e40af,stroke:#3b82f6,stroke-width:3px,color:#fff
     style analysis fill:#b45309,stroke:#f59e0b,stroke-width:3px,color:#fff
