@@ -8,13 +8,19 @@ Create a comprehensive implementation plan for the specified task, then guide th
 
 **IMPORTANT**: Keep orchestrator output minimal. User reviews the plan FILE directly, not in chat.
 
+## Arguments
+
+- **Task description**: Free-form description of the feature, fix, or refactoring to plan
+
 ## Instructions
 
-### Step 1: Grammar Check
+### Step 1: Parse and Validate Input
 
-Before launching the `planner-default` agent, first grammar and spell check the provided task description (`$ARGUMENTS`). Ensure the revised task description is clear, correct, and unambiguous.
+Parse `$ARGUMENTS` to extract the task description.
 
-### Step 2: Launch Planner in Background
+**Grammar and Spell Check**: Before launching the specialist agent, grammar and spell check the provided task description. Ensure the revised task description is clear, correct, and unambiguous.
+
+### Step 2: Launch Specialist Agent in Background
 
 Launch the `planner-default` agent **in the background** using the Task tool with `run_in_background: true`:
 
@@ -30,7 +36,7 @@ IMPORTANT: At the end of your plan, include implementation options guidance for 
 
 Use `subagent_type: "planner-default"` when invoking the Task tool.
 
-### Step 3: Wait for Plan Completion
+### Step 3: Wait for Specialist Completion
 
 Use `TaskOutput` with `block: true` to wait for the planner agent to complete. The planner will:
 1. Investigate the codebase thoroughly

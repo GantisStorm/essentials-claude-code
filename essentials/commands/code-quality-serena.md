@@ -14,13 +14,13 @@ Analyze code quality for the specified files by spawning parallel `code-quality-
 
 ## Instructions
 
-### Step 1: Parse Arguments
+### Step 1: Parse and Validate Input
 
 Parse `$ARGUMENTS` to extract the list of files to analyze.
 
 Validate each file path exists before proceeding. If a file doesn't exist, report it and skip.
 
-### Step 2: Launch Quality Analyzers in Background
+### Step 2: Launch Specialist Agent(s) in Background
 
 For EACH file in the list, launch a `code-quality-serena` agent **in the background** using the Task tool with `run_in_background: true`:
 
@@ -100,7 +100,7 @@ Use `subagent_type: "code-quality-serena"` for each Task tool invocation.
 
 **Launch ALL agents in a single message** with `run_in_background: true` to enable parallel execution.
 
-### Step 3: Wait for Analysis Completion
+### Step 3: Wait for Specialist Completion
 
 Use `TaskOutput` with `block: true` to wait for each code-quality-serena agent to complete.
 
@@ -113,7 +113,7 @@ For each completed agent, collect:
 - Plan file path
 - List of changes to implement
 
-### Step 4: Parse Analysis Results
+### Step 4: Parse Results
 
 From each agent's output, extract:
 1. The file path analyzed
@@ -125,7 +125,7 @@ Group files by:
 - **Needs Changes**: Files with `Changes Required: Yes` and a plan file path
 - **Clean**: Files with `Changes Required: No`
 
-### Step 5: Auto-Spawn File Editors for Files Needing Changes
+### Step 5: Auto-Dispatch File Editors
 
 For each file in the "Needs Changes" group, launch a `file-editor-default` agent **in the background**.
 
@@ -169,7 +169,7 @@ For each completed editor, collect:
 - Regression check status
 - Issues or warnings
 
-### Step 7: Verify ALL Fixes Were Implemented (CRITICAL)
+### Step 7: VERIFY ALL CHANGES IMPLEMENTED (CRITICAL)
 
 **This step ensures no fixes are missed.** For each file that was edited:
 
@@ -193,9 +193,23 @@ For each completed editor, collect:
    | [path] | 4 | 3 | ⚠ Missing 1 - Re-dispatching |
    ```
 
-### Step 8: Report Comprehensive Summary
+### Step 8: Aggregated Verification
 
-After all agents complete, provide a detailed summary:
+After all file-editor agents complete, run verification:
+
+```bash
+# Run project linters, formatters, and type checkers
+# (refer to CLAUDE.md or project documentation for specific commands)
+```
+
+Collect results:
+- Number of lint errors fixed
+- Number of type errors found
+- Any files that failed verification
+
+### Step 9: Report Comprehensive Summary
+
+After all agents complete and verification runs, provide a detailed summary:
 
 ```
 ## Code Quality Analysis & Implementation Summary (LSP-Powered)

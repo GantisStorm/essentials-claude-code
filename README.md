@@ -149,6 +149,144 @@ All builders implement a systematic **iterative refinement loop** with clear sep
 
 This contrasts with **non-builder agents** (planner, bug-scout, code-quality) which run to completion and present a single result for user review.
 
+## Orchestrator Meta-Pattern
+
+All **non-builder slash commands** (`/planner`, `/bug-scout`, `/editor`, `/code-quality`, `/code-quality-serena`) follow a consistent **orchestration meta-pattern** for spawning specialist agents, collecting results, and coordinating multi-step workflows:
+
+### Orchestrator Architecture: Commands Coordinate, Agents Execute
+
+| Orchestrator | **Command Role** | **Specialist Agent(s)** | **Auto-Dispatch File Editors?** |
+|--------------|------------------|-------------------------|----------------------------------|
+| **`/planner`** | Orchestrates planning workflow | `planner-default` creates plan | ❌ No (presents options to user) |
+| **`/bug-scout`** | Orchestrates bug investigation & fix | `bug-scout-default` investigates → `file-editor-default` fixes | ✅ Yes (after risk validation) |
+| **`/editor`** | Orchestrates parallel file editing | Multiple `file-editor-default` agents (one per file) | ✅ Yes (is the dispatcher itself) |
+| **`/code-quality`** | Orchestrates quality analysis & fixes | `code-quality-default` analyzes → `file-editor-default` fixes | ✅ Yes (for files needing changes) |
+| **`/code-quality-serena`** | Orchestrates LSP-powered analysis & fixes | `code-quality-serena` analyzes → `file-editor-default` fixes | ✅ Yes (for files needing changes) |
+
+### Standardized Workflow Steps
+
+All orchestrators follow this **9-step meta-framework**:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Step 1: Parse and Validate Input                           │
+│         - Parse $ARGUMENTS                                  │
+│         - Validate file paths, plan files exist             │
+│         - Prepare data for specialist agent                 │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 2: Launch Specialist Agent(s) in Background           │
+│         - Use Task tool with run_in_background: true        │
+│         - Pass clear, structured prompts                    │
+│         - Launch ALL agents in parallel (single message)    │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 3: Wait for Specialist Completion                     │
+│         - Use TaskOutput with block: true                   │
+│         - Collect structured results                        │
+│         - Extract plan paths, file lists, metrics           │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 4: Parse Results / Risk Validation (if applicable)    │
+│         - Extract plan file paths, change counts            │
+│         - Group by action needed (e.g., needs changes/clean)│
+│         - Risk gate: Ask user if CRITICAL or LOW confidence │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 5: Auto-Dispatch File Editors (if applicable)         │
+│         - Launch file-editor-default agents in parallel     │
+│         - One agent per file needing changes                │
+│         - Pass ONLY plan file path (avoid context pollution)│
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 6: Collect Editor Results (if applicable)             │
+│         - Use TaskOutput for each file-editor               │
+│         - Collect CHANGES COMPLETED counts                  │
+│         - Aggregate security assessments, warnings          │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 7: VERIFY ALL CHANGES IMPLEMENTED (CRITICAL)          │
+│         - Compare: TOTAL CHANGES (plan) vs CHANGES COMPLETED│
+│         - If mismatch: Re-dispatch for missed changes       │
+│         - Loop until CHANGES COMPLETED == TOTAL CHANGES     │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 8: Aggregated Verification (if applicable)            │
+│         - Run project linters, formatters, type checkers    │
+│         - Collect verification results                      │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 9: Report Comprehensive Summary                       │
+│         - Minimal output (details in plan files)            │
+│         - Tables: files modified, verification status       │
+│         - Next steps for user                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Key Characteristics of All Orchestrators
+
+1. **Single-Pass Execution**: Run to completion, no iterative loops (unlike builders)
+2. **Minimal Context Pollution**: Commands don't read large files; agents do and write artifacts
+3. **Parallel Agent Spawning**: Launch all specialist agents in one message for max performance
+4. **Automatic File Editing**: Most orchestrators auto-dispatch `file-editor-default` for implementation
+5. **Verification Loops**: Critical Step 7 ensures no changes are missed (re-dispatch if needed)
+6. **Structured Reporting**: Users review artifacts (plan files, changes) directly, not chat output
+7. **No User Interaction**: Orchestrators make best judgment and proceed autonomously (except risk gates)
+8. **Git Safety**: Orchestrators never commit/push; all changes left for user review
+
+### Critical Separation of Concerns
+
+**Slash Commands** (`essentials/commands/*.md`):
+- Orchestrate workflows, coordinate multiple agents
+- Use `Task` and `TaskOutput` tools exclusively
+- Handle argument parsing, validation, result aggregation
+- Present summaries and options to users
+- May use `AskUserQuestion` for risk validation gates
+
+**Specialist Agents** (`essentials/agents/*-default.md`):
+- Execute focused tasks (planning, investigation, analysis, editing)
+- Create artifacts (plan files, edited code, analysis reports)
+- Return minimal structured results to orchestrator
+- NEVER interact with users (no `AskUserQuestion`)
+- NEVER orchestrate sub-agents
+
+### Orchestrator-Specific Variations
+
+| Orchestrator | Unique Step | Purpose |
+|--------------|-------------|---------|
+| `/planner` | Step 1: Grammar check task description | Ensures clear, unambiguous planning input |
+| `/planner` | Step 4: Present implementation options | User chooses `/editor`, `/issue-builder`, or `/plan-builder` |
+| `/bug-scout` | Step 1: Execute diagnostic commands | Runs `docker logs`, `journalctl` as requested |
+| `/bug-scout` | Step 4: Risk validation gate | Asks user confirmation if CRITICAL severity or LOW confidence |
+| `/editor` | Step 2: Pre-flight conflict check | Detects potential import conflicts, dependency order |
+| `/code-quality*` | Step 4: Group by needs changes/clean | Skips file-editors for files already meeting 9.1/10 threshold |
+
+### Why This Pattern
+
+- **Predictability**: Every orchestrator follows same 9-step flow (easier to maintain)
+- **Composability**: Orchestrators can be chained (e.g., `/planner` → `/editor`)
+- **Reliability**: Verification loops ensure no changes are missed
+- **Performance**: Parallel agent spawning maximizes throughput
+- **Clarity**: Clear separation between orchestration (commands) and execution (agents)
+
+This pattern complements the **Builder Meta-Loop Pattern** by providing a standardized approach for **fire-and-forget** workflows that don't require iterative user refinement.
+
 ## Features
 
 ### 1. **Planner** (`/planner`)

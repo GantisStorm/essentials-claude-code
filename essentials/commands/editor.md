@@ -17,7 +17,7 @@ Execute the implementation plan by spawning parallel `file-editor-default` agent
 
 ## Instructions
 
-### Step 1: Parse and Validate Arguments
+### Step 1: Parse and Validate Input
 
 Parse `$ARGUMENTS` to extract:
 1. The plan file path (first argument)
@@ -37,7 +37,7 @@ Before launching editors, check for potential conflicts:
 - If multiple files are in the same directory, note this (parallel edits to shared imports)
 - If files have obvious dependencies (A imports B), note the order
 
-### Step 3: Launch File Editors in Background
+### Step 3: Auto-Dispatch File Editors
 
 For EACH file in the list, launch a `file-editor-default` agent **in the background** using the Task tool with `run_in_background: true`:
 
@@ -75,7 +75,7 @@ Use `subagent_type: "file-editor-default"` for each Task tool invocation.
 
 **Launch ALL agents in a single message** with `run_in_background: true` to enable parallel execution.
 
-### Step 4: Collect Results
+### Step 4: Collect Editor Results
 
 Use `TaskOutput` with `block: true` to wait for each file-editor agent to complete.
 
@@ -88,7 +88,7 @@ For each completed agent, collect:
 - Issues or warnings
 - Potential merge conflicts
 
-### Step 4.5: Verify ALL Changes Were Implemented (CRITICAL)
+### Step 5: VERIFY ALL CHANGES IMPLEMENTED (CRITICAL)
 
 **This step ensures no changes are missed.** For each file that was edited:
 
@@ -135,7 +135,7 @@ Implement ONLY the missing changes listed above.
 Report back with `CHANGES COMPLETED: N/N` confirming all missing changes are done.
 ```
 
-### Step 5: Run Aggregated Verification
+### Step 6: Aggregated Verification
 
 After all agents complete, run verification across all files:
 
@@ -149,7 +149,7 @@ Collect results:
 - Number of type errors found
 - Any files that failed verification
 
-### Step 6: Report Summary
+### Step 7: Report Comprehensive Summary
 
 After all agents complete and verification runs, provide a comprehensive summary:
 

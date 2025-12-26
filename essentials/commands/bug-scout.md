@@ -17,7 +17,7 @@ Investigate bugs by analyzing error logs and user reports, performing deep code 
 
 ## Instructions
 
-### Step 1: Parse and Gather Input
+### Step 1: Parse and Validate Input
 
 Parse `$ARGUMENTS` to extract the log dump and user report.
 
@@ -33,7 +33,7 @@ Parse `$ARGUMENTS` to extract the log dump and user report.
   - Process logs: `journalctl -u <service>` or check `/var/log/`
   - Custom commands as specified by the user
 
-### Step 2: Launch Bug Scout in Background
+### Step 2: Launch Specialist Agent in Background
 
 Launch the `bug-scout-default` agent **in the background** using the Task tool with `run_in_background: true`:
 
@@ -114,7 +114,7 @@ Write the complete plan to `.claude/plans/` and report back with minimal output.
 
 Use `subagent_type: "bug-scout-default"` when invoking the Task tool.
 
-### Step 3: Wait for Investigation Completion
+### Step 3: Wait for Specialist Completion
 
 Use `TaskOutput` with `block: true` to wait for the bug-scout agent to complete.
 
@@ -125,7 +125,7 @@ From the agent's output, extract:
 4. Files to edit
 5. Total changes count
 
-### Step 4: Risk Validation Gate
+### Step 4: Parse Results / Risk Validation
 
 Before spawning file-editors, validate the investigation:
 
@@ -152,7 +152,7 @@ Files to Modify:
 Proceed with fix implementation? [Y/N]
 ```
 
-### Step 5: Auto-Spawn File Editors
+### Step 5: Auto-Dispatch File Editors
 
 If the scout identified files to edit or create, launch `file-editor-default` agents **in the background** for each file:
 
@@ -194,7 +194,7 @@ For each completed editor, collect:
 - Regression check status
 - Issues or warnings
 
-### Step 7: Verify ALL Fixes Were Implemented (CRITICAL)
+### Step 7: VERIFY ALL CHANGES IMPLEMENTED (CRITICAL)
 
 **This step ensures no fixes are missed.** For each file that was edited:
 
@@ -241,7 +241,7 @@ investigation but were not completed in the first pass.
 Report back with confirmation that each missing fix has been applied.
 ```
 
-### Step 8: Post-Implementation Verification
+### Step 8: Aggregated Verification
 
 After all file-editor agents complete, run verification:
 
@@ -254,7 +254,7 @@ If the investigation identified specific test cases:
 - Note which tests should now pass
 - Suggest running those tests
 
-### Step 9: Report Summary
+### Step 9: Report Comprehensive Summary
 
 After all agents complete and verification runs, provide a comprehensive summary:
 
