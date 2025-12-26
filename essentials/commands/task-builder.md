@@ -1,14 +1,14 @@
 ---
 allowed-tools: Task, TaskOutput, Bash, Read
-argument-hint: <plan-file-path OR issues-file-path>
-description: Break down a plan into granular issues and orchestrate iterative implementation (project)
+argument-hint: <plan-file-path OR tasks-file-path>
+description: Break down a plan into granular tasks and orchestrate iterative implementation (project)
 ---
 
-Break down implementation plans into trackable issues and orchestrate user-driven iterative implementation. Creates a comprehensive tasks.json file that decomposes the plan into logical, atomic work units with COMPLETE implementation details, code snippets, architectural context, requirements, and constraints embedded in each issue. Issues are fully self-contained so file-editor agents never need to reference the plan. Then manages implementation one issue at a time with full verification.
+Break down implementation plans into trackable tasks and orchestrate user-driven iterative implementation. Creates a comprehensive tasks.json file that decomposes the plan into logical, atomic work units with COMPLETE implementation details, code snippets, architectural context, requirements, and constraints embedded in each task. Tasks are fully self-contained so file-editor agents never need to reference the plan. Then manages implementation one task at a time with full verification.
 
 **IMPORTANT**: Keep orchestrator output minimal. User reviews the tasks file directly, not in chat.
 
-**KEY FEATURE**: Issues extract and embed ALL detail from the plan including:
+**KEY FEATURE**: Tasks extract and embed ALL detail from the plan including:
 - Complete code snippets (can be hundreds of lines per file)
 - Full implementation details verbatim from plan
 - All architectural context and relationships
@@ -16,7 +16,7 @@ Break down implementation plans into trackable issues and orchestrate user-drive
 - Testing strategies and risk mitigations
 - External documentation and API details
 
-This makes issues completely self-contained for implementation.
+This makes tasks completely self-contained for implementation.
 
 ## Arguments
 
@@ -27,7 +27,7 @@ This makes issues completely self-contained for implementation.
    - Creates tasks.json and starts orchestration
 
 2. **RESUME MODE** - Pass an tasks file:
-   - `<issues-file-path>`: Path to existing tasks file (e.g., `.claude/plans/issues-a3f9e.json`)
+   - `<tasks-file-path>`: Path to existing tasks file (e.g., `.claude/plans/tasks-a3f9e.json`)
    - Resumes from where it left off
 
 ## Instructions
@@ -38,20 +38,20 @@ Parse `$ARGUMENTS` to extract the input file path.
 
 **Mode Detection (based on file extension):**
 - If file ends with `.md`: **DECOMPOSE mode** - Create tasks.json from plan and start orchestration
-- If file ends with `.json` or contains `issues-`: **RESUME mode** - Load existing tasks.json and resume orchestration
+- If file ends with `.json` or contains `tasks-`: **RESUME mode** - Load existing tasks.json and resume orchestration
 
 **Validation:**
 - Verify input file exists (use Bash: `ls <file-path>`)
 - For DECOMPOSE mode: Verify plan status is "READY FOR IMPLEMENTATION"
 - For RESUME mode: Verify JSON structure is valid tasks file
 
-### Step 2: Launch Issue Builder in Background
+### Step 2: Launch task Builder in Background
 
 Launch the `task-builder-default` agent **in the background** using the Task tool with `run_in_background: true`:
 
 **For DECOMPOSE+ORCHESTRATE mode:**
 ```
-Break down the implementation plan into granular, trackable issues, then IMMEDIATELY enter the iterative orchestration loop to implement them one by one with user approval.
+Break down the implementation plan into granular, trackable tasks, then IMMEDIATELY enter the iterative orchestration loop to implement them one by one with user approval.
 
 Plan file: <plan-file-path>
 Mode: DECOMPOSE+ORCHESTRATE
@@ -71,10 +71,10 @@ PHASE 1: DECOMPOSITION (create tasks.json)
    - Build dependency graph of all file changes
    - Identify implementation layers
 
-2. ISSUE DECOMPOSITION WITH FULL DETAIL EMBEDDING:
-   - Break plan into logical, atomic issues
-   - Strategy: layer-based (one issue per dependency layer) OR file-based OR feature-based
-   - For EACH issue, embed COMPLETE details:
+2. TASK DECOMPOSITION WITH FULL DETAIL EMBEDDING:
+   - Break plan into logical, atomic tasks
+   - Strategy: layer-based (one task per dependency layer) OR file-based OR feature-based
+   - For EACH task, embed COMPLETE details:
      * full_description: Multi-paragraph context (1000-3000 chars)
      * For each file:
        - Complete implementation_details from plan (500-5000+ chars)
@@ -84,22 +84,22 @@ PHASE 1: DECOMPOSITION (create tasks.json)
      * constraints_applicable: ALL constraints with C-IDs
      * architectural_context: Relevant architecture sections
      * implementation_notes: Patterns, guidance from plan
-     * testing_strategy: Test requirements for this issue
+     * testing_strategy: Test requirements for this task
      * risk_mitigations: Risks and how to mitigate
      * external_context: Relevant API docs and examples
-   - Each issue must be:
+   - Each task must be:
      - Atomic: Independently implementable (within its layer)
      - Self-Contained: Has ALL detail needed, no plan reference required
      - Testable: Clear verification criteria
      - Reversible: Can be rolled back without breaking others
      - Traceable: Maps to specific plan requirements with IDs
 
-3. CREATE COMPREHENSIVE ISSUES FILE:
-   - Write to: .claude/plans/issues-{plan-hash5}.json
+3. CREATE COMPREHENSIVE TASKS FILE:
+   - Write to: .claude/plans/tasks-{plan-hash5}.json
    - Use same 5-char hash from plan filename
-   - Structure: version, plan_reference, issues array, completion_summary
-   - Each issue contains 15+ fields with complete details
-   - File-editor agents will receive ALL context from issues, never read plan
+   - Structure: version, plan_reference, tasks array, completion_summary
+   - Each task contains 15+ fields with complete details
+   - File-editor agents will receive ALL context from tasks, never read plan
 
 4. QUALITY SCORING:
    - Score decomposition on: atomicity, dependency accuracy, requirement coverage, verification clarity, granularity, self-containment
@@ -109,65 +109,77 @@ PHASE 1: DECOMPOSITION (create tasks.json)
 PHASE 2: ORCHESTRATION LOOP (immediately after creating tasks.json)
 
 5. ENTER ORCHESTRATOR LOOP:
-   - For each issue (in dependency order):
-     a. Present issue to user with AskUserQuestion (options: implement/skip/view details/abort)
-     b. If user approves: spawn file-editor-default agents for issue's files
-        - Pass COMPLETE context from issue to each file-editor
-        - Include: implementation_details, code_snippets, changes_list, purpose,
-          dependencies, provides, architectural_context, implementation_notes,
-          requirements, constraints, testing_strategy, risk_mitigations, external_context
-        - File-editors receive EVERYTHING, never need to read plan
-     c. Verify ALL changes completed (CHANGES COMPLETED == TOTAL CHANGES from plan)
-     d. Re-dispatch if changes incomplete (with same complete context)
-     e. Update tasks.json with completion status
-     f. Move to next issue
+   - For each task (in dependency order):
+     a. Present task to user with AskUserQuestion:
+        - Options: [1] Implement this task, [2] Skip this task, [3] View complete details, [4] Pause/Compact, [5] Abort
+        - Show: task ID, title, files count, changes count
+
+     b. If user selects [1] Implement:
+        - Spawn file-editor-default agents IN PARALLEL (one per file in the task)
+        - Launch ALL in a SINGLE message with run_in_background: true
+        - For EACH file, pass the plan file path and file path (like code-quality does)
+        - File-editors read the plan file directly to get full context
+
+     c. Wait for all file-editors to complete (use TaskOutput with block: true)
+
+     d. Verify ALL changes completed:
+        - For each file: CHANGES COMPLETED must equal TOTAL CHANGES from plan
+        - If mismatch: re-dispatch file-editor for missed changes only
+        - Loop until verified
+
+     e. Run regression testing (if configured)
+
+     f. Update tasks.json with completion status
+
+     g. Move to next task
 
 6. CRITICAL RULES:
-   - Create tasks.json THEN immediately start orchestration (don't wait for user)
-   - ONE issue at a time (never parallel issue execution)
-   - User approval required for EACH issue (use AskUserQuestion)
-   - File-editors get ALL details from issue JSON, not from plan
-   - Issues are self-contained with complete implementation specs
-   - Verify completion before moving to next
+   - Create tasks.json THEN immediately start orchestration
+   - ONE task at a time (sequential task processing)
+   - PARALLEL file-editors within each task (one per file)
+   - User approval required for EACH task via AskUserQuestion
+   - After each task: ask user to continue/pause/abort
+   - File-editors read plan file directly (pass plan path, not contents)
+   - Verify all changes before marking task complete
    - Update tasks.json after every status change
    - NO state-modifying git commands
 
-Report back with minimal output: issues created, orchestration results, tasks file path.
+Report back with minimal output: tasks created, orchestration results, tasks file path.
 ```
 
 **For RESUME mode:**
 ```
 Resume iterative implementation from existing tasks file.
 
-Issues file: <issues-file-path>
+Tasks file: <tasks-file-path>
 Mode: RESUME
 
 ## Instructions
 
-1. LOAD ISSUES FILE:
-   - Read the provided tasks file: <issues-file-path>
+1. LOAD TASKS FILE:
+   - Read the provided tasks file: <tasks-file-path>
    - Validate JSON structure and integrity
    - Extract plan_reference to know which plan this came from
 
 2. ANALYZE STATE:
    - Parse completion status (completed/pending/failed/deferred)
-   - Identify next issue to implement
-   - Validate dependencies are met for next issue
+   - Identify next task to implement
+   - Validate dependencies are met for next task
    - Check for blockers
 
 3. GET YOUR BEARINGS:
-   - Report to user: "Resuming from [issues-file-path]"
-   - Report: "[X] issues completed, [Y] remaining"
-   - Report: "Next issue: ISS-XXX [title]"
+   - Report to user: "Resuming from [tasks-file-path]"
+   - Report: "[X] tasks completed, [Y] remaining"
+   - Report: "Next task: TSK-XXX [title]"
 
 4. ORCHESTRATOR LOOP:
-   - Resume from next incomplete issue
+   - Resume from next incomplete task
    - Same workflow as DECOMPOSE mode (steps 5a-5f above)
    - Update tasks.json as you progress
 
 5. HANDLE FAILURES:
-   - If failed issues block others: ask user how to proceed
-   - If all issues blocked: report and stop
+   - If failed tasks block others: ask user how to proceed
+   - If all tasks blocked: report and stop
 
 Report back with minimal output: resume summary, tasks file path.
 ```
@@ -178,14 +190,14 @@ Use `subagent_type: "task-builder-default"` when invoking the Task tool.
 
 Use `TaskOutput` with `block: true` to wait for the task-builder agent to complete.
 
-The agent will handle the entire orchestration loop internally, presenting issues to the user via AskUserQuestion and spawning file-editor agents as approved.
+The agent will handle the entire orchestration loop internally, presenting tasks to the user via AskUserQuestion and spawning file-editor agents as approved.
 
 ### Step 4: Report Summary
 
 After the agent completes, provide a minimal summary:
 
 ```
-## Issue Builder Summary
+## Task Builder Summary
 
 ### Mode: [DECOMPOSE | RESUME]
 
@@ -194,7 +206,7 @@ After the agent completes, provide a minimal summary:
 
 ### Results
 
-**Total Issues**: [N]
+**Total Tasks**: [N]
 **Completed**: [X] ([%]%)
 **Failed**: [Y]
 **Deferred**: [Z]
@@ -203,30 +215,30 @@ After the agent completes, provide a minimal summary:
 **Changes Completed**: [X] / [N] ([%]%)
 **Requirements Met**: [X] / [N] ([%]%)
 
-### Issues Summary
+### Tasks Summary
 
 **Completed:**
-- ISS-001: [title] ✓
-- ISS-002: [title] ✓
+- TSK-001: [title] ✓
+- TSK-002: [title] ✓
 
 **Failed:**
-- ISS-XXX: [title] - [reason]
+- TSK-XXX: [title] - [reason]
 
 **Deferred:**
-- ISS-YYY: [title]
+- TSK-YYY: [title]
 
 **Blocked:**
-- ISS-ZZZ: [title] - [blocked by ISS-XXX]
+- TSK-ZZZ: [title] - [blocked by TSK-XXX]
 
 ### Next Steps
 
 - Review changes: git diff
 - Run quality checks (see CLAUDE.md)
-- Address failed/deferred issues
-- Resume if needed: /task-builder <plan-path> --resume
+- Address failed/deferred tasks
+- Resume if needed: /task-builder <tasks-path>
 - Commit when satisfied
 
-**Issues file saved**: .claude/plans/tasks-{hash5}.json
+**Tasks file saved**: .claude/plans/tasks-{hash5}.json
 ```
 
 ## Workflow Diagram
@@ -249,12 +261,12 @@ After the agent completes, provide a minimal summary:
     │   │  2. Build dependency graph              │
     │   │  3. Create tasks.json                  │
     │   │  4. Enter orchestrator loop:            │
-    │   │     ├─► Present issue (AskUserQuestion) │
+    │   │     ├─► Present task (AskUserQuestion) │
     │   │     ├─► User approves?                  │
     │   │     ├─► Spawn file-editors              │
     │   │     ├─► Verify completion               │
     │   │     ├─► Update tasks.json              │
-    │   │     └─► Next issue                      │
+    │   │     └─► Next task                      │
     │   └─────────────────────────────────────────┘
     │
     └──[RESUME]─────────────────────────┐
@@ -264,7 +276,7 @@ After the agent completes, provide a minimal summary:
         │                                         │
         │  1. Load tasks-{hash5}.json            │
         │  2. Analyze completion state            │
-        │  3. Find next issue                     │
+        │  3. Find next task                     │
         │  4. Resume orchestrator loop            │
         │     (same as DECOMPOSE steps above)     │
         └─────────────────────────────────────────┘
@@ -286,28 +298,28 @@ After the agent completes, provide a minimal summary:
 |----------|--------|
 | Plan file missing | Report error, stop |
 | Plan not READY FOR IMPLEMENTATION | Report error, stop |
-| Issues file missing (RESUME mode) | Report error, suggest running without --resume |
-| Issues file corrupted | Report error, suggest regenerating |
-| All issues blocked | Report blockers, ask user to resolve failed issues |
+| Tasks file missing (RESUME mode) | Report error, suggest running with plan file instead |
+| Tasks file corrupted | Report error, suggest regenerating |
+| All tasks blocked | Report blockers, ask user to resolve failed tasks |
 | User aborts orchestration | Save state to tasks.json, report progress |
-| File-editor fails | Mark issue as failed, ask user how to proceed |
+| File-editor fails | Mark task as failed, ask user how to proceed |
 
 ## Example Usage
 
 ```bash
-# DECOMPOSE MODE: Create issues from plan and start implementation
+# DECOMPOSE MODE: Create tasks from plan and start implementation
 /task-builder .claude/plans/oauth2-authentication-a3f9e-plan.md
 
 # RESUME MODE: Resume from existing tasks file (NOTE: Pass the tasks.json, not the plan!)
-/task-builder .claude/plans/issues-a3f9e.json
+/task-builder .claude/plans/tasks-a3f9e.json
 
 # After interruption or /compact, resume where you left off
-/task-builder .claude/plans/issues-7k2m1.json
+/task-builder .claude/plans/tasks-7k2m1.json
 ```
 
-## When to Use Issue Builder vs Direct Editor
+## When to Use Task Builder vs Direct Editor
 
-**Use Issue Builder (`/task-builder`) when:**
+**Use Task Builder (`/task-builder`) when:**
 - Complex plans with >5 files
 - Unclear dependencies between files
 - You want incremental, reviewable progress
@@ -322,7 +334,7 @@ After the agent completes, provide a minimal summary:
 
 ## Integration with Other Commands
 
-Issue Builder works with plans created by:
+Task Builder works with plans created by:
 - `/planner` - Implementation plans
 - `/bug-scout` - Bug fix plans (if complex multi-file fixes)
 - `/code-quality` - Quality improvement plans (if many files)
@@ -330,17 +342,17 @@ Issue Builder works with plans created by:
 ## Tasks File Structure
 
 The tasks file provides:
-- **Granular tracking**: Progress at issue level, not just file level
+- **Granular tracking**: Progress at task level, not just file level
 - **Dependency management**: Visual graph prevents implementation ordering mistakes
 - **Resume capability**: If interrupted, resume exactly where you left off
-- **Requirement traceability**: Every issue maps to specific plan requirements with R-IDs
+- **Requirement traceability**: Every task maps to specific plan requirements with R-IDs
 - **Audit trail**: Complete history of what was implemented when
-- **Self-contained specs**: Each issue has COMPLETE implementation details
+- **Self-contained specs**: Each task has COMPLETE implementation details
 - **No plan dependency**: File-editors never need to reference the plan file
-- **Comprehensive context**: Issues embed all code snippets, architectural context, requirements, constraints, testing strategy, and risk mitigations
+- **Comprehensive context**: Tasks embed all code snippets, architectural context, requirements, constraints, testing strategy, and risk mitigations
 
-**Issue Size**: Issues are intentionally large and comprehensive (often 5-50KB each)
+**Task Size**: Tasks are intentionally large and comprehensive (often 5-50KB each)
 to provide complete implementation specifications. This eliminates the need for
 file-editor agents to read or parse the plan file.
 
-Located at: `.claude/plans/issues-{plan-hash5}.json`
+Located at: `.claude/plans/tasks-{plan-hash5}.json`
