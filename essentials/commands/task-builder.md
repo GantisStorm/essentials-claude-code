@@ -4,9 +4,9 @@ argument-hint: <plan-file-path OR issues-file-path>
 description: Break down a plan into granular issues and orchestrate iterative implementation (project)
 ---
 
-Break down implementation plans into trackable issues and orchestrate user-driven iterative implementation. Creates a comprehensive issues.json file that decomposes the plan into logical, atomic work units with COMPLETE implementation details, code snippets, architectural context, requirements, and constraints embedded in each issue. Issues are fully self-contained so file-editor agents never need to reference the plan. Then manages implementation one issue at a time with full verification.
+Break down implementation plans into trackable issues and orchestrate user-driven iterative implementation. Creates a comprehensive tasks.json file that decomposes the plan into logical, atomic work units with COMPLETE implementation details, code snippets, architectural context, requirements, and constraints embedded in each issue. Issues are fully self-contained so file-editor agents never need to reference the plan. Then manages implementation one issue at a time with full verification.
 
-**IMPORTANT**: Keep orchestrator output minimal. User reviews the issues file directly, not in chat.
+**IMPORTANT**: Keep orchestrator output minimal. User reviews the tasks file directly, not in chat.
 
 **KEY FEATURE**: Issues extract and embed ALL detail from the plan including:
 - Complete code snippets (can be hundreds of lines per file)
@@ -24,10 +24,10 @@ This makes issues completely self-contained for implementation.
 
 1. **DECOMPOSE MODE** - Pass a plan file:
    - `<plan-file-path>`: Path to plan file in `.claude/plans/` (e.g., `.claude/plans/oauth2-authentication-a3f9e-plan.md`)
-   - Creates issues.json and starts orchestration
+   - Creates tasks.json and starts orchestration
 
-2. **RESUME MODE** - Pass an issues file:
-   - `<issues-file-path>`: Path to existing issues file (e.g., `.claude/plans/issues-a3f9e.json`)
+2. **RESUME MODE** - Pass an tasks file:
+   - `<issues-file-path>`: Path to existing tasks file (e.g., `.claude/plans/issues-a3f9e.json`)
    - Resumes from where it left off
 
 ## Instructions
@@ -37,17 +37,17 @@ This makes issues completely self-contained for implementation.
 Parse `$ARGUMENTS` to extract the input file path.
 
 **Mode Detection (based on file extension):**
-- If file ends with `.md`: **DECOMPOSE mode** - Create issues.json from plan and start orchestration
-- If file ends with `.json` or contains `issues-`: **RESUME mode** - Load existing issues.json and resume orchestration
+- If file ends with `.md`: **DECOMPOSE mode** - Create tasks.json from plan and start orchestration
+- If file ends with `.json` or contains `issues-`: **RESUME mode** - Load existing tasks.json and resume orchestration
 
 **Validation:**
 - Verify input file exists (use Bash: `ls <file-path>`)
 - For DECOMPOSE mode: Verify plan status is "READY FOR IMPLEMENTATION"
-- For RESUME mode: Verify JSON structure is valid issues file
+- For RESUME mode: Verify JSON structure is valid tasks file
 
 ### Step 2: Launch Issue Builder in Background
 
-Launch the `issue-builder-default` agent **in the background** using the Task tool with `run_in_background: true`:
+Launch the `task-builder-default` agent **in the background** using the Task tool with `run_in_background: true`:
 
 **For DECOMPOSE+ORCHESTRATE mode:**
 ```
@@ -58,7 +58,7 @@ Mode: DECOMPOSE+ORCHESTRATE
 
 ## Instructions
 
-PHASE 1: DECOMPOSITION (create issues.json)
+PHASE 1: DECOMPOSITION (create tasks.json)
 
 1. PLAN ANALYSIS (COMPREHENSIVE EXTRACTION):
    - Read the plan file completely
@@ -106,7 +106,7 @@ PHASE 1: DECOMPOSITION (create issues.json)
    - Minimum: 40/50 with no dimension <8
    - Revise if score too low
 
-PHASE 2: ORCHESTRATION LOOP (immediately after creating issues.json)
+PHASE 2: ORCHESTRATION LOOP (immediately after creating tasks.json)
 
 5. ENTER ORCHESTRATOR LOOP:
    - For each issue (in dependency order):
@@ -119,25 +119,25 @@ PHASE 2: ORCHESTRATION LOOP (immediately after creating issues.json)
         - File-editors receive EVERYTHING, never need to read plan
      c. Verify ALL changes completed (CHANGES COMPLETED == TOTAL CHANGES from plan)
      d. Re-dispatch if changes incomplete (with same complete context)
-     e. Update issues.json with completion status
+     e. Update tasks.json with completion status
      f. Move to next issue
 
 6. CRITICAL RULES:
-   - Create issues.json THEN immediately start orchestration (don't wait for user)
+   - Create tasks.json THEN immediately start orchestration (don't wait for user)
    - ONE issue at a time (never parallel issue execution)
    - User approval required for EACH issue (use AskUserQuestion)
    - File-editors get ALL details from issue JSON, not from plan
    - Issues are self-contained with complete implementation specs
    - Verify completion before moving to next
-   - Update issues.json after every status change
+   - Update tasks.json after every status change
    - NO state-modifying git commands
 
-Report back with minimal output: issues created, orchestration results, issues file path.
+Report back with minimal output: issues created, orchestration results, tasks file path.
 ```
 
 **For RESUME mode:**
 ```
-Resume iterative implementation from existing issues file.
+Resume iterative implementation from existing tasks file.
 
 Issues file: <issues-file-path>
 Mode: RESUME
@@ -145,7 +145,7 @@ Mode: RESUME
 ## Instructions
 
 1. LOAD ISSUES FILE:
-   - Read the provided issues file: <issues-file-path>
+   - Read the provided tasks file: <issues-file-path>
    - Validate JSON structure and integrity
    - Extract plan_reference to know which plan this came from
 
@@ -163,20 +163,20 @@ Mode: RESUME
 4. ORCHESTRATOR LOOP:
    - Resume from next incomplete issue
    - Same workflow as DECOMPOSE mode (steps 5a-5f above)
-   - Update issues.json as you progress
+   - Update tasks.json as you progress
 
 5. HANDLE FAILURES:
    - If failed issues block others: ask user how to proceed
    - If all issues blocked: report and stop
 
-Report back with minimal output: resume summary, issues file path.
+Report back with minimal output: resume summary, tasks file path.
 ```
 
-Use `subagent_type: "issue-builder-default"` when invoking the Task tool.
+Use `subagent_type: "task-builder-default"` when invoking the Task tool.
 
 ### Step 3: Wait for Completion
 
-Use `TaskOutput` with `block: true` to wait for the issue-builder agent to complete.
+Use `TaskOutput` with `block: true` to wait for the task-builder agent to complete.
 
 The agent will handle the entire orchestration loop internally, presenting issues to the user via AskUserQuestion and spawning file-editor agents as approved.
 
@@ -190,7 +190,7 @@ After the agent completes, provide a minimal summary:
 ### Mode: [DECOMPOSE | RESUME]
 
 **Plan**: [plan file path]
-**Issues File**: .claude/plans/issues-{hash5}.json
+**Tasks File**: .claude/plans/tasks-{hash5}.json
 
 ### Results
 
@@ -223,16 +223,16 @@ After the agent completes, provide a minimal summary:
 - Review changes: git diff
 - Run quality checks (see CLAUDE.md)
 - Address failed/deferred issues
-- Resume if needed: /issue-builder <plan-path> --resume
+- Resume if needed: /task-builder <plan-path> --resume
 - Commit when satisfied
 
-**Issues file saved**: .claude/plans/issues-{hash5}.json
+**Issues file saved**: .claude/plans/tasks-{hash5}.json
 ```
 
 ## Workflow Diagram
 
 ```
-/issue-builder <plan> [--resume]
+/task-builder <plan> [--resume]
     │
     ▼
 ┌─────────────────────┐
@@ -243,26 +243,26 @@ After the agent completes, provide a minimal summary:
     ├──[DECOMPOSE]──────────────────────┐
     │                                   │
     │   ┌─────────────────────────────────────────┐
-    │   │ Launch issue-builder-default            │◄── run_in_background: true
+    │   │ Launch task-builder-default            │◄── run_in_background: true
     │   │                                         │
     │   │  1. Read plan                           │
     │   │  2. Build dependency graph              │
-    │   │  3. Create issues.json                  │
+    │   │  3. Create tasks.json                  │
     │   │  4. Enter orchestrator loop:            │
     │   │     ├─► Present issue (AskUserQuestion) │
     │   │     ├─► User approves?                  │
     │   │     ├─► Spawn file-editors              │
     │   │     ├─► Verify completion               │
-    │   │     ├─► Update issues.json              │
+    │   │     ├─► Update tasks.json              │
     │   │     └─► Next issue                      │
     │   └─────────────────────────────────────────┘
     │
     └──[RESUME]─────────────────────────┐
                                         │
         ┌─────────────────────────────────────────┐
-        │ Launch issue-builder-default            │◄── run_in_background: true
+        │ Launch task-builder-default            │◄── run_in_background: true
         │                                         │
-        │  1. Load issues-{hash5}.json            │
+        │  1. Load tasks-{hash5}.json            │
         │  2. Analyze completion state            │
         │  3. Find next issue                     │
         │  4. Resume orchestrator loop            │
@@ -289,25 +289,25 @@ After the agent completes, provide a minimal summary:
 | Issues file missing (RESUME mode) | Report error, suggest running without --resume |
 | Issues file corrupted | Report error, suggest regenerating |
 | All issues blocked | Report blockers, ask user to resolve failed issues |
-| User aborts orchestration | Save state to issues.json, report progress |
+| User aborts orchestration | Save state to tasks.json, report progress |
 | File-editor fails | Mark issue as failed, ask user how to proceed |
 
 ## Example Usage
 
 ```bash
 # DECOMPOSE MODE: Create issues from plan and start implementation
-/issue-builder .claude/plans/oauth2-authentication-a3f9e-plan.md
+/task-builder .claude/plans/oauth2-authentication-a3f9e-plan.md
 
-# RESUME MODE: Resume from existing issues file (NOTE: Pass the issues.json, not the plan!)
-/issue-builder .claude/plans/issues-a3f9e.json
+# RESUME MODE: Resume from existing tasks file (NOTE: Pass the tasks.json, not the plan!)
+/task-builder .claude/plans/issues-a3f9e.json
 
 # After interruption or /compact, resume where you left off
-/issue-builder .claude/plans/issues-7k2m1.json
+/task-builder .claude/plans/issues-7k2m1.json
 ```
 
 ## When to Use Issue Builder vs Direct Editor
 
-**Use Issue Builder (`/issue-builder`) when:**
+**Use Issue Builder (`/task-builder`) when:**
 - Complex plans with >5 files
 - Unclear dependencies between files
 - You want incremental, reviewable progress
@@ -327,9 +327,9 @@ Issue Builder works with plans created by:
 - `/bug-scout` - Bug fix plans (if complex multi-file fixes)
 - `/code-quality` - Quality improvement plans (if many files)
 
-## Issues File Structure
+## Tasks File Structure
 
-The issues file provides:
+The tasks file provides:
 - **Granular tracking**: Progress at issue level, not just file level
 - **Dependency management**: Visual graph prevents implementation ordering mistakes
 - **Resume capability**: If interrupted, resume exactly where you left off
