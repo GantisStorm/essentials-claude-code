@@ -1,150 +1,249 @@
 ---
 allowed-tools: Task, TaskOutput, Bash, Read, Glob, Grep, AskUserQuestion
-argument-hint: [--type=TYPE] <path>
-description: Generate comprehensive documentation from project/code analysis following documentation standards (project)
+argument-hint: [--mode=MODE] [OPTIONS] <path> [request]
+description: Generate or edit architectural documentation following DEVGUIDE patterns (project)
 ---
 
-Generate comprehensive, professional documentation by analyzing project structure, code, and APIs. The slash command orchestrates analysis while the document-builder-default agent analyzes code and generates documentation following established templates and best practices.
+Generate hierarchical architectural documentation (DEVGUIDE.md) or edit existing documentation. The slash command orchestrates while the document-builder-default agent analyzes code structure and generates/edits language-agnostic architectural guides.
 
-**IMPORTANT**: The SLASH COMMAND handles ALL orchestration. The agent ONLY analyzes and creates documentation.
+**TWO MODES:**
+
+1. **CREATE MODE** (default): Generate hierarchical DEVGUIDE.md files following architectural guide patterns
+   - Analyzes code structure and extracts architectural patterns
+   - Generates language-agnostic architectural guides at each directory level
+   - Follows template structure: Overview → Sub-folder guides → Templates → Patterns → Best practices → Summary
+   - Cross-references sub-folder guides
+
+2. **EDIT MODE**: Edit existing documentation based on user requests
+   - Takes path to existing document and user request
+   - Applies changes while maintaining document structure
+   - Similar to plugin-builder's iterative editing
+
+**IMPORTANT**: The SLASH COMMAND handles ALL orchestration. The agent ONLY analyzes and creates/edits documentation.
 
 **IMPORTANT**: Keep orchestrator output minimal. User reviews the document FILE directly, not in chat.
 
-**Quality Process**: The agent applies systematic code analysis and 6 validation passes to ensure documents score ≥40/50 across 5 dimensions.
-
 ## Arguments
 
-1. **--type=TYPE** (optional): Document type to generate
-   - `readme` - Project README.md (default if not specified)
-   - `api` - API reference documentation
-   - `architecture` - Architecture documentation
-   - `contributing` - Contributing guidelines
-   - `changelog` - Changelog/release notes template
-   - `guide` - User or developer guide
+### Create Mode (default)
 
-2. **path**: File path, directory path, or "." for entire project
-   - Examples: `.`, `src/`, `src/api/`, `src/api/handlers.py`
+```bash
+/document-builder <directory-path>
+/document-builder --mode=create <directory-path>
+```
+
+- **directory-path**: Directory to analyze and generate DEVGUIDE.md for
+  - Examples: `.`, `src/`, `src/services/`, `frontend/src/components/`
+  - Generates DEVGUIDE.md in the target directory
+  - Optionally generates hierarchical guides for sub-directories
+
+### Edit Mode
+
+```bash
+/document-builder --mode=edit <document-path> "<user-request>"
+```
+
+- **document-path**: Path to existing DEVGUIDE.md or other documentation file
+- **user-request**: Description of changes to make
+  - Examples: "Add SSE pattern template", "Update service architecture section", "Add new component pattern"
 
 ## Instructions
 
 ### Step 1: Parse and Validate Arguments
 
 Parse `$ARGUMENTS` to extract:
-1. Document type (from `--type=TYPE` flag, defaults to `readme`)
-2. Target path (file, directory, or `.` for project root)
+1. Mode (from `--mode=MODE` flag, defaults to `create`)
+2. Target path (directory for create mode, file for edit mode)
+3. User request (for edit mode only)
 
 **Validation:**
-```bash
-# Verify path exists
-ls <path>
 
-# If path is a file, verify it's readable
-# If path is a directory, verify it contains files
+For CREATE mode:
+```bash
+# Verify directory exists
+ls -la <directory-path>
+```
+
+For EDIT mode:
+```bash
+# Verify document file exists
+ls -la <document-path>
 ```
 
 - If path missing or invalid: Report error and stop
-- If unsupported document type: Report error with valid types
+- If mode invalid: Report error with valid modes (create, edit)
 - If arguments malformed: Report usage example
+- If edit mode but no user request: Report error, request required
 
-### Step 2: Determine Scope and Document Type
+### Step 2: Determine Mode and Scope
 
 Based on arguments, determine:
 
+**For CREATE Mode:**
 ```
 Scope Analysis:
-- Target: [file | directory | project root]
-- Document type: [README | API | ARCHITECTURE | CONTRIBUTING | CHANGELOG | GUIDE]
-- Primary language: [detect from file extensions]
-- Project type: [library | application | API | CLI | framework]
+- Target Directory: [path]
+- Primary language: [detect from file extensions in directory]
+- Framework: [detect from dependencies/imports]
+- Directory type: [services | components | api | lib | utils | etc.]
+- Sub-directories: [list immediate sub-directories]
 ```
 
-**Auto-detection rules:**
-- If `--type` not specified: Default to README
-- If path is single file: Generate focused documentation for that file/module
-- If path is directory: Generate documentation for that subsection
-- If path is `.`: Generate project-level documentation
+**For EDIT Mode:**
+```
+Edit Analysis:
+- Document Path: [path to existing file]
+- User Request: [changes requested]
+- Document Type: [DEVGUIDE | README | etc.]
+```
 
 ### Step 3: Generate Output File Path
 
-Create output file path based on document type:
+Create output file path based on mode:
 
 ```bash
 # Generate 5-char random hash
 HASH=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c 5)
 ```
 
-**Naming patterns:**
-- README: `.claude/plans/document-builder-README-{hash5}.md`
-- API: `.claude/plans/document-builder-API-{hash5}.md`
-- ARCHITECTURE: `.claude/plans/document-builder-ARCHITECTURE-{hash5}.md`
-- CONTRIBUTING: `.claude/plans/document-builder-CONTRIBUTING-{hash5}.md`
-- CHANGELOG: `.claude/plans/document-builder-CHANGELOG-{hash5}.md`
-- GUIDE: `.claude/plans/document-builder-GUIDE-{hash5}.md`
+**For CREATE Mode:**
+- `.claude/plans/document-builder-DEVGUIDE-{hash5}.md`
+
+**For EDIT Mode:**
+- `.claude/plans/document-builder-EDIT-{hash5}.md`
 
 ### Step 4: Launch Document Builder Agent
 
-**CRITICAL**: The SLASH COMMAND orchestrates. The agent ONLY analyzes code and creates documentation.
+**CRITICAL**: The SLASH COMMAND orchestrates. The agent ONLY analyzes code and creates/edits documentation.
 
 Launch `document-builder-default` agent **in background** using Task tool with `run_in_background: true`:
 
-```
-Analyze the project/code and generate comprehensive documentation following documentation standards.
+**For CREATE Mode:**
 
-Document Type: <type>
-Target Path: <path>
+```
+MODE: CREATE
+
+Analyze the directory structure and code patterns to generate a hierarchical DEVGUIDE.md architectural guide.
+
+Target Directory: <directory-path>
 Output File: <generated file path>
 
 ## Your Task
 
-You are ONLY responsible for analyzing code and creating documentation. You do NOT orchestrate or interact with the user.
+Generate a language-agnostic architectural guide (DEVGUIDE.md) following the DEVGUIDE pattern:
+- Overview of the directory's purpose and architecture
+- Sub-folder guide links (if sub-directories exist)
+- Code templates showing architectural patterns
+- Design patterns and best practices
+- Directory structure summary
 
-SYSTEMATIC PROCESS:
+You are ONLY responsible for analyzing code structure and creating the architectural guide. You do NOT orchestrate or interact with the user.
 
-1. PROJECT ANALYSIS:
-   - Read CLAUDE.md, README.md, package.json, pyproject.toml, etc.
-   - Detect project type, language, framework
-   - Identify architecture patterns
-   - Extract dependencies and tech stack
+SYSTEMATIC PROCESS FOR CREATE MODE:
 
-2. CODE STRUCTURE ANALYSIS:
-   - Use Glob to find all relevant files
-   - Use Grep to extract exports, classes, functions, APIs
-   - Build complete code structure map
-   - Identify entry points, main modules, utilities
+1. DIRECTORY ANALYSIS:
+   - Analyze directory structure and file organization
+   - Detect primary language/framework from file extensions
+   - Identify directory type (services, components, api, lib, utils, etc.)
+   - List immediate sub-directories for cross-referencing
+   - Detect common architectural patterns in the code
 
-3. API/INTERFACE EXTRACTION:
-   - Extract all public APIs, functions, classes
-   - Document function signatures, parameters, return types
-   - Extract docstrings and comments
-   - Identify usage patterns
+2. CODE PATTERN EXTRACTION:
+   - Use Glob to find all source files in directory
+   - Use Grep to extract class/function/export patterns
+   - Identify common code organization patterns
+   - Extract structural templates (class structures, function patterns)
+   - Find design patterns (providers, factories, hooks, etc.)
 
-4. DOCUMENTATION GENERATION:
-   - Apply appropriate template for document type
-   - Generate content based on code analysis (NOT assumptions)
-   - Include code examples extracted from tests or usage
-   - Follow documentation standards for the language/framework
+3. ARCHITECTURE IDENTIFICATION:
+   - Identify architectural layers (if services: Core/Orchestrated/Internal)
+   - Identify design patterns (Provider, Factory, SSE, etc.)
+   - Extract common templates from existing code
+   - Identify best practices from code structure
 
-5. REFLECTION CHECKPOINT:
-   - Verify all content is backed by code evidence
-   - Ensure no placeholders or "TODO" sections
-   - Validate completeness against template
+4. DEVGUIDE GENERATION:
+   - Generate Overview section (directory purpose and architecture)
+   - Generate Sub-folder Guides section (links to sub-directories)
+   - Generate Templates section (code templates with comment dividers)
+   - Generate Patterns section (architectural patterns identified)
+   - Generate Best Practices section
+   - Generate Directory Structure section
+   - Generate Summary section
 
-6. QUALITY VALIDATION (6 passes):
-   - Pass 1: Initial draft from analysis
-   - Pass 2: Structural validation against template
-   - Pass 3: Anti-pattern scan (no vague language)
-   - Pass 4: Accuracy check (all code references valid)
-   - Pass 5: Quality scoring (≥40/50)
-   - Pass 6: Final review
+5. TEMPLATE FORMATTING:
+   - Use language-agnostic pseudocode or detected language
+   - Use comment dividers: // ============================================================================
+   - Include section headers in templates
+   - Show architectural structure, not implementation details
 
-7. WRITE DOCUMENTATION FILE:
-   - Write complete documentation to output file
-   - Include metadata and quality scores
+6. CROSS-REFERENCING:
+   - Link to sub-directory DEVGUIDeS (e.g., [lib/api/DEVGUIDE.md](api/DEVGUIDE.md))
+   - Reference related architectural patterns
+   - Link to parent DEVGUIDE if not root
+
+7. QUALITY VALIDATION:
+   - Verify architectural focus (not code documentation)
+   - Ensure language-agnostic templates
+   - Check cross-references are valid
+   - Verify all templates show architectural patterns
 
 Return only:
 OUTPUT_FILE: <path>
 STATUS: CREATED
-QUALITY_SCORE: <score>/50
+MODE: CREATE
+
+DO NOT interact with user. The slash command handles all communication.
+```
+
+**For EDIT Mode:**
+
+```
+MODE: EDIT
+
+Edit existing documentation based on user request.
+
+Document Path: <document-path>
+User Request: <user-request>
+Output File: <generated file path>
+
+## Your Task
+
+Read the existing document, apply the requested changes, and maintain document structure and style.
+
+You are ONLY responsible for editing the documentation. You do NOT orchestrate or interact with the user.
+
+SYSTEMATIC PROCESS FOR EDIT MODE:
+
+1. READ EXISTING DOCUMENT:
+   - Read the complete existing document
+   - Understand current structure and sections
+   - Identify document type and style
+
+2. ANALYZE USER REQUEST:
+   - Parse user request for specific changes
+   - Identify which sections need modification
+   - Determine if new sections need to be added
+
+3. APPLY CHANGES:
+   - Make requested modifications to document
+   - Add new sections if requested
+   - Update cross-references if structure changes
+   - Maintain existing formatting and style
+
+4. VALIDATE EDITS:
+   - Ensure changes match user request
+   - Verify document structure maintained
+   - Check formatting consistency
+   - Validate cross-references still work
+
+5. WRITE UPDATED DOCUMENT:
+   - Write complete updated documentation to output file
+   - Preserve metadata format
+
+Return only:
+OUTPUT_FILE: <path>
+STATUS: UPDATED
+MODE: EDIT
 
 DO NOT interact with user. The slash command handles all communication.
 ```
@@ -157,207 +256,343 @@ Use `TaskOutput` with `block: true` to wait for the document-builder agent to co
 
 Collect agent output:
 - Output file path
-- Status (CREATED)
-- Quality score
+- Status (CREATED or UPDATED)
+- Mode (CREATE or EDIT)
 
 ### Step 6: Report Results
 
-After agent completes, output:
+After agent completes, output based on mode:
+
+**For CREATE Mode:**
 
 ```
 ═══════════════════════════════════════════════════════════════
-DOCUMENT BUILDER: DOCUMENTATION GENERATED
+DOCUMENT BUILDER: DEVGUIDE CREATED
 ═══════════════════════════════════════════════════════════════
 
-Document Type: [README | API | ARCHITECTURE | etc.]
-Target: [path analyzed]
+Target Directory: [directory path]
 Output File: [file path]
 
-Quality Score: [X]/50
-
-Analysis Summary:
-- Files analyzed: [count]
-- APIs documented: [count]
-- Classes documented: [count]
-- Functions documented: [count]
+Structure:
+- Overview: Architecture and purpose
+- Sub-folder guides: [count] cross-references
+- Templates: [count] code templates
+- Patterns: [count] design patterns
+- Best practices: Identified standards
 
 ═══════════════════════════════════════════════════════════════
 NEXT STEPS
 ═══════════════════════════════════════════════════════════════
 
-1. Review documentation: [output file path]
-2. Move to project: mv [output file] ./[final location]
-3. Commit: git add [file] && git commit -m "Add [type] documentation"
+1. Review DEVGUIDE: [output file path]
+2. Move to directory: mv [output file] [directory]/DEVGUIDE.md
+3. Generate sub-folder guides: /document-builder [subdirectory]
+4. Commit: git add [file] && git commit -m "Add DEVGUIDE for [directory]"
+
+═══════════════════════════════════════════════════════════════
+```
+
+**For EDIT Mode:**
+
+```
+═══════════════════════════════════════════════════════════════
+DOCUMENT BUILDER: DOCUMENTATION UPDATED
+═══════════════════════════════════════════════════════════════
+
+Original: [document path]
+Output File: [file path]
+
+Changes Applied:
+[User request description]
+
+═══════════════════════════════════════════════════════════════
+NEXT STEPS
+═══════════════════════════════════════════════════════════════
+
+1. Review changes: [output file path]
+2. Replace original: mv [output file] [original path]
+3. Commit: git add [file] && git commit -m "Update documentation"
 
 ═══════════════════════════════════════════════════════════════
 ```
 
 ## Workflow Diagram
 
+### CREATE Mode Workflow
+
 ```
-/document-builder [--type=TYPE] <path>
+/document-builder [--mode=create] <directory>
     │
     ▼
 ┌─────────────────────────────────┐
 │ Parse arguments                 │
-│ Validate path exists            │
-│ Determine document type & scope │
+│ Validate directory exists       │
+│ Detect mode (CREATE)            │
 └─────────────────────────────────┘
     │
     ▼
 ┌──────────────────────────────────────────────────┐
-│ Launch document-builder-default                  │◄── run_in_background: true
-│ (analyze and create docs ONLY)                   │
+│ Launch document-builder-default (CREATE MODE)    │◄── run_in_background: true
 │                                                  │
-│  PHASE 1: Project Analysis                       │
-│    - Read project files, detect type/language    │
-│    - Extract tech stack, dependencies            │
+│  PHASE 1: Directory Analysis                     │
+│    - Analyze directory structure                 │
+│    - Detect language/framework                   │
+│    - Identify directory type (services/etc.)     │
+│    - List sub-directories                        │
 │                                                  │
-│  PHASE 2: Code Structure Analysis                │
-│    - Glob all files, Grep for APIs/exports       │
-│    - Build complete structure map                │
+│  PHASE 2: Code Pattern Extraction                │
+│    - Glob source files in directory              │
+│    - Grep for class/function patterns            │
+│    - Extract structural templates                │
+│    - Find design patterns                        │
 │                                                  │
-│  PHASE 3: API/Interface Extraction               │
-│    - Extract all public APIs with signatures     │
-│    - Document parameters, return types           │
-│    - Extract usage examples from code            │
+│  PHASE 3: Architecture Identification            │
+│    - Identify architectural layers               │
+│    - Extract common patterns                     │
+│    - Identify best practices                     │
 │                                                  │
-│  PHASE 4: Documentation Generation               │
-│    - Apply template for document type            │
-│    - Generate content from analysis              │
-│    - Include extracted code examples             │
+│  PHASE 4: DEVGUIDE Generation                    │
+│    - Generate Overview                           │
+│    - Generate Sub-folder guides section          │
+│    - Generate Templates section                  │
+│    - Generate Patterns section                   │
+│    - Generate Best Practices section             │
+│    - Generate Summary                            │
 │                                                  │
-│  PHASE 4.5: Reflection Checkpoint (ReAct)        │
-│    - Verify evidence-based content               │
-│    - Check completeness, no TODOs                │
+│  PHASE 5: Quality Validation                     │
+│    - Verify architectural focus                  │
+│    - Check language-agnostic templates           │
+│    - Validate cross-references                   │
 │                                                  │
-│  PHASE 5: Quality Validation (6 passes)          │
-│    - Pass 1: Initial draft                       │
-│    - Pass 2: Structural validation               │
-│    - Pass 3: Anti-pattern scan                   │
-│    - Pass 4: Accuracy check                      │
-│    - Pass 5: Quality scoring (≥40/50)            │
-│    - Pass 6: Final review                        │
-│                                                  │
-│  PHASE 6: Write Documentation                    │
+│  PHASE 6: Write DEVGUIDE                         │
 └──────────────────────────────────────────────────┘
     │
     ▼
 ┌─────────────────────┐
-│ TaskOutput (block)  │◄── Wait for completion
+│ Report DEVGUIDE     │
+│ created             │
 └─────────────────────┘
+```
+
+### EDIT Mode Workflow
+
+```
+/document-builder --mode=edit <document-path> "request"
+    │
+    ▼
+┌─────────────────────────────────┐
+│ Parse arguments                 │
+│ Validate document exists        │
+│ Extract user request            │
+└─────────────────────────────────┘
+    │
+    ▼
+┌──────────────────────────────────────────────────┐
+│ Launch document-builder-default (EDIT MODE)      │◄── run_in_background: true
+│                                                  │
+│  PHASE 1: Read Existing Document                 │
+│    - Read complete document                      │
+│    - Understand structure                        │
+│    - Identify document type                      │
+│                                                  │
+│  PHASE 2: Analyze User Request                   │
+│    - Parse requested changes                     │
+│    - Identify sections to modify                 │
+│    - Plan new sections if needed                 │
+│                                                  │
+│  PHASE 3: Apply Changes                          │
+│    - Make requested modifications                │
+│    - Add new sections if requested               │
+│    - Maintain formatting/style                   │
+│                                                  │
+│  PHASE 4: Validate Edits                         │
+│    - Verify changes match request                │
+│    - Check structure maintained                  │
+│    - Validate cross-references                   │
+│                                                  │
+│  PHASE 5: Write Updated Document                 │
+└──────────────────────────────────────────────────┘
     │
     ▼
 ┌─────────────────────┐
-│ Report results with │
-│ quality score       │◄── minimal output
+│ Report document     │
+│ updated             │
 └─────────────────────┘
 ```
 
 ## Key Architecture Points
 
-1. **Slash Command Orchestrates**: The command file handles argument parsing and orchestration
-2. **Agent Only Analyzes**: The agent analyzes code and creates documentation, no user interaction
-3. **Evidence-Based**: All documentation generated from actual code analysis, not assumptions
-4. **Template-Driven**: Uses established templates for each document type
-5. **Quality Validation**: 6-pass validation ensures high-quality output
-6. **No Iteration**: Single-pass generation (not iterative refinement like prompt-builder)
+1. **Two Modes**: CREATE generates hierarchical DEVGUIDeS, EDIT modifies existing docs
+2. **Slash Command Orchestrates**: Handles argument parsing and mode detection
+3. **Agent Only Analyzes/Edits**: Agent does the work, no user interaction
+4. **Architectural Focus**: CREATE mode generates architectural guides, not code documentation
+5. **Language-Agnostic**: Templates are language-agnostic or adapt to detected language
+6. **Hierarchical Structure**: DEVGUIDeS cross-reference sub-directory guides
+7. **No Iteration**: Single-pass generation (not iterative refinement)
 
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
 | Path missing or invalid | Report error with correct path format, stop |
-| Unsupported document type | Report error with valid types, stop |
-| No files found in path | Report error, suggest different path |
+| Unsupported mode | Report error with valid modes (create, edit), stop |
+| No files found in directory (CREATE) | Report error, suggest different directory |
+| Document not found (EDIT) | Report error with correct file path, stop |
+| Missing user request (EDIT) | Report error, request required for edit mode |
 | Agent fails | Report error with agent output |
-| Analysis incomplete | Agent reports what's missing, still generates best-effort documentation |
-| Low quality score (<40/50) | Agent refines and re-validates automatically |
+| Analysis incomplete | Agent reports what's missing, still generates best-effort guide |
 
 ## Example Usage
 
+### CREATE Mode Examples
+
 ```bash
-# Generate README for entire project
+# Generate DEVGUIDE for current directory
 /document-builder .
 
-# Generate README with explicit type flag
-/document-builder --type=readme .
+# Generate DEVGUIDE for services directory
+/document-builder src/services/
 
-# Generate API documentation for specific directory
-/document-builder --type=api src/api/
+# Generate DEVGUIDE for components directory
+/document-builder frontend/src/components/
 
-# Generate architecture documentation
-/document-builder --type=architecture .
+# Explicit create mode
+/document-builder --mode=create src/lib/
 
-# Generate contributing guidelines
-/document-builder --type=contributing .
-
-# Generate API docs for single file
-/document-builder --type=api src/api/handlers.py
-
-# Generate developer guide
-/document-builder --type=guide .
+# Generate hierarchical DEVGUIDeS for entire project
+# (run for root, then each sub-directory)
+/document-builder backend/
+/document-builder backend/src/
+/document-builder backend/src/services/
+/document-builder backend/src/controllers/
 ```
 
-## Document Templates
+### EDIT Mode Examples
 
-Each document type follows a specific template:
+```bash
+# Add new section to existing DEVGUIDE
+/document-builder --mode=edit src/services/DEVGUIDE.md "Add SSE pattern template"
 
-### README Template
-- Project title and description (from package.json/pyproject.toml)
-- Features (extracted from code analysis)
-- Installation (from package manager files)
-- Quick Start (from examples or tests)
-- API Overview (top-level exports)
-- Configuration (from config files)
-- Contributing & License
+# Update architecture section
+/document-builder --mode=edit backend/DEVGUIDE.md "Update service architecture to include new orchestration pattern"
 
-### API Template
-- Overview
-- Authentication (if detected)
-- Endpoints/Functions (all public APIs)
-- Request/Response schemas (from type definitions)
-- Error codes (from error handling code)
-- Code examples (from tests)
+# Add new component pattern
+/document-builder --mode=edit src/components/DEVGUIDE.md "Add skeleton component pattern with examples"
 
-### ARCHITECTURE Template
-- System Overview
-- Architecture Diagram (ASCII art from structure)
-- Component Breakdown (from directory structure)
-- Data Flow (from imports/dependencies)
-- Technology Stack (detected technologies)
-- Design Patterns (identified patterns)
+# Fix cross-references
+/document-builder --mode=edit src/lib/DEVGUIDE.md "Update sub-folder guide links"
+```
 
-### CONTRIBUTING Template
-- Development Setup (from package manager)
-- Code Style (from linter configs)
-- Testing (from test files)
-- Pull Request Process
-- Code Review Guidelines
+## DEVGUIDE Template Structure
 
-### CHANGELOG Template
-- Version format structure
-- Change categories (Added, Changed, Fixed, etc.)
-- Example entries
+The CREATE mode generates DEVGUIDeS following this structure:
 
-### GUIDE Template
-- Getting Started
-- Core Concepts (from main modules)
-- Common Tasks (from common usage patterns)
-- Troubleshooting (from error handling)
-- FAQ
+### DEVGUIDE.md Template
+
+```markdown
+# [Directory Name] Architecture Guide
+
+## Overview
+
+[High-level description of directory purpose and architecture]
+[Key architectural decisions and patterns]
+[When to use code in this directory]
+
+## Sub-folder Guides
+
+- [subdirectory1/DEVGUIDE.md](subdirectory1/DEVGUIDE.md) - [Purpose]
+- [subdirectory2/DEVGUIDE.md](subdirectory2/DEVGUIDE.md) - [Purpose]
+- [subdirectory3/DEVGUIDE.md](subdirectory3/DEVGUIDE.md) - [Purpose]
+
+## Templates
+
+### [Pattern 1 Name]
+
+[Description of when to use this pattern]
+
+\`\`\`language
+// ============================================================================
+// IMPORTS AND TYPES
+// ============================================================================
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+export class ExamplePattern {
+  // ============================================================================
+  // PROPERTIES
+  // ============================================================================
+
+  // ============================================================================
+  // PUBLIC METHODS
+  // ============================================================================
+
+  // ----------------------------------------------------------------------------
+  // PRIMARY BUSINESS METHODS
+  // ----------------------------------------------------------------------------
+
+  // ============================================================================
+  // PRIVATE METHODS
+  // ============================================================================
+}
+\`\`\`
+
+### [Pattern 2 Name]
+
+[Template for second pattern...]
+
+## Design Patterns
+
+### [Design Pattern 1]
+
+[Description and usage]
+
+### [Design Pattern 2]
+
+[Description and usage]
+
+## Best Practices
+
+1. **[Practice 1]**: [Description]
+2. **[Practice 2]**: [Description]
+3. **[Practice 3]**: [Description]
+
+## Directory Structure
+
+\`\`\`
+directory-name/
+├── subdirectory1/          # [Purpose]
+├── subdirectory2/          # [Purpose]
+├── file-pattern1.ext       # [Purpose]
+└── file-pattern2.ext       # [Purpose]
+\`\`\`
+
+## Summary
+
+[Brief summary of key takeaways]
+[Links to related guides]
+```
 
 ## When to Use Document Builder
 
-**Use `/document-builder` when:**
-- Starting a new project and need initial documentation
-- Adding documentation to existing undocumented code
-- Updating documentation after major refactoring
-- Creating standardized documentation across projects
-- Need comprehensive API documentation
-- Want architecture documentation generated from code
+**Use `/document-builder` (CREATE mode) when:**
+- Setting up hierarchical architectural documentation for a project
+- Documenting directory structure and architectural patterns
+- Creating language-agnostic architectural guides
+- Need to document design patterns used in code
+- Want to establish coding standards based on existing patterns
+- Building onboarding documentation for developers
+
+**Use `/document-builder --mode=edit` when:**
+- Need to add new sections to existing DEVGUIDeS
+- Update architectural patterns after refactoring
+- Fix or update cross-references between guides
+- Add new templates or design patterns
+- Update best practices section
 
 **Don't use when:**
-- Documentation already exists and just needs minor updates (use editor)
-- Need custom documentation that doesn't fit templates
-- Project is too small to warrant formal documentation
+- Need API reference documentation (use other documentation tools)
+- Need inline code comments or docstrings
+- Documentation needs are very simple (a README is sufficient)
+- Project doesn't follow architectural patterns

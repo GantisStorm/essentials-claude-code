@@ -1,6 +1,6 @@
 # Essentials for Claude Code
 
-A comprehensive multi-agent orchestration framework for Claude Code. Features deep planning, bug investigation, code quality analysis (standard and LSP-powered), issue-based iterative implementation, parallel file editing capabilities, and documentation generation from vibe descriptions.
+A comprehensive multi-agent orchestration framework for Claude Code. Features deep planning, bug investigation, code quality analysis (standard and LSP-powered), issue-based iterative implementation, parallel file editing capabilities, and hierarchical architectural documentation generation (DEVGUIDE.md).
 
 ## Core Concept: Multi-Agent Workflows
 
@@ -86,15 +86,15 @@ flowchart LR
 flowchart LR
     subgraph standalone["✨ STANDALONE AGENTS"]
         prompt_cmd["/prompt-builder<br/>Transform vibe → prompt"]
-        doc_cmd["/document-builder<br/>Transform vibe → docs"]
+        doc_cmd["/document-builder<br/>CREATE: Generate DEVGUIDE<br/>EDIT: Update docs"]
     end
 
     subgraph prompt_work["📝 PROMPT ENGINEERING"]
         prompt_agent["prompt-builder-default<br/><br/>1. Parse vibe description<br/>2. Generate structured prompt<br/>3. Iterate with user feedback<br/>4. Save to .claude/plans/"]
     end
 
-    subgraph doc_work["📄 DOCUMENTATION GENERATION"]
-        doc_agent["document-builder-default<br/><br/>1. Analyze project/code structure<br/>2. Extract APIs and interfaces<br/>3. Generate from templates<br/>4. Save to .claude/plans/"]
+    subgraph doc_work["📄 ARCHITECTURAL DOCUMENTATION"]
+        doc_agent["document-builder-default<br/><br/>CREATE: Analyze code patterns<br/>→ Generate hierarchical DEVGUIDE.md<br/>EDIT: Apply user changes<br/>→ Maintain doc structure"]
     end
 
     subgraph prompt_storage["💾 PROMPT STORAGE"]
@@ -102,7 +102,7 @@ flowchart LR
     end
 
     subgraph doc_storage["💾 DOCUMENT STORAGE"]
-        doc_files[(".claude/plans/<br/><br/>• document-builder-{slug}-draft.md<br/>• Multiple revision passes<br/>• User reviews in chat")]
+        doc_files[(".claude/plans/<br/><br/>• document-builder-DEVGUIDE-{hash5}.md (CREATE)<br/>• document-builder-EDIT-{hash5}.md (EDIT)<br/>• Single-pass generation")]
     end
 
     prompt_cmd --> prompt_agent
@@ -110,8 +110,7 @@ flowchart LR
     prompt_files -.->|"user reviews"| prompt_agent
 
     doc_cmd --> doc_agent
-    doc_agent -->|"saves drafts"| doc_files
-    doc_files -.->|"user reviews"| doc_agent
+    doc_agent -->|"saves to .claude/plans/"| doc_files
 
     style standalone fill:#6b21a8,stroke:#a855f7,stroke-width:3px,color:#fff
     style prompt_work fill:#b45309,stroke:#f59e0b,stroke-width:3px,color:#fff
@@ -135,7 +134,7 @@ All builders implement a systematic **iterative refinement loop** with clear sep
 | **`plan-builder`** | Orchestrates refinement loop | ONLY applies changes to plan file | After each refinement iteration |
 | **`task-builder`** | Orchestrates task-by-task implementation | ONLY creates/updates tasks.json | After each task presented: [1] Implement, [2] Skip, [3] View details, [4] Pause/Compact, [5] Abort |
 | **`prompt-builder`** | Orchestrates refinement loop | ONLY creates/updates prompt drafts | After each draft revision |
-| **`document-builder`** | Orchestrates refinement loop | ONLY creates/updates document drafts | After each draft revision |
+| **`document-builder`** | Detects mode (CREATE/EDIT) | CREATE: Generates DEVGUIDE from code patterns<br/>EDIT: Applies user changes to existing docs | N/A (single-pass execution) |
 
 **Critical Separation of Concerns:**
 - **Slash Commands (`.md` files in `commands/`)**: Handle ALL orchestration
@@ -601,24 +600,40 @@ Iterative prompt engineering from vibe descriptions with multi-pass quality vali
 - **Best for**: Creating Claude Code slash commands, subagent prompts, prompt engineering with systematic quality control
 
 ### 8. **Document Builder** (`/document-builder`) ⭐ NEW
-Code-analysis-driven documentation generation following documentation standards:
-- **Orchestration Pattern**: Slash command orchestrates, agent ONLY analyzes code and creates documentation
-  - Command: Parses arguments (--type=TYPE, path), launches agent in background, reports results
-  - Agent: Analyzes project structure, extracts APIs, generates documentation from templates, validates quality
-- **Evidence-based documentation**: All content generated from actual code analysis (Glob, Grep, Read)
-- **Document types supported**: README, API reference, architecture docs, contributing guidelines, changelog templates, user/developer guides
-- **Systematic code analysis**:
-  - Phase 1: Project analysis (detect language, framework, dependencies, tech stack)
-  - Phase 2: Code structure analysis (entry points, modules, import graph)
-  - Phase 3: API/interface extraction (exact signatures, docstrings, usage examples from tests)
-- **Template-driven generation**: Uses established templates for each document type with real data from code
-- **6-pass validation process**: Initial draft, structural validation, anti-pattern scan, accuracy check (verify against code), quality scoring (≥40/50), final review
-- **Reflection checkpoints**: ReAct reasoning loops validate analysis completeness and evidence quality (Phase 3.5)
-- **Quality scoring**: 5-dimension assessment (Accuracy, Completeness, Clarity, Usefulness, Standards Compliance)
-- **No placeholders**: Replaces all TODOs with actual content from code or omits section
-- **Language-aware**: Follows documentation conventions for detected language/framework (JavaScript, Python, Go, Rust, etc.)
-- **Minimal output**: Agent returns only OUTPUT_FILE, STATUS, QUALITY_SCORE, counts - user reviews file directly
-- **Best for**: Generating initial documentation for projects, API references from code analysis, architecture docs from structure analysis, creating standardized documentation
+Hierarchical architectural documentation (DEVGUIDE.md) generation and editing:
+- **Two Modes**:
+  - **CREATE mode** (default): Generate hierarchical DEVGUIDE.md files from code pattern analysis
+  - **EDIT mode**: Edit existing documentation based on user requests
+- **Orchestration Pattern**: Slash command orchestrates, agent ONLY analyzes/edits and creates documentation
+  - Command: Parses arguments (--mode=create|edit, path), launches agent in background, reports results
+  - Agent CREATE: Analyzes directory structure, extracts architectural patterns, generates DEVGUIDE.md
+  - Agent EDIT: Reads existing document, applies user changes, maintains structure
+- **Architectural focus**: Generates architecture guides showing patterns, not code documentation
+- **CREATE Mode Process**:
+  - Phase 1: Directory analysis (detect language, framework, directory type, sub-directories)
+  - Phase 2: Code pattern extraction (class/function patterns, structural templates, design patterns)
+  - Phase 3: Architecture identification (architectural layers, best practices, template examples)
+  - Phase 4: DEVGUIDE generation (Overview → Sub-folder guides → Templates → Patterns → Best practices → Summary)
+  - Phase 5: Quality validation (architectural focus, language-agnostic templates, valid cross-references)
+  - Phase 6: Write DEVGUIDE file
+- **EDIT Mode Process**:
+  - Phase 1: Read existing document (parse structure, formatting, cross-references)
+  - Phase 2: Analyze user request (identify sections to modify, new sections to add)
+  - Phase 3: Apply changes (modify sections, add new content, maintain style)
+  - Phase 4: Validate edits (verify changes match request, structure maintained, cross-references valid)
+  - Phase 5: Write updated document
+- **DEVGUIDE Template Structure**:
+  - Overview (directory purpose and architecture)
+  - Sub-folder Guides (cross-references to sub-directory DEVGUIDeS)
+  - Templates (code templates with comment dividers: // ============================================================================)
+  - Design Patterns (architectural patterns identified from code)
+  - Best Practices (identified from code organization)
+  - Directory Structure (visual tree with explanations)
+  - Summary (key takeaways and links)
+- **Language-agnostic templates**: Show architectural structure, not implementation details
+- **Cross-referencing**: Links to sub-directory DEVGUIDeS for hierarchical organization
+- **Minimal output**: Agent returns only OUTPUT_FILE, STATUS, MODE - user reviews file directly
+- **Best for**: Creating hierarchical architectural documentation, documenting design patterns, establishing coding standards, onboarding documentation
 
 ## Installation
 
@@ -758,28 +773,42 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 ### Document Building
 
 ```bash
-# Generate README for entire project
+# CREATE MODE: Generate hierarchical DEVGUIDeS
+
+# Generate DEVGUIDE for current directory (default mode)
 /document-builder .
 
-# Generate README with explicit type flag
-/document-builder --type=readme .
+# Generate DEVGUIDE for services directory
+/document-builder src/services/
 
-# Generate API documentation for specific directory
-/document-builder --type=api src/api/
+# Generate DEVGUIDE for components directory
+/document-builder frontend/src/components/
 
-# Generate architecture documentation
-/document-builder --type=architecture .
+# Explicit create mode
+/document-builder --mode=create src/lib/
 
-# Generate contributing guidelines
-/document-builder --type=contributing .
+# Generate hierarchical DEVGUIDeS for entire project
+# (run for root, then each sub-directory)
+/document-builder backend/
+/document-builder backend/src/
+/document-builder backend/src/services/
+/document-builder backend/src/controllers/
 
-# Generate API docs for single file
-/document-builder --type=api src/api/handlers.py
+# EDIT MODE: Update existing documentation
 
-# Generate developer guide
-/document-builder --type=guide .
+# Add new section to existing DEVGUIDE
+/document-builder --mode=edit src/services/DEVGUIDE.md "Add SSE pattern template"
 
-# Output is saved in .claude/plans/ - review and move to project root
+# Update architecture section
+/document-builder --mode=edit backend/DEVGUIDE.md "Update service architecture to include new orchestration pattern"
+
+# Add new component pattern
+/document-builder --mode=edit src/components/DEVGUIDE.md "Add skeleton component pattern with examples"
+
+# Fix cross-references
+/document-builder --mode=edit src/lib/DEVGUIDE.md "Update sub-folder guide links"
+
+# Output is saved in .claude/plans/ - review and move to target directory
 ```
 
 ## Architecture
@@ -817,7 +846,7 @@ Orchestrator Commands
 │   └── prompt-builder-default (iterative refinement)
 │
 └── /document-builder ⭐ NEW
-    └── document-builder-default (iterative documentation generation)
+    └── document-builder-default (CREATE: generate DEVGUIDE from patterns | EDIT: apply user changes)
 ```
 
 ### Plan Storage
@@ -830,7 +859,8 @@ All plans are stored in **your project's** `.claude/plans/` directory (not the p
 - `code-quality-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality standard)
 - `code-quality-serena-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality-serena LSP)
 - `prompt-builder-{slug}-draft.md` - Prompt drafts (from /prompt-builder)
-- `document-builder-{slug}-draft.md` - Document drafts (from /document-builder) ⭐ NEW
+- `document-builder-DEVGUIDE-{hash5}.md` - DEVGUIDE drafts (from /document-builder CREATE mode) ⭐ NEW
+- `document-builder-EDIT-{hash5}.md` - Updated docs (from /document-builder EDIT mode) ⭐ NEW
 
 ## Directory Structure
 
