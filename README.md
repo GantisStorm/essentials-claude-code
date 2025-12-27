@@ -1,6 +1,6 @@
 # Essentials for Claude Code
 
-A comprehensive multi-agent orchestration framework for Claude Code. Features deep planning, bug investigation, code quality analysis (standard and LSP-powered), issue-based iterative implementation, and parallel file editing capabilities.
+A comprehensive multi-agent orchestration framework for Claude Code. Features deep planning, bug investigation, code quality analysis (standard and LSP-powered), issue-based iterative implementation, parallel file editing capabilities, and documentation generation from vibe descriptions.
 
 ## Core Concept: Multi-Agent Workflows
 
@@ -86,23 +86,38 @@ flowchart LR
 flowchart LR
     subgraph standalone["✨ STANDALONE AGENTS"]
         prompt_cmd["/prompt-builder<br/>Transform vibe → prompt"]
+        doc_cmd["/document-builder<br/>Transform vibe → docs"]
     end
 
     subgraph prompt_work["📝 PROMPT ENGINEERING"]
         prompt_agent["prompt-builder-default<br/><br/>1. Parse vibe description<br/>2. Generate structured prompt<br/>3. Iterate with user feedback<br/>4. Save to .claude/plans/"]
     end
 
+    subgraph doc_work["📄 DOCUMENTATION GENERATION"]
+        doc_agent["document-builder-default<br/><br/>1. Parse vibe description<br/>2. Generate structured docs<br/>3. Iterate with user feedback<br/>4. Save to .claude/plans/"]
+    end
+
     subgraph prompt_storage["💾 PROMPT STORAGE"]
         prompt_files[(".claude/plans/<br/><br/>• prompt-builder-{slug}-draft.md<br/>• Multiple revision passes<br/>• User reviews in chat")]
+    end
+
+    subgraph doc_storage["💾 DOCUMENT STORAGE"]
+        doc_files[(".claude/plans/<br/><br/>• document-builder-{slug}-draft.md<br/>• Multiple revision passes<br/>• User reviews in chat")]
     end
 
     prompt_cmd --> prompt_agent
     prompt_agent -->|"saves drafts"| prompt_files
     prompt_files -.->|"user reviews"| prompt_agent
 
+    doc_cmd --> doc_agent
+    doc_agent -->|"saves drafts"| doc_files
+    doc_files -.->|"user reviews"| doc_agent
+
     style standalone fill:#6b21a8,stroke:#a855f7,stroke-width:3px,color:#fff
     style prompt_work fill:#b45309,stroke:#f59e0b,stroke-width:3px,color:#fff
     style prompt_storage fill:#1e40af,stroke:#3b82f6,stroke-width:3px,color:#fff
+    style doc_work fill:#b45309,stroke:#f59e0b,stroke-width:3px,color:#fff
+    style doc_storage fill:#1e40af,stroke:#3b82f6,stroke-width:3px,color:#fff
 ```
 
 ## Naming Pattern: Builder Agents
@@ -120,6 +135,7 @@ All builders implement a systematic **iterative refinement loop** with clear sep
 | **`plan-builder`** | Orchestrates refinement loop | ONLY applies changes to plan file | After each refinement iteration |
 | **`task-builder`** | Orchestrates task-by-task implementation | ONLY creates/updates tasks.json | After each task presented: [1] Implement, [2] Skip, [3] View details, [4] Pause/Compact, [5] Abort |
 | **`prompt-builder`** | Orchestrates refinement loop | ONLY creates/updates prompt drafts | After each draft revision |
+| **`document-builder`** | Orchestrates refinement loop | ONLY creates/updates document drafts | After each draft revision |
 
 **Critical Separation of Concerns:**
 - **Slash Commands (`.md` files in `commands/`)**: Handle ALL orchestration
@@ -584,6 +600,23 @@ Iterative prompt engineering from vibe descriptions with multi-pass quality vali
 - **Minimal output**: Agent returns only DRAFT_FILE, ITERATION, STATUS - user reviews file directly, no bloat in chat
 - **Best for**: Creating Claude Code slash commands, subagent prompts, prompt engineering with systematic quality control
 
+### 8. **Document Builder** (`/document-builder`) ⭐ NEW
+Iterative documentation generation from vibe descriptions with multi-pass quality validation:
+- **Orchestration Pattern**: Slash command orchestrates refinement loop, agent ONLY creates/updates documents
+  - Command: Validates vibe input (AskUserQuestion if too short), orchestrates refinement loop, reports updates
+  - Agent: Transforms vibe into structured documentation, applies 6-pass validation, updates draft based on feedback
+- **Vibe transformation**: Transforms rough ideas into high-quality, professional documentation (READMEs, specs, guides)
+- **Document types supported**: README.md, technical specifications, user guides, API documentation, architecture docs, migration guides, troubleshooting guides
+- **Anti-pattern elimination**: Removes vague phrases like "simply", "easily", "as needed", "etc."
+- **6-pass validation process**: Structural validation, anti-pattern scan, consumer simulation, quality scoring (≥40/50 target), final review
+- **Reflection checkpoints**: ReAct reasoning loops validate clarity, completeness, and usefulness before proceeding
+- **Iterative refinement**: User provides feedback in chat, command launches agent to refine, agent re-runs validation passes, updates draft
+- **Quality scoring**: 5-dimension assessment (Clarity, Completeness, Structure, Usefulness, Best Practices)
+- **Audience-aware writing**: Adjusts technical depth and tone based on target readers (developers, end-users, DevOps, etc.)
+- **Context-driven**: Reads project files (CLAUDE.md, README, existing docs) to match project style and conventions
+- **Minimal output**: Agent returns only DRAFT_FILE, ITERATION, STATUS - user reviews file directly, no bloat in chat
+- **Best for**: Creating comprehensive project documentation, technical specifications, user guides, API references with systematic quality control
+
 ## Installation
 
 ### Step 1: Add the Marketplace
@@ -719,6 +752,24 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 "done"
 ```
 
+### Document Building
+
+```bash
+# Create a new document from a vibe
+/document-builder "a README for our GraphQL API with authentication, rate limiting, and webhook examples"
+
+# Refine based on feedback
+"add more JWT authentication examples and error handling"
+
+# Continue refining
+"add a troubleshooting section for common API errors"
+
+# When satisfied
+"done"
+
+# The document is saved in .claude/plans/ and ready to copy to your project
+```
+
 ## Architecture
 
 ### Agent Hierarchy
@@ -750,8 +801,11 @@ Orchestrator Commands
 │   ├── code-quality-serena (LSP semantic analysis + plan)
 │   └── file-editor-default (parallel, per-file)
 │
-└── /prompt-builder
-    └── prompt-builder-default (iterative refinement)
+├── /prompt-builder
+│   └── prompt-builder-default (iterative refinement)
+│
+└── /document-builder ⭐ NEW
+    └── document-builder-default (iterative documentation generation)
 ```
 
 ### Plan Storage
@@ -764,6 +818,7 @@ All plans are stored in **your project's** `.claude/plans/` directory (not the p
 - `code-quality-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality standard)
 - `code-quality-serena-{filename}-{hash5}-plan.md` - Quality improvement plans (from /code-quality-serena LSP)
 - `prompt-builder-{slug}-draft.md` - Prompt drafts (from /prompt-builder)
+- `document-builder-{slug}-draft.md` - Document drafts (from /document-builder) ⭐ NEW
 
 ## Directory Structure
 
@@ -777,7 +832,8 @@ essentials/
 │   ├── task-builder-default.md    # Task-based implementation agent ⭐ NEW
 │   ├── plan-builder-default.md   # Plan refinement agent ⭐ NEW
 │   ├── planner-default.md          # Planning agent
-│   └── prompt-builder-default.md   # Prompt engineering agent
+│   ├── prompt-builder-default.md   # Prompt engineering agent
+│   └── document-builder-default.md # Documentation generation agent ⭐ NEW
 └── commands/
     ├── bug-scout.md                # /bug-scout command
     ├── code-quality.md             # /code-quality command
@@ -786,7 +842,8 @@ essentials/
     ├── task-builder.md            # /task-builder command ⭐ NEW
     ├── plan-builder.md           # /plan-builder command ⭐ NEW
     ├── planner.md                  # /planner command
-    └── prompt-builder.md           # /prompt-builder command
+    ├── prompt-builder.md           # /prompt-builder command
+    └── document-builder.md         # /document-builder command ⭐ NEW
 ```
 
 ## Key Design Principles
