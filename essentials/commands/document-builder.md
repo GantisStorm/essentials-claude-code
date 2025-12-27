@@ -1,263 +1,245 @@
 ---
-allowed-tools: Task, TaskOutput, Bash, Read, Write, AskUserQuestion
-argument-hint: <vibe-description>
-description: Build high-quality documentation from vibe descriptions through iterative refinement (project)
+allowed-tools: Task, TaskOutput, Bash, Read, Glob, Grep, AskUserQuestion
+argument-hint: [--type=TYPE] <path>
+description: Generate comprehensive documentation from project/code analysis following documentation standards (project)
 ---
 
-Build high-quality documentation (READMEs, technical specs, architecture docs, guides) from vibe descriptions using iterative multi-pass revision. The slash command orchestrates the refinement loop while the document-builder-default agent creates/updates document drafts with reflection checkpoints and quality validation.
+Generate comprehensive, professional documentation by analyzing project structure, code, and APIs. The slash command orchestrates analysis while the document-builder-default agent analyzes code and generates documentation following established templates and best practices.
 
-**IMPORTANT**: The SLASH COMMAND handles ALL orchestration. The agent ONLY creates/updates document drafts.
+**IMPORTANT**: The SLASH COMMAND handles ALL orchestration. The agent ONLY analyzes and creates documentation.
 
-**IMPORTANT**: Keep orchestrator output minimal. User reviews the draft FILE directly, not in chat.
+**IMPORTANT**: Keep orchestrator output minimal. User reviews the document FILE directly, not in chat.
 
-**Quality Process**: The agent applies 6 validation passes (structural validation, anti-pattern scan, consumer simulation, quality scoring, final review) to ensure documents score ≥40/50 across 5 dimensions.
+**Quality Process**: The agent applies systematic code analysis and 6 validation passes to ensure documents score ≥40/50 across 5 dimensions.
 
 ## Arguments
 
-1. **Vibe description**: Rough description of what the document should cover
+1. **--type=TYPE** (optional): Document type to generate
+   - `readme` - Project README.md (default if not specified)
+   - `api` - API reference documentation
+   - `architecture` - Architecture documentation
+   - `contributing` - Contributing guidelines
+   - `changelog` - Changelog/release notes template
+   - `guide` - User or developer guide
+
+2. **path**: File path, directory path, or "." for entire project
+   - Examples: `.`, `src/`, `src/api/`, `src/api/handlers.py`
 
 ## Instructions
 
-### Step 1: Validate Vibe Input
+### Step 1: Parse and Validate Arguments
 
-Check if the vibe description is sufficient:
+Parse `$ARGUMENTS` to extract:
+1. Document type (from `--type=TYPE` flag, defaults to `readme`)
+2. Target path (file, directory, or `.` for project root)
 
-**If vibe is too short (< 5 words):**
+**Validation:**
+```bash
+# Verify path exists
+ls <path>
 
-Use AskUserQuestion to get more detail:
-
-```
-questions:
-  - question: "The vibe description is very short. Can you provide more details about what you want the document to cover?"
-    header: "More detail"
-    multiSelect: false
-    options:
-      - label: "Provide more detail now"
-        description: "I'll describe what I want in more detail"
-      - label: "Proceed anyway"
-        description: "Continue with the short vibe and let the agent infer"
+# If path is a file, verify it's readable
+# If path is a directory, verify it contains files
 ```
 
-If user chooses "Provide more detail now", use their additional input as the vibe.
+- If path missing or invalid: Report error and stop
+- If unsupported document type: Report error with valid types
+- If arguments malformed: Report usage example
 
-If user chooses "Proceed anyway", continue with the original vibe.
+### Step 2: Determine Scope and Document Type
 
-### Step 2: Generate Draft File Path
+Based on arguments, determine:
 
-Create a unique draft file path:
-- Pattern: `.claude/plans/document-builder-{slug}-{hash5}-draft.md`
-- Derive slug from the vibe (e.g., "readme-api", "architecture-guide", "technical-spec")
-- Generate a 5-character random hash to prevent conflicts (lowercase alphanumeric)
-- Example: `.claude/plans/document-builder-readme-api-7k3m2-draft.md`
+```
+Scope Analysis:
+- Target: [file | directory | project root]
+- Document type: [README | API | ARCHITECTURE | CONTRIBUTING | CHANGELOG | GUIDE]
+- Primary language: [detect from file extensions]
+- Project type: [library | application | API | CLI | framework]
+```
 
-Use Bash to generate random hash if needed:
+**Auto-detection rules:**
+- If `--type` not specified: Default to README
+- If path is single file: Generate focused documentation for that file/module
+- If path is directory: Generate documentation for that subsection
+- If path is `.`: Generate project-level documentation
+
+### Step 3: Generate Output File Path
+
+Create output file path based on document type:
+
 ```bash
 # Generate 5-char random hash
-echo $(cat /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c 5)
+HASH=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c 5)
 ```
 
-### Step 3: Launch Document Builder Agent
+**Naming patterns:**
+- README: `.claude/plans/document-builder-README-{hash5}.md`
+- API: `.claude/plans/document-builder-API-{hash5}.md`
+- ARCHITECTURE: `.claude/plans/document-builder-ARCHITECTURE-{hash5}.md`
+- CONTRIBUTING: `.claude/plans/document-builder-CONTRIBUTING-{hash5}.md`
+- CHANGELOG: `.claude/plans/document-builder-CHANGELOG-{hash5}.md`
+- GUIDE: `.claude/plans/document-builder-GUIDE-{hash5}.md`
 
-**CRITICAL**: The SLASH COMMAND orchestrates the refinement loop. The agent ONLY creates/updates document drafts.
+### Step 4: Launch Document Builder Agent
+
+**CRITICAL**: The SLASH COMMAND orchestrates. The agent ONLY analyzes code and creates documentation.
 
 Launch `document-builder-default` agent **in background** using Task tool with `run_in_background: true`:
 
 ```
-Build a high-quality document from this vibe using multi-pass revision with quality validation.
+Analyze the project/code and generate comprehensive documentation following documentation standards.
 
-Vibe: <user's vibe description>
-
-Draft file: <generated file path>
+Document Type: <type>
+Target Path: <path>
+Output File: <generated file path>
 
 ## Your Task
 
-You are ONLY responsible for creating the document draft. You do NOT orchestrate or interact with the user.
+You are ONLY responsible for analyzing code and creating documentation. You do NOT orchestrate or interact with the user.
 
-1. CONTEXT GATHERING:
-   - Read project files (CLAUDE.md, README, CONTRIBUTING, existing docs)
-   - Understand project patterns and conventions
-   - Gather existing documentation style
+SYSTEMATIC PROCESS:
 
-2. VIBE ANALYSIS:
-   - Parse user's vibe description
-   - Identify document type and requirements
-   - Determine audience and purpose
+1. PROJECT ANALYSIS:
+   - Read CLAUDE.md, README.md, package.json, pyproject.toml, etc.
+   - Detect project type, language, framework
+   - Identify architecture patterns
+   - Extract dependencies and tech stack
 
-3. RESEARCH (if needed):
-   - Use available MCP tools for context
-   - Gather best practices and examples
-   - Research domain-specific patterns
+2. CODE STRUCTURE ANALYSIS:
+   - Use Glob to find all relevant files
+   - Use Grep to extract exports, classes, functions, APIs
+   - Build complete code structure map
+   - Identify entry points, main modules, utilities
 
-4. DRAFT CREATION:
-   - Determine document type (README, spec, guide, etc.)
-   - Build initial draft following best practices
-   - Structure for target audience
+3. API/INTERFACE EXTRACTION:
+   - Extract all public APIs, functions, classes
+   - Document function signatures, parameters, return types
+   - Extract docstrings and comments
+   - Identify usage patterns
+
+4. DOCUMENTATION GENERATION:
+   - Apply appropriate template for document type
+   - Generate content based on code analysis (NOT assumptions)
+   - Include code examples extracted from tests or usage
+   - Follow documentation standards for the language/framework
 
 5. REFLECTION CHECKPOINT:
-   - Verify clarity, completeness, usefulness
-   - Ensure best practices alignment
-   - Validate audience appropriateness
+   - Verify all content is backed by code evidence
+   - Ensure no placeholders or "TODO" sections
+   - Validate completeness against template
 
-6. ITERATIVE REVISION (6 passes):
-   - Pass 1: Initial draft
-   - Pass 2: Structural validation
-   - Pass 3: Anti-pattern scan (eliminate vague language)
-   - Pass 4: Consumer simulation
-   - Pass 5: Quality scoring (≥40/50, all dimensions ≥8)
+6. QUALITY VALIDATION (6 passes):
+   - Pass 1: Initial draft from analysis
+   - Pass 2: Structural validation against template
+   - Pass 3: Anti-pattern scan (no vague language)
+   - Pass 4: Accuracy check (all code references valid)
+   - Pass 5: Quality scoring (≥40/50)
    - Pass 6: Final review
 
-7. WRITE DRAFT FILE:
-   - Write to specified path with quality scores and revision log
-   - Include validation status
+7. WRITE DOCUMENTATION FILE:
+   - Write complete documentation to output file
+   - Include metadata and quality scores
 
 Return only:
-DRAFT_FILE: <path>
-ITERATION: 1
+OUTPUT_FILE: <path>
 STATUS: CREATED
+QUALITY_SCORE: <score>/50
 
-DO NOT orchestrate refinement. The slash command handles all user interaction.
+DO NOT interact with user. The slash command handles all communication.
 ```
 
 Use `subagent_type: "document-builder-default"` when invoking the Task tool.
 
-### Step 4: Wait for Completion
+### Step 5: Wait for Completion
 
 Use `TaskOutput` with `block: true` to wait for the document-builder agent to complete.
 
 Collect agent output:
-- Draft file path
-- Iteration number
+- Output file path
 - Status (CREATED)
+- Quality score
 
-### Step 5: Report Initial Draft
+### Step 6: Report Results
 
-After agent completes initial draft, output ONLY:
-
-```
-═══════════════════════════════════════════════════════════════
-DOCUMENT BUILDER: DRAFT CREATED
-═══════════════════════════════════════════════════════════════
-
-Draft ready: <file path>
-
-Review the draft file and provide feedback, or say "done" when satisfied.
-═══════════════════════════════════════════════════════════════
-```
-
-**DO NOT** read or display the draft content. User opens the file directly.
-
-### Step 6: Refinement Loop (Command Orchestrates)
-
-**CRITICAL**: The SLASH COMMAND runs the refinement loop, NOT the agent.
-
-After initial draft, wait for user response:
-
-#### Option A: User Provides Feedback
-
-If user provides refinement request (e.g., "add more examples", "focus on X", "restructure Y"):
-
-1. Launch `document-builder-default` agent again in background:
+After agent completes, output:
 
 ```
-Refine the document based on user feedback using the same multi-pass revision process.
-
-Draft file: <same file path>
-
-User feedback: <their feedback>
-
-## Your Task
-
-You are ONLY responsible for applying changes to the document. You do NOT orchestrate or interact with the user.
-
-REFINEMENT PROCESS:
-1. Read existing draft file
-2. Parse user's requested changes
-3. Apply changes surgically (only what user requested)
-4. Re-run all 6 validation passes:
-   - Pass 1: Apply user's requested changes
-   - Pass 2: Structural validation
-   - Pass 3: Anti-pattern scan
-   - Pass 4: Consumer simulation
-   - Pass 5: Quality re-scoring (maintain ≥40/50)
-   - Pass 6: Final review
-5. Increment iteration number
-6. Update revision history with changes and quality re-assessment
-7. Write back to same file
-
-Return only:
-DRAFT_FILE: <path>
-ITERATION: <n+1>
-STATUS: UPDATED
-
-DO NOT orchestrate further refinement. The slash command handles all user interaction.
-```
-
-Use `subagent_type: "document-builder-default"` with `run_in_background: true`.
-
-2. Wait for completion using `TaskOutput` with `block: true`
-
-3. Output:
-```
 ═══════════════════════════════════════════════════════════════
-DOCUMENT BUILDER: DRAFT UPDATED
+DOCUMENT BUILDER: DOCUMENTATION GENERATED
 ═══════════════════════════════════════════════════════════════
 
-Draft updated: <file path> (iteration <N>)
+Document Type: [README | API | ARCHITECTURE | etc.]
+Target: [path analyzed]
+Output File: [file path]
 
-Review and provide more feedback, or say "done".
+Quality Score: [X]/50
+
+Analysis Summary:
+- Files analyzed: [count]
+- APIs documented: [count]
+- Classes documented: [count]
+- Functions documented: [count]
+
 ═══════════════════════════════════════════════════════════════
-```
-
-4. Return to Step 6 (loop until user says "done")
-
-#### Option B: User Says "Done"
-
-If user indicates completion (e.g., "done", "looks good", "that's it"):
-
-Output:
-```
-═══════════════════════════════════════════════════════════════
-DOCUMENT BUILDER: COMPLETE
+NEXT STEPS
 ═══════════════════════════════════════════════════════════════
 
-Final draft: <file path>
-
-The document is ready for use. You can:
-- Move it to your project root (for READMEs)
-- Add it to your docs/ folder
-- Use it as-is or continue editing manually
+1. Review documentation: [output file path]
+2. Move to project: mv [output file] ./[final location]
+3. Commit: git add [file] && git commit -m "Add [type] documentation"
 
 ═══════════════════════════════════════════════════════════════
 ```
-
-Exit refinement loop.
 
 ## Workflow Diagram
 
 ```
-/document-builder <vibe>
+/document-builder [--type=TYPE] <path>
     │
     ▼
-┌─────────────────────┐
-│ Validate vibe input │
-│ Generate draft path │
-└─────────────────────┘
+┌─────────────────────────────────┐
+│ Parse arguments                 │
+│ Validate path exists            │
+│ Determine document type & scope │
+└─────────────────────────────────┘
     │
     ▼
 ┌──────────────────────────────────────────────────┐
 │ Launch document-builder-default                  │◄── run_in_background: true
-│ (create draft ONLY)                              │
+│ (analyze and create docs ONLY)                   │
 │                                                  │
-│  PHASE 0-4: Context, Analysis, Research, Draft   │
+│  PHASE 1: Project Analysis                       │
+│    - Read project files, detect type/language    │
+│    - Extract tech stack, dependencies            │
+│                                                  │
+│  PHASE 2: Code Structure Analysis                │
+│    - Glob all files, Grep for APIs/exports       │
+│    - Build complete structure map                │
+│                                                  │
+│  PHASE 3: API/Interface Extraction               │
+│    - Extract all public APIs with signatures     │
+│    - Document parameters, return types           │
+│    - Extract usage examples from code            │
+│                                                  │
+│  PHASE 4: Documentation Generation               │
+│    - Apply template for document type            │
+│    - Generate content from analysis              │
+│    - Include extracted code examples             │
+│                                                  │
 │  PHASE 4.5: Reflection Checkpoint (ReAct)        │
-│  PHASE 5: Iterative Revision (6 passes)          │
+│    - Verify evidence-based content               │
+│    - Check completeness, no TODOs                │
+│                                                  │
+│  PHASE 5: Quality Validation (6 passes)          │
 │    - Pass 1: Initial draft                       │
 │    - Pass 2: Structural validation               │
 │    - Pass 3: Anti-pattern scan                   │
-│    - Pass 4: Consumer simulation                 │
+│    - Pass 4: Accuracy check                      │
 │    - Pass 5: Quality scoring (≥40/50)            │
 │    - Pass 6: Final review                        │
-│  PHASE 6: Write draft with scores & revision log │
+│                                                  │
+│  PHASE 6: Write Documentation                    │
 └──────────────────────────────────────────────────┘
     │
     ▼
@@ -267,122 +249,115 @@ Exit refinement loop.
     │
     ▼
 ┌─────────────────────┐
-│ Report: "Draft      │
-│ ready"              │◄── minimal output
+│ Report results with │
+│ quality score       │◄── minimal output
 └─────────────────────┘
-    │
-    ▼
-┌───────────────────────────────────────────────────┐
-│ REFINEMENT LOOP (in command)                      │
-│                                                   │
-│  User reviews file → Provides feedback OR "done"  │
-│                                                   │
-│  If feedback:                                     │
-│  ├─► Launch agent (Phase 7: refine)              │◄── run_in_background: true
-│  ├─► Wait for completion                         │
-│  ├─► Report "Draft updated"                      │
-│  └─► Loop back                                   │
-│                                                   │
-│  If "done":                                       │
-│  └─► Report "Complete" and exit                  │
-└───────────────────────────────────────────────────┘
 ```
 
 ## Key Architecture Points
 
-1. **Slash Command Orchestrates**: The command file (document-builder.md) handles refinement loop
-2. **Agent Only Creates Documents**: The agent (document-builder-default.md) ONLY creates/updates drafts
-3. **No User Interaction in Agent**: Agent never asks questions, just creates/updates
-4. **Iterative Refinement**: Command runs loop, user provides feedback, agent applies changes
-5. **Multi-Pass Quality**: Agent ensures all documents pass 6 validation passes
-6. **Minimal Output**: Agent returns DRAFT_FILE, ITERATION, STATUS only
+1. **Slash Command Orchestrates**: The command file handles argument parsing and orchestration
+2. **Agent Only Analyzes**: The agent analyzes code and creates documentation, no user interaction
+3. **Evidence-Based**: All documentation generated from actual code analysis, not assumptions
+4. **Template-Driven**: Uses established templates for each document type
+5. **Quality Validation**: 6-pass validation ensures high-quality output
+6. **No Iteration**: Single-pass generation (not iterative refinement like prompt-builder)
 
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
-| Vibe too short (<5 words) | Ask user for more detail via AskUserQuestion |
-| Agent fails | Report error, offer retry |
-| File write fails | Report error, suggest checking permissions |
-| Draft file missing during refinement | Report error, suggest starting fresh |
-| Invalid document type | Agent makes best judgment based on vibe |
+| Path missing or invalid | Report error with correct path format, stop |
+| Unsupported document type | Report error with valid types, stop |
+| No files found in path | Report error, suggest different path |
+| Agent fails | Report error with agent output |
+| Analysis incomplete | Agent reports what's missing, still generates best-effort documentation |
+| Low quality score (<40/50) | Agent refines and re-validates automatically |
 
 ## Example Usage
 
 ```bash
-# Create initial draft
-/document-builder "a README for our new GraphQL API with authentication, rate limiting, and webhook examples"
+# Generate README for entire project
+/document-builder .
 
-# Command creates draft, user reviews file
+# Generate README with explicit type flag
+/document-builder --type=readme .
 
-# User provides feedback
-User: "add more authentication examples with JWT tokens"
+# Generate API documentation for specific directory
+/document-builder --type=api src/api/
 
-# Command launches agent to refine, reports update
+# Generate architecture documentation
+/document-builder --type=architecture .
 
-# User continues refining
-User: "add troubleshooting section for common errors"
+# Generate contributing guidelines
+/document-builder --type=contributing .
 
-# Command launches agent again, reports update
+# Generate API docs for single file
+/document-builder --type=api src/api/handlers.py
 
-# User finishes
-User: "done"
-
-# Command reports completion
+# Generate developer guide
+/document-builder --type=guide .
 ```
 
-## Common Document Types
+## Document Templates
 
-The document-builder can create:
+Each document type follows a specific template:
 
-**Project Documentation:**
-- README.md - Project overview, setup, usage
-- CONTRIBUTING.md - Contribution guidelines
-- ARCHITECTURE.md - System architecture documentation
-- API.md - API reference documentation
-- CHANGELOG.md - Version history and release notes
+### README Template
+- Project title and description (from package.json/pyproject.toml)
+- Features (extracted from code analysis)
+- Installation (from package manager files)
+- Quick Start (from examples or tests)
+- API Overview (top-level exports)
+- Configuration (from config files)
+- Contributing & License
 
-**Technical Specifications:**
-- Requirements specs - Detailed requirements documents
-- Design specs - Technical design documentation
-- Integration specs - Integration guidelines
-- Security specs - Security requirements and policies
+### API Template
+- Overview
+- Authentication (if detected)
+- Endpoints/Functions (all public APIs)
+- Request/Response schemas (from type definitions)
+- Error codes (from error handling code)
+- Code examples (from tests)
 
-**Guides:**
-- User guides - End-user documentation
-- Developer guides - Development workflow documentation
-- Deployment guides - Deployment procedures
-- Migration guides - Version migration instructions
+### ARCHITECTURE Template
+- System Overview
+- Architecture Diagram (ASCII art from structure)
+- Component Breakdown (from directory structure)
+- Data Flow (from imports/dependencies)
+- Technology Stack (detected technologies)
+- Design Patterns (identified patterns)
 
-**Reference Materials:**
-- Best practices - Project coding standards
-- Style guides - Code style and conventions
-- Troubleshooting guides - Common issues and solutions
+### CONTRIBUTING Template
+- Development Setup (from package manager)
+- Code Style (from linter configs)
+- Testing (from test files)
+- Pull Request Process
+- Code Review Guidelines
 
-## Integration
+### CHANGELOG Template
+- Version format structure
+- Change categories (Added, Changed, Fixed, etc.)
+- Example entries
 
-Document Builder creates documentation for:
-- Project repositories (README, CONTRIBUTING)
-- Technical specifications (design docs, API specs)
-- User documentation (guides, tutorials)
-- Internal documentation (architecture, runbooks)
-
-After building a document:
-- Move to appropriate location (root, docs/, etc.)
-- Commit to version control
-- Update as project evolves
-- Refine with `/document-builder <draft-file> "feedback"`
+### GUIDE Template
+- Getting Started
+- Core Concepts (from main modules)
+- Common Tasks (from common usage patterns)
+- Troubleshooting (from error handling)
+- FAQ
 
 ## When to Use Document Builder
 
 **Use `/document-builder` when:**
-- Creating new documentation from scratch
-- Need structured, professional documentation
-- Want consistent documentation style
-- Building comprehensive guides or specs
-- Documenting complex systems or APIs
+- Starting a new project and need initial documentation
+- Adding documentation to existing undocumented code
+- Updating documentation after major refactoring
+- Creating standardized documentation across projects
+- Need comprehensive API documentation
+- Want architecture documentation generated from code
 
 **Don't use when:**
-- Simple one-paragraph documentation (write directly)
-- Updating existing docs (use editor or Edit tool)
-- Documentation is code-generated (use code tools)
+- Documentation already exists and just needs minor updates (use editor)
+- Need custom documentation that doesn't fit templates
+- Project is too small to warrant formal documentation

@@ -94,7 +94,7 @@ flowchart LR
     end
 
     subgraph doc_work["📄 DOCUMENTATION GENERATION"]
-        doc_agent["document-builder-default<br/><br/>1. Parse vibe description<br/>2. Generate structured docs<br/>3. Iterate with user feedback<br/>4. Save to .claude/plans/"]
+        doc_agent["document-builder-default<br/><br/>1. Analyze project/code structure<br/>2. Extract APIs and interfaces<br/>3. Generate from templates<br/>4. Save to .claude/plans/"]
     end
 
     subgraph prompt_storage["💾 PROMPT STORAGE"]
@@ -601,21 +601,24 @@ Iterative prompt engineering from vibe descriptions with multi-pass quality vali
 - **Best for**: Creating Claude Code slash commands, subagent prompts, prompt engineering with systematic quality control
 
 ### 8. **Document Builder** (`/document-builder`) ⭐ NEW
-Iterative documentation generation from vibe descriptions with multi-pass quality validation:
-- **Orchestration Pattern**: Slash command orchestrates refinement loop, agent ONLY creates/updates documents
-  - Command: Validates vibe input (AskUserQuestion if too short), orchestrates refinement loop, reports updates
-  - Agent: Transforms vibe into structured documentation, applies 6-pass validation, updates draft based on feedback
-- **Vibe transformation**: Transforms rough ideas into high-quality, professional documentation (READMEs, specs, guides)
-- **Document types supported**: README.md, technical specifications, user guides, API documentation, architecture docs, migration guides, troubleshooting guides
-- **Anti-pattern elimination**: Removes vague phrases like "simply", "easily", "as needed", "etc."
-- **6-pass validation process**: Structural validation, anti-pattern scan, consumer simulation, quality scoring (≥40/50 target), final review
-- **Reflection checkpoints**: ReAct reasoning loops validate clarity, completeness, and usefulness before proceeding
-- **Iterative refinement**: User provides feedback in chat, command launches agent to refine, agent re-runs validation passes, updates draft
-- **Quality scoring**: 5-dimension assessment (Clarity, Completeness, Structure, Usefulness, Best Practices)
-- **Audience-aware writing**: Adjusts technical depth and tone based on target readers (developers, end-users, DevOps, etc.)
-- **Context-driven**: Reads project files (CLAUDE.md, README, existing docs) to match project style and conventions
-- **Minimal output**: Agent returns only DRAFT_FILE, ITERATION, STATUS - user reviews file directly, no bloat in chat
-- **Best for**: Creating comprehensive project documentation, technical specifications, user guides, API references with systematic quality control
+Code-analysis-driven documentation generation following documentation standards:
+- **Orchestration Pattern**: Slash command orchestrates, agent ONLY analyzes code and creates documentation
+  - Command: Parses arguments (--type=TYPE, path), launches agent in background, reports results
+  - Agent: Analyzes project structure, extracts APIs, generates documentation from templates, validates quality
+- **Evidence-based documentation**: All content generated from actual code analysis (Glob, Grep, Read)
+- **Document types supported**: README, API reference, architecture docs, contributing guidelines, changelog templates, user/developer guides
+- **Systematic code analysis**:
+  - Phase 1: Project analysis (detect language, framework, dependencies, tech stack)
+  - Phase 2: Code structure analysis (entry points, modules, import graph)
+  - Phase 3: API/interface extraction (exact signatures, docstrings, usage examples from tests)
+- **Template-driven generation**: Uses established templates for each document type with real data from code
+- **6-pass validation process**: Initial draft, structural validation, anti-pattern scan, accuracy check (verify against code), quality scoring (≥40/50), final review
+- **Reflection checkpoints**: ReAct reasoning loops validate analysis completeness and evidence quality (Phase 3.5)
+- **Quality scoring**: 5-dimension assessment (Accuracy, Completeness, Clarity, Usefulness, Standards Compliance)
+- **No placeholders**: Replaces all TODOs with actual content from code or omits section
+- **Language-aware**: Follows documentation conventions for detected language/framework (JavaScript, Python, Go, Rust, etc.)
+- **Minimal output**: Agent returns only OUTPUT_FILE, STATUS, QUALITY_SCORE, counts - user reviews file directly
+- **Best for**: Generating initial documentation for projects, API references from code analysis, architecture docs from structure analysis, creating standardized documentation
 
 ## Installation
 
@@ -755,19 +758,28 @@ Once configured, `/code-quality-serena` will use semantic code navigation for mo
 ### Document Building
 
 ```bash
-# Create a new document from a vibe
-/document-builder "a README for our GraphQL API with authentication, rate limiting, and webhook examples"
+# Generate README for entire project
+/document-builder .
 
-# Refine based on feedback
-"add more JWT authentication examples and error handling"
+# Generate README with explicit type flag
+/document-builder --type=readme .
 
-# Continue refining
-"add a troubleshooting section for common API errors"
+# Generate API documentation for specific directory
+/document-builder --type=api src/api/
 
-# When satisfied
-"done"
+# Generate architecture documentation
+/document-builder --type=architecture .
 
-# The document is saved in .claude/plans/ and ready to copy to your project
+# Generate contributing guidelines
+/document-builder --type=contributing .
+
+# Generate API docs for single file
+/document-builder --type=api src/api/handlers.py
+
+# Generate developer guide
+/document-builder --type=guide .
+
+# Output is saved in .claude/plans/ - review and move to project root
 ```
 
 ## Architecture
