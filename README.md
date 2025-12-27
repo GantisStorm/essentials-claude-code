@@ -93,7 +93,7 @@ flowchart LR
         prompt_agent["prompt-builder-default<br/><br/>1. Parse vibe description<br/>2. Generate structured prompt<br/>3. Iterate with user feedback<br/>4. Save to .claude/plans/"]
     end
 
-    subgraph doc_work["📄 ARCHITECTURAL DOCUMENTATION<br/><br/>&nbsp;"]
+    subgraph doc_work["📄 ARCH DOCS"]
         doc_agent["document-builder-default<br/><br/>CREATE: Analyze code patterns<br/>Generate hierarchical DEVGUIDE.md<br/><br/>EDIT: Apply user changes<br/>Maintain doc structure"]
     end
 
