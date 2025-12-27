@@ -94,7 +94,7 @@ flowchart LR
     end
 
     subgraph doc_work["📄 ARCHITECTURAL DOCUMENTATION"]
-        doc_agent["document-builder-default<br/><br/>CREATE: Code → DEVGUIDE.md<br/>EDIT: Update existing docs"]
+        doc_agent["document-builder-default<br/><br/>CREATE: Analyze code patterns<br/>Generate hierarchical DEVGUIDE.md<br/><br/>EDIT: Apply user changes<br/>Maintain doc structure"]
     end
 
     subgraph prompt_storage["💾 PROMPT STORAGE"]
