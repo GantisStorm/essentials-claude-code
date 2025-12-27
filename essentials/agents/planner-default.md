@@ -1292,11 +1292,11 @@ Now that planning is complete, you have several options:
 - Command: `/editor .claude/plans/{task-slug}-{hash5}-plan.md <file1> <file2> ...`
 - Use when: <5 files, clear dependencies, single session expected
 
-**Option 2: Issue-Based Implementation (`/issue-builder`)** - Best for complex plans
-- Breaks plan into granular, trackable issues
-- Implements one issue at a time with user approval
+**Option 2: Task-Based Implementation (`/task-builder`)** - Best for complex plans
+- Breaks plan into granular, trackable tasks
+- Implements one task at a time with user approval
 - Provides resume capability if interrupted
-- Command: `/issue-builder .claude/plans/{task-slug}-{hash5}-plan.md`
+- Command: `/task-builder .claude/plans/{task-slug}-{hash5}-plan.md`
 - Use when: >5 files, unclear dependencies, incremental progress desired
 
 **Recommended for this plan**: [Option 1|Option 2] - [brief reason]
@@ -1311,9 +1311,9 @@ Now that planning is complete, you have several options:
 ✓ Plan is READY FOR IMPLEMENTATION
 ✓ All quality scores ≥ 8
 ✓ All revision passes completed
-✓ Plan can be executed by file-editor agents (via /editor or /issue-builder)
+✓ Plan can be executed by file-editor agents (via /editor or /task-builder)
 
-**User should now choose**: /editor or /issue-builder
+**User should now choose**: /editor or /task-builder
 ```
 
 ### 9. Post-Implementation Verification Guide

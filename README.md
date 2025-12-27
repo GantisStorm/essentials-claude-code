@@ -31,7 +31,7 @@ flowchart LR
 
     subgraph storage["💾 PLAN STORAGE"]
         direction TB
-        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• issues-{hash}.json<br/>• bug-scout-plan.md<br/>• code-quality-plan.md")]
+        plans[(".claude/plans/<br/><br/>• {task}-plan.md<br/>• tasks-{hash}.json<br/>• bug-scout-plan.md<br/>• code-quality-plan.md")]
     end
 
     subgraph execution["⚙️ FILE-EDITOR ORCHESTRATION"]
@@ -271,7 +271,7 @@ All orchestrators follow this **9-step meta-framework**:
 | Orchestrator | Unique Step | Purpose |
 |--------------|-------------|---------|
 | `/planner` | Step 1: Grammar check task description | Ensures clear, unambiguous planning input |
-| `/planner` | Step 4: Present implementation options | User chooses `/editor`, `/issue-builder`, or `/plan-builder` |
+| `/planner` | Step 4: Present implementation options | User chooses `/editor`, `/task-builder`, or `/plan-builder` |
 | `/bug-scout` | Step 1: Execute diagnostic commands | Runs `docker logs`, `journalctl` as requested |
 | `/bug-scout` | Step 4: Risk validation gate | Asks user confirmation if CRITICAL severity or LOW confidence |
 | `/editor` | Step 2: Pre-flight conflict check | Detects potential import conflicts, dependency order |
@@ -321,7 +321,7 @@ Comprehensive architectural planning agent with complete end-to-end planning wor
 - Guides user to choose implementation approach:
   - **Option 1**: `/plan-builder` - Refine plan with git-style revision tracking (optional)
   - **Option 2**: `/editor` - Batch mode for simple plans (<5 files)
-  - **Option 3**: `/issue-builder` - Iterative mode for complex plans (>5 files)
+  - **Option 3**: `/task-builder` - Iterative mode for complex plans (>5 files)
 
 ### 2. **Bug Scout** (`/bug-scout`)
 Deep bug investigation with systematic analysis and automatic fix implementation:

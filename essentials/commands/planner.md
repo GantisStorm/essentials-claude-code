@@ -31,7 +31,7 @@ Create a comprehensive implementation plan for the following task:
 
 Write the plan to `.claude/plans/` following your standard format.
 
-IMPORTANT: At the end of your plan, include implementation options guidance for the user to choose between /editor (batch mode) and /issue-builder (iterative mode).
+IMPORTANT: At the end of your plan, include implementation options guidance for the user to choose between /editor (batch mode) and /task-builder (iterative mode).
 ```
 
 Use `subagent_type: "planner-default"` when invoking the Task tool.
@@ -69,9 +69,9 @@ From the planner's output, extract the plan file path and present the user with 
 - Best for: Simple plans (<5 files), clear dependencies, single session
 - Command: `/editor .claude/plans/{plan-file} <file1> <file2> ...`
 
-**Option 2: Issue-Based Implementation (`/issue-builder`)** - Iterative mode, one issue at a time
+**Option 2: Task-Based Implementation (`/task-builder`)** - Iterative mode, one task at a time
 - Best for: Complex plans (>5 files), unclear dependencies, resumable work
-- Command: `/issue-builder .claude/plans/{plan-file}`
+- Command: `/task-builder .claude/plans/{plan-file}`
 
 **Recommended**: [Option 1|Option 2] - [brief reason from planner]
 
@@ -79,7 +79,7 @@ From the planner's output, extract the plan file path and present the user with 
 
 1. Review the plan: Open `.claude/plans/{plan-file}`
 2. (Optional) Optimize: `/plan-builder` if plan needs refinement
-3. Choose implementation approach: `/editor` or `/issue-builder`
+3. Choose implementation approach: `/editor` or `/task-builder`
 ```
 
 ## Workflow Diagram
@@ -107,7 +107,7 @@ From the planner's output, extract the plan file path and present the user with 
 ┌─────────────────────┐
 │ Present options:    │
 │ /editor or          │
-│ /issue-builder      │
+│ /task-builder       │
 └─────────────────────┘
     │
     ▼
@@ -128,5 +128,5 @@ From the planner's output, extract the plan file path and present the user with 
 # After plan is created, user chooses:
 /editor .claude/plans/oauth2-authentication-a3f9e-plan.md src/auth/handler src/auth/middleware
 # OR
-/issue-builder .claude/plans/oauth2-authentication-a3f9e-plan.md
+/task-builder .claude/plans/oauth2-authentication-a3f9e-plan.md
 ```
