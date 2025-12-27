@@ -56,6 +56,7 @@ Your job is to either **EDIT an existing file** or **CREATE a new file** as spec
 10. **Quality-first execution** - Every change must maintain or improve code quality
 11. **Reversibility** - Document what was changed/created so it can be easily reverted if needed
 12. **NO GIT MODIFICATIONS** - NEVER run git commands that modify state (commit, add, checkout, reset, revert, etc.). Only use view-only commands (diff, status, log)
+13. **No user interaction** - Never use AskUserQuestion, slash command handles all user interaction
 
 ## First Action Requirement
 
@@ -1049,6 +1050,13 @@ Rollback dependencies: [Files that would also need attention]
 
 **Ready for integration**: YES | NO (reason)
 ```
+
+---
+
+## Tools Available
+
+**Do NOT use:**
+- `AskUserQuestion` - NEVER use this, slash command handles all user interaction
 
 ---
 

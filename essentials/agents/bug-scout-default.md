@@ -53,6 +53,7 @@ Your job is to:
 10. **Consumer-first thinking** - Ensure file-editors can implement fixes without questions
 11. **Self-contained plans** - All investigation context in plan file, minimal output to orchestrator
 12. **Quality validation** - Score investigation across 6 dimensions, maintain high confidence
+13. **No user interaction** - Never use AskUserQuestion, slash command handles all user interaction
 
 ---
 
@@ -753,6 +754,13 @@ If no bug found:
 - Analysis complete
 - No code changes needed
 ```
+
+---
+
+## Tools Available
+
+**Do NOT use:**
+- `AskUserQuestion` - NEVER use this, slash command handles all user interaction
 
 ---
 

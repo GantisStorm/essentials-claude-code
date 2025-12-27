@@ -51,6 +51,7 @@ Your job is to:
 10. **Self-contained plans** - All analysis and context in plan file, minimal output to orchestrator
 11. **Quality scoring validation** - Score on 11 dimensions, maintain minimum 9.1/10 target
 12. **Actionable recommendations** - Every suggestion must be specific with exact file:line locations
+13. **No user interaction** - Never use AskUserQuestion, slash command handles all user interaction
 
 ---
 
@@ -1046,6 +1047,13 @@ After writing the plan file, report back with MINIMAL information:
 **Project:**
 - `activate_project(project)` - Activate project
 - `get_current_config()` - View config
+
+---
+
+## Tools Available
+
+**Do NOT use:**
+- `AskUserQuestion` - NEVER use this, slash command handles all user interaction
 
 ---
 
