@@ -277,6 +277,23 @@ Create a mapping file for reliable sync back to tasks.md:
 # Write to openspec/changes/<name>/.beads-mapping.json
 ```
 
+**CRITICAL: Get ACTUAL line numbers from tasks.md**
+
+Before creating the mapping, find the actual line number of each task:
+```bash
+# Find actual line numbers of tasks in tasks.md
+grep -n "^\s*- \[ \]" openspec/changes/<name>/tasks.md
+```
+
+Example output:
+```
+4:- [ ] Task 1.1: Create responsive hook
+5:- [ ] Task 1.2: Add breakpoint detection
+8:- [ ] Task 2.1: Update mobile styles
+```
+
+Use these ACTUAL line numbers (4, 5, 8) in the mapping file, NOT sequential (1, 2, 3):
+
 ```json
 {
   "epic_id": "<epic-id>",
@@ -288,25 +305,40 @@ Create a mapping file for reliable sync back to tasks.md:
     {
       "bead_id": "<id>",
       "task_number": "1.1",
-      "task_line": 1,
-      "title": "<title>",
+      "task_line": 4,
+      "task_text": "- [ ] Task 1.1: Create responsive hook",
+      "title": "Task 1.1: Create responsive hook",
       "phase": "phase-1",
       "spec_file": "specs/<area>/spec.md"
     },
     {
       "bead_id": "<id>",
       "task_number": "1.2",
-      "task_line": 2,
-      "title": "<title>",
+      "task_line": 5,
+      "task_text": "- [ ] Task 1.2: Add breakpoint detection",
+      "title": "Task 1.2: Add breakpoint detection",
       "phase": "phase-1",
+      "spec_file": "specs/<area>/spec.md"
+    },
+    {
+      "bead_id": "<id>",
+      "task_number": "2.1",
+      "task_line": 8,
+      "task_text": "- [ ] Task 2.1: Update mobile styles",
+      "title": "Task 2.1: Update mobile styles",
+      "phase": "phase-2",
       "spec_file": "specs/<area>/spec.md"
     }
   ]
 }
 ```
 
+**WHY THIS MATTERS:**
+The stop-hook uses `sed "${task_line}s/- \[ \]/- [x]/"` to mark tasks complete.
+If task_line is wrong, it marks the wrong line (or nothing at all).
+
 This enables:
-- Reliable sync when beads are closed
+- Reliable sync when beads are closed (correct line marked)
 - Line-number-based task marking in tasks.md
 - Progress tracking across sessions
 - Context recovery via plan_reference

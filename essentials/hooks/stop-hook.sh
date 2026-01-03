@@ -49,19 +49,49 @@ sync_beads_to_openspec() {
     while IFS= read -r bead_id; do
       [[ -z "$bead_id" ]] && continue
 
-      # Get task line number from mapping
-      local task_line
+      # Get task info from mapping
+      local task_line task_text
       task_line=$(jq -r ".tasks[] | select(.bead_id == \"$bead_id\") | .task_line" "$mapping_file" 2>/dev/null || echo "")
+      task_text=$(jq -r ".tasks[] | select(.bead_id == \"$bead_id\") | .task_text // \"\"" "$mapping_file" 2>/dev/null || echo "")
 
-      if [[ -n "$task_line" ]] && [[ "$task_line" != "null" ]]; then
-        # Mark specific line as complete using line number
-        sed -i.bak "${task_line}s/- \[ \]/- [x]/" "$temp_file" 2>/dev/null
-        rm -f "${temp_file}.bak"
+      local marked=false
+
+      # Strategy 1: Use task_line directly (fast, works if tasks.md unchanged)
+      if [[ -n "$task_line" ]] && [[ "$task_line" != "null" ]] && [[ "$task_line" =~ ^[0-9]+$ ]]; then
+        # Check if line still contains unchecked task
+        local line_content
+        line_content=$(sed -n "${task_line}p" "$temp_file" 2>/dev/null || echo "")
+        if [[ "$line_content" =~ ^[[:space:]]*-\ \[\ \] ]]; then
+          sed -i.bak "${task_line}s/- \[ \]/- [x]/" "$temp_file" 2>/dev/null
+          rm -f "${temp_file}.bak"
+          marked=true
+        fi
+      fi
+
+      # Strategy 2: Use task_text to find current line (handles line shifts)
+      if [[ "$marked" == "false" ]] && [[ -n "$task_text" ]] && [[ "$task_text" != "null" ]]; then
+        # task_text format: "- [ ] Task description" or just "Task description"
+        # Extract just the description part for matching
+        local task_desc
+        task_desc=$(echo "$task_text" | sed 's/^- \[[ x]\] //')
+
+        # Find line number containing this task description (unchecked)
+        local found_line
+        found_line=$(grep -n "^[[:space:]]*- \[ \].*$(printf '%s' "$task_desc" | sed 's/[[\.*^$()+?{|]/\\&/g')" "$temp_file" 2>/dev/null | head -1 | cut -d: -f1)
+
+        if [[ -n "$found_line" ]] && [[ "$found_line" =~ ^[0-9]+$ ]]; then
+          sed -i.bak "${found_line}s/- \[ \]/- [x]/" "$temp_file" 2>/dev/null
+          rm -f "${temp_file}.bak"
+          marked=true
+        fi
+      fi
+
+      if [[ "$marked" == "true" ]]; then
         SYNCED_COUNT=$((SYNCED_COUNT + 1))
       fi
     done <<< "$closed_ids"
   else
-    # Method 2: Fallback to title matching
+    # Method 2: Fallback to title matching (no mapping file)
     local titles
     titles=$(echo "$closed_beads" | jq -r '.[].title' 2>/dev/null || echo "")
 
@@ -70,12 +100,14 @@ sync_beads_to_openspec() {
 
       # Escape special regex characters in title
       local escaped_title
-      escaped_title=$(printf '%s\n' "$title" | sed 's/[[\.*^$()+?{|]/\\&/g')
+      escaped_title=$(printf '%s' "$title" | sed 's/[[\.*^$()+?{|]/\\&/g')
 
-      # Check if task exists and is unchecked
-      if grep -qE "^[[:space:]]*- \[ \].*${escaped_title}" "$temp_file" 2>/dev/null; then
-        # Mark as complete
-        sed -i.bak "s/^\([[:space:]]*- \)\[ \]\(.*${escaped_title}\)/\1[x]\2/" "$temp_file" 2>/dev/null
+      # Find FIRST unchecked task containing this title (by line number)
+      local found_line
+      found_line=$(grep -n "^[[:space:]]*- \[ \].*${escaped_title}" "$temp_file" 2>/dev/null | head -1 | cut -d: -f1)
+
+      if [[ -n "$found_line" ]] && [[ "$found_line" =~ ^[0-9]+$ ]]; then
+        sed -i.bak "${found_line}s/- \[ \]/- [x]/" "$temp_file" 2>/dev/null
         rm -f "${temp_file}.bak"
         SYNCED_COUNT=$((SYNCED_COUNT + 1))
       fi
