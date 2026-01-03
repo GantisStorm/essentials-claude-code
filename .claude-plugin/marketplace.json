@@ -1,0 +1,18 @@
+{
+  "name": "essentials-claude-code",
+  "version": "2.30.0",
+  "description": "Multi-agent orchestration framework for Claude Code. Complete 5-stage workflow with context chain: Plan (source of truth) → proposal-creator → beads-creator → beads-loop. Each stage preserves full implementation code, exit criteria, and back-references for recovery. Implementation loops that iterate until complete.",
+  "author": "GantisStorm",
+  "owner": {
+    "name": "GantisStorm"
+  },
+  "homepage": "https://github.com/GantisStorm/essentials-claude-code",
+  "plugins": [
+    {
+      "name": "essentials",
+      "version": "2.30.0",
+      "description": "15 commands, 10 agents. Context chain: Plan → Spec → Beads with back-references. Proposal-creator preserves full implementation code from plans. Beads-creator includes dual refs (spec + plan) in each bead. Loops recover from plan when context lost. LSP-powered via Serena MCP.",
+      "source": "./essentials"
+    }
+  ]
+}
