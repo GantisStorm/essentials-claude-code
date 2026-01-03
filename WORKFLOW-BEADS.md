@@ -82,12 +82,12 @@ bd help
 │  │ Each bead must be           │   │ │  1. bd ready → pick task    │   │  │
 │  │ SELF-CONTAINED with:        │   │ │  2. Implement task          │   │  │
 │  │  • Full context             │   │ │  3. bd close                │   │  │
-│  │  • Requirements             │   │ │  4. Auto-sync → tasks.md [x]│   │  │
+│  │  • Requirements             │   │ │  4. Edit tasks.md → [x]     │   │  │
 │  │  • Acceptance criteria      │   │ │  5. Repeat until done       │   │  │
 │  │  • Files to modify          │   │ └─────────────────────────────┘   │  │
 │  │                             │   │                                   │  │
 │  │                             │   │ On complete:                      │  │
-│  │                             │   │  • Auto-archive OpenSpec change   │  │
+│  │                             │   │  • openspec archive <name>        │  │
 │  └─────────────────────────────┘   └───────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────────────────┘
 ```
@@ -184,11 +184,10 @@ bd ready                                    # Next task
 - Shows full task context with `bd show <id>`
 - Implements using the self-contained description
 - Closes with `bd close` when done
-- **Auto-syncs with OpenSpec** - automatically marks `[x]` in tasks.md when beads close
-- **Tracks sync status** - shows synced/total in `.claude/beads-loop.local.md`
+- **You mark OpenSpec manually** - edit tasks.md to change `- [ ]` to `- [x]`
 - **Automatically continues** to next task (via stop hook)
 - Stops when no ready tasks remain
-- **Auto-archives OpenSpec** - runs `openspec archive` automatically when all beads complete
+- Archive with `openspec archive <name>` when complete
 
 **Stop the loop:**
 ```bash
@@ -395,9 +394,8 @@ openspec/changes/<change>/spec.md
 - <specific file paths>"
 ```
 
-OpenSpec sync and archive are automatic:
-- `/beads-loop` auto-syncs closed beads to tasks.md
-- When all Beads issues closed, auto-archives the change
+After closing each bead, manually edit tasks.md to mark `[x]`.
+When all tasks complete, run `openspec archive <name>`.
 ```
 
 ---
