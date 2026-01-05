@@ -132,7 +132,28 @@ If context is compacted and you lose track:
 
 Step mode pauses after each todo for human control. This prevents context compaction and quality degradation on large plans.
 
-**After completing each todo, you MUST use AskUserQuestion to pause.**
+**After completing each todo, you MUST:**
+
+1. Check todo list status
+2. Show execution order in the pause message
+3. Use AskUserQuestion to let user confirm or continue
+
+**Before pausing, output execution status:**
+```
+===============================================================
+TODO COMPLETED: <todo-name>
+===============================================================
+
+Progress: N/M todos complete
+
+EXECUTION ORDER (remaining):
+  Next → Todo 3: Add validation logic
+  Then → Todo 4: Write unit tests
+  Then → Todo 5: Run exit criteria
+===============================================================
+```
+
+**Then use AskUserQuestion:**
 
 The options MUST include:
 1. **Continue (Recommended)** - proceed to next pending todo
@@ -142,11 +163,11 @@ The options MUST include:
 Example:
 ```
 Use AskUserQuestion with:
-- question: "Todo complete. What would you like to do?"
+- question: "Todo complete. Next: Add validation logic. Continue?"
 - header: "Next step"
 - options:
   - label: "Continue (Recommended)"
-    description: "Proceed to next pending todo"
+    description: "Proceed to: Add validation logic"
   - label: "Stop"
     description: "End the implement loop here"
 ```
@@ -156,4 +177,4 @@ Based on the response:
 - **Stop**: End the loop and report progress
 - **Other/feedback**: Handle user's custom input
 
-Use `--auto` flag to skip pauses and run continuously.
+**Auto mode** (`--auto` flag): Skips pauses but still follows todo order.

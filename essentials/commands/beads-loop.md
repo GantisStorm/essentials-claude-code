@@ -125,10 +125,31 @@ Stealth mode keeps all beads functionality but doesn't pollute the repo.
 
 Step mode pauses after each bead for human control. This prevents context compaction and quality degradation on large task sets.
 
-**After completing each bead, you MUST use AskUserQuestion to pause.**
+**After completing each bead, you MUST:**
+
+1. Run `bd ready` to get updated task list with priorities
+2. Show execution order in the pause message
+3. Use AskUserQuestion to let user confirm or pick
+
+**Before pausing, output execution status:**
+```
+===============================================================
+BEAD COMPLETED: <bead-id>
+===============================================================
+
+Progress: N/M beads complete
+
+EXECUTION ORDER (remaining):
+  Next → <bead-id>: <title> (P0)
+  Then → <bead-id>: <title> (P0)
+  Then → <bead-id>: <title> (P1, blocked until P0 done)
+===============================================================
+```
+
+**Then use AskUserQuestion:**
 
 The options MUST include:
-1. **Continue (Recommended)** - proceed to next highest priority bead
+1. **Continue (Recommended)** - proceed to next in execution order
 2. **Stop** - end the beads loop
 3. **One option per ready bead** - let user pick a specific bead by ID
 4. *(Other is automatic for feedback)*
@@ -136,23 +157,21 @@ The options MUST include:
 Example with 2 ready beads:
 ```
 Use AskUserQuestion with:
-- question: "Bead complete. What would you like to do?"
+- question: "Bead complete. Next: my-bead-id-1 (Create user auth). Continue?"
 - header: "Next step"
 - options:
   - label: "Continue (Recommended)"
-    description: "Proceed to next highest priority bead"
+    description: "Proceed to my-bead-id-1: Create user authentication module"
   - label: "Stop"
     description: "End the beads loop here"
-  - label: "my-bead-id-1"
-    description: "Create user authentication module"
   - label: "my-bead-id-2"
-    description: "Add validation middleware"
+    description: "Skip to: Add validation middleware"
 ```
 
 Based on the response:
-- **Continue**: Proceed to Step 1 (find ready work), pick highest priority
+- **Continue**: Proceed to next in execution order (respects `bd ready` priority)
 - **Stop**: End the loop and report progress
 - **Specific bead ID**: Work on that bead next (skip priority order)
 - **Other/feedback**: Handle user's custom input
 
-Use `--auto` flag to skip pauses and run continuously.
+**Auto mode** (`--auto` flag): Skips pauses but still follows `bd ready` priority order.

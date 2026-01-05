@@ -204,9 +204,31 @@ From the slash command you receive:
 
 **Single spec**: Create one epic with child task beads.
 
-**Multiple specs** (from auto-decomposed proposal): Create one epic per spec, with cross-spec dependencies. Beads in later specs depend on completion of earlier spec epics.
+**Multiple specs** (from auto-decomposed proposal): Create one epic per spec, with cross-spec dependencies. Read `depends_on` from each proposal.md to establish epic ordering.
 
 **Note:** Beads work identically regardless of source planner (`/plan-creator`, `/bug-plan-creator`, or `/code-quality-plan-creator`). The spec contains the plan_reference, and you extract the same information from any plan type.
+
+### Multi-Spec Dependency Handling
+
+When processing multiple specs:
+
+1. **Read depends_on from each proposal.md**:
+```bash
+grep -A5 "depends_on:" $SPEC_PATH/proposal.md
+```
+
+2. **Create epics in dependency order** (specs with no dependencies first)
+
+3. **Link epic dependencies with `bd dep add`**:
+```bash
+# If frontend depends on backend:
+bd dep add <frontend-epic-id> <backend-epic-id>
+```
+
+4. **Set priorities to reflect execution order**:
+   - P0: No dependencies (execute first)
+   - P1: Depends on P0 specs
+   - P2: Depends on P1 specs
 
 ## Phase 1: Extract ALL Information from BOTH Spec AND Plan
 
@@ -398,10 +420,39 @@ bd ready
 
 Return:
 ```
+===============================================================
+BEADS CREATED
+===============================================================
+
 EPIC_ID: <id>
 TASKS_CREATED: <count>
 READY_COUNT: <count>
 STATUS: IMPORTED
+
+EXECUTION ORDER (by priority):
+  P0 (no blockers):
+    1. <bead-id>: <title>
+    2. <bead-id>: <title>
+  P1 (after P0 completes):
+    3. <bead-id>: <title>
+  P2 (after P1 completes):
+    4. <bead-id>: <title>
+
+DEPENDENCY GRAPH:
+  <bead-1> ──▶ <bead-2> ──▶ <bead-3>
+            └──▶ <bead-4>
+
+Run `bd ready` to start with the first available task.
+===============================================================
+```
+
+For **multiple specs**, include cross-spec ordering:
+```
+CROSS-SPEC EXECUTION ORDER:
+  1. <spec-1-name> (P0 - no dependencies)
+     └── Tasks: <bead-1>, <bead-2>
+  2. <spec-2-name> (P1 - depends on spec-1)
+     └── Tasks: <bead-3>, <bead-4>
 ```
 
 ---

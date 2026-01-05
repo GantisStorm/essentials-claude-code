@@ -151,7 +151,28 @@ cat openspec/changes/<id>/tasks.md | grep -A 20 "Exit Criteria"
 
 Step mode pauses after each task for human control. This prevents context compaction and quality degradation on large specs.
 
-**After completing each task, you MUST use AskUserQuestion to pause.**
+**After completing each task, you MUST:**
+
+1. Re-read `tasks.md` to get current status
+2. Show execution order in the pause message
+3. Use AskUserQuestion to let user confirm or pick
+
+**Before pausing, output execution status:**
+```
+===============================================================
+TASK COMPLETED: <task-name>
+===============================================================
+
+Progress: N/M tasks complete
+
+EXECUTION ORDER (remaining):
+  Next → Task 3: Add validation middleware
+  Then → Task 4: Create unit tests
+  Then → Task 5: Run integration tests
+===============================================================
+```
+
+**Then use AskUserQuestion:**
 
 The options MUST include:
 1. **Continue (Recommended)** - proceed to next task in order
@@ -162,17 +183,15 @@ The options MUST include:
 Example with 2 remaining tasks:
 ```
 Use AskUserQuestion with:
-- question: "Task complete. What would you like to do?"
+- question: "Task complete. Next: Add validation middleware. Continue?"
 - header: "Next step"
 - options:
   - label: "Continue (Recommended)"
-    description: "Proceed to next task in order"
+    description: "Proceed to: Add validation middleware"
   - label: "Stop"
     description: "End the spec loop here"
-  - label: "Add validation middleware"
-    description: "Task from tasks.md"
   - label: "Create unit tests"
-    description: "Task from tasks.md"
+    description: "Skip to: Create unit tests"
 ```
 
 Based on the response:
@@ -181,4 +200,4 @@ Based on the response:
 - **Specific task**: Work on that task next (skip order)
 - **Other/feedback**: Handle user's custom input
 
-Use `--auto` flag to skip pauses and run continuously.
+**Auto mode** (`--auto` flag): Skips pauses but still follows task order from tasks.md.
