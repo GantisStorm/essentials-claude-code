@@ -223,6 +223,7 @@ EXECUTION ORDER (remaining):
 - [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — **Small** tasks: plan → implement
 - [WORKFLOW-SPEC.md](WORKFLOW-SPEC.md) — **Medium** tasks: add spec validation
 - [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — **Large** tasks: persistent tracking
+- [COMPARISON.md](COMPARISON.md) — How essentials compares to other AI coding tools
 
 ## License
 
