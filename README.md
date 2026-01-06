@@ -49,11 +49,11 @@ flowchart LR
     BL --> Done3(("✓ No ready beads"))
 ```
 
-**Small:** `/plan-creator` analyzes codebase → `/implement-loop` executes until exit criteria pass. One session.
+**Small:** Single-session features, bug fixes, refactoring. `/plan-creator` analyzes codebase → `/implement-loop` executes until exit criteria pass.
 
-**Medium:** `/plan-creator` → `/proposal-creator` creates OpenSpec → **human reviews** → `/spec-loop` implements tasks.
+**Medium:** Human validation before coding. `/plan-creator` → `/proposal-creator` creates OpenSpec → **human reviews spec** → `/spec-loop` implements tasks until all complete.
 
-**Large:** `/plan-creator` → `/proposal-creator` (auto-decomposes if large) → `/beads-creator` creates self-contained beads → `/beads-loop` executes with persistent tracking.
+**Large:** Persistent memory across sessions. `/plan-creator` → `/proposal-creator` → `/beads-creator` creates self-contained beads → `/beads-loop` executes. Survives context compaction and session restarts.
 
 ## Commands
 
@@ -220,10 +220,10 @@ EXECUTION ORDER (remaining):
 
 ## Guides
 
-- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — **Small** tasks: plan → implement
-- [WORKFLOW-SPEC.md](WORKFLOW-SPEC.md) — **Medium** tasks: add spec validation
-- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — **Large** tasks: persistent tracking
-- [COMPARISON.md](COMPARISON.md) — How essentials compares to other AI coding tools
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Single-session features, bug fixes, refactoring
+- [WORKFLOW-SPEC.md](WORKFLOW-SPEC.md) — Human validation between requirements and implementation
+- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent memory that survives sessions and context compaction
+- [COMPARISON.md](COMPARISON.md) — Why verification-enforced completion matters (code-first vs conversation vs spec-first vs essentials)
 
 ## License
 
