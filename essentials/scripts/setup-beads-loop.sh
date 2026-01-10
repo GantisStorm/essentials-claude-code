@@ -170,6 +170,8 @@ max_iterations: $MAX_ITERATIONS
 label_filter: "$LABEL_FILTER"
 step_mode: $STEP_MODE
 started_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+setup_timestamp: $(date +%s)
+owner_transcript: ""
 current_task: ""
 ---
 

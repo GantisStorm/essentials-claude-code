@@ -49,10 +49,41 @@ ITERATION=$(echo "$FRONTMATTER" | grep '^iteration:' | sed 's/iteration: *//' ||
 MAX_ITERATIONS=$(echo "$FRONTMATTER" | grep '^max_iterations:' | sed 's/max_iterations: *//' || echo "0")
 LABEL_FILTER=$(echo "$FRONTMATTER" | grep '^label_filter:' | sed 's/label_filter: *//' | sed 's/^"\(.*\)"$/\1/' || echo "")
 STEP_MODE=$(echo "$FRONTMATTER" | grep '^step_mode:' | sed 's/step_mode: *//' || echo "true")
+OWNER_TRANSCRIPT=$(echo "$FRONTMATTER" | grep '^owner_transcript:' | sed 's/owner_transcript: *//' | sed 's/^"\(.*\)"$/\1/' || echo "")
+SETUP_TIMESTAMP=$(echo "$FRONTMATTER" | grep '^setup_timestamp:' | sed 's/setup_timestamp: *//' || echo "0")
 
 # Validate numeric fields
 [[ ! "$ITERATION" =~ ^[0-9]+$ ]] && ITERATION=1
 [[ ! "$MAX_ITERATIONS" =~ ^[0-9]+$ ]] && MAX_ITERATIONS=0
+[[ ! "$SETUP_TIMESTAMP" =~ ^[0-9]+$ ]] && SETUP_TIMESTAMP=0
+
+# Session ownership check - prevents loop from capturing other CC instances
+GRACE_PERIOD=30  # seconds after setup when ownership can be claimed
+
+if [[ -z "$OWNER_TRANSCRIPT" ]]; then
+  # No owner yet - try to claim if within grace period
+  CURRENT_TIME=$(date +%s)
+  TIME_SINCE_SETUP=$((CURRENT_TIME - SETUP_TIMESTAMP))
+
+  if [[ $TIME_SINCE_SETUP -le $GRACE_PERIOD ]]; then
+    # Claim ownership - update state file with our transcript path
+    OWNER_TRANSCRIPT="$TRANSCRIPT_PATH"
+    sed -i.bak "s|^owner_transcript:.*|owner_transcript: \"$TRANSCRIPT_PATH\"|" "$BEADS_STATE" 2>/dev/null || true
+    rm -f "${BEADS_STATE}.bak" 2>/dev/null || true
+  else
+    # Grace period expired with no owner - orphaned state, clean up
+    rm -f "$BEADS_STATE"
+    exit 0
+  fi
+fi
+
+# Check if we're the owner - if not, don't enforce the loop
+if [[ "$TRANSCRIPT_PATH" != "$OWNER_TRANSCRIPT" ]]; then
+  # Different session - let it exit freely without enforcing beads loop
+  exit 0
+fi
+
+# We are the owner session - continue with normal enforcement
 
 # Check max iterations
 if [[ $MAX_ITERATIONS -gt 0 ]] && [[ $ITERATION -ge $MAX_ITERATIONS ]]; then
@@ -199,6 +230,8 @@ max_iterations: $MAX_ITERATIONS
 label_filter: "$LABEL_FILTER"
 step_mode: $STEP_MODE
 started_at: "$(echo "$FRONTMATTER" | grep '^started_at:' | sed 's/started_at: *//' | sed 's/^"\(.*\)"$/\1/' || date -u +%Y-%m-%dT%H:%M:%SZ)"
+setup_timestamp: $SETUP_TIMESTAMP
+owner_transcript: "$OWNER_TRANSCRIPT"
 current_task: "$CURRENT_TASK"
 ---
 
