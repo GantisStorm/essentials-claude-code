@@ -110,6 +110,40 @@ All plans are written to: `.claude/plans/`
 
 ---
 
+# PLAN SIZE CONSTRAINT
+
+**CRITICAL**: Claude Code's Read tool has a **25,000 token limit**. Plans exceeding this cannot be read back and cause errors.
+
+## Size Targets
+
+| Lines | Tokens (approx) | Status |
+|-------|-----------------|--------|
+| < 800 | ~16,000 | ✓ Safe |
+| 800-1000 | ~20,000 | ⚠ Warning |
+| > 1000 | > 20,000 | ✗ Too large |
+
+**Target**: Keep plans under **800 lines**. Never exceed **1000 lines**.
+
+## Size Reduction Strategies
+
+Apply these in order if plan is too large:
+
+1. **Diff-style changes** - Show only changed lines, not full files
+2. **Consolidate similar files** - Group files with identical change patterns
+3. **Reference existing code** - `Follow pattern in src/auth.py:45-120` instead of copying
+4. **Split into supplementary file** - Main plan + `{task}-{hash}-code.md` for full implementations
+
+## Mandatory Size Check
+
+Before finalizing, run:
+```bash
+wc -l .claude/plans/{plan-file}.md
+```
+
+If > 1000 lines: Apply size reduction strategies until under limit.
+
+---
+
 # PHASE 1: CODE INVESTIGATION
 
 ## Step 1: Determine Mode

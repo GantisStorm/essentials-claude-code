@@ -633,6 +633,20 @@ Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 **Create the `.claude/plans/` directory if it doesn't exist.**
 
+## Plan Size Constraint
+
+**CRITICAL**: Claude Code's Read tool has a **25,000 token limit**. Plans exceeding this cannot be read back.
+
+**Target**: Keep plans under **800 lines** (~16,000 tokens). Never exceed **1000 lines**.
+
+**Size Reduction** (if too large):
+1. Diff-style changes instead of full code blocks
+2. Consolidate similar files with shared patterns
+3. Reference existing code (`Follow pattern in file:line-range`)
+4. Split into main plan + supplementary code file
+
+**Before finalizing**: Run `wc -l` on plan file. If > 1000 lines, apply reductions.
+
 ## Step 2: Plan File Format
 
 ```markdown
