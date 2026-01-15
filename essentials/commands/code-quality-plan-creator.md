@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput
 argument-hint: "<file1> [file2] ... [fileN]"
 description: LSP-powered architectural code quality analysis - generates comprehensive improvement plans for /implement-loop or OpenSpec
+model: opus
 context: fork
 ---
 

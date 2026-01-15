@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput
 argument-hint: "[directory-or-files]"
 description: Generate DEVGUIDE.md architectural documentation using LSP (project)
+model: opus
 context: fork
 ---
 

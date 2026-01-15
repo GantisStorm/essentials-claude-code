@@ -11,6 +11,7 @@ This template defines the standard structure for slash commands in `essentials/c
 allowed-tools: <Tool1, Tool2, ...>
 argument-hint: "<argument pattern>"
 description: <One-line description>
+model: <haiku|opus>  # Optional: haiku for loops/cancels, opus for creators
 context: fork  # Optional: runs command in isolated context (use for heavy exploration commands)
 ---
 
@@ -185,6 +186,7 @@ Use `subagent_type: "<agent-type>"` and `run_in_background: true`.
 - `allowed-tools`: Comma-separated list of tools the command can use
 - `argument-hint`: Pattern showing expected arguments (e.g., `<file1> [file2]`)
 - `description`: Single-line description for help text
+- Optional: `model: <haiku|opus>` for explicit model selection (haiku for loops/cancels, opus for creators)
 - Optional: `context: fork` for commands that spawn heavy background agents (isolates context from main session)
 - Optional: `hide-from-slash-command-tool: "true"` for internal commands
 

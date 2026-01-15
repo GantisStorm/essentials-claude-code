@@ -1,6 +1,7 @@
 ---
 description: "Implement a plan with iterative loop until completion"
 argument-hint: "<plan_path> [--step|--auto] [--max-iterations N]"
+model: haiku
 allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh)", "Read", "TodoWrite", "Bash", "Edit", "AskUserQuestion"]
 hide-from-slash-command-tool: "true"
 ---

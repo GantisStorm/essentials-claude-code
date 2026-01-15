@@ -1,6 +1,7 @@
 ---
 description: "Execute beads iteratively until all tasks complete"
 argument-hint: "[--step|--auto] [--label <label>] [--max-iterations N]"
+model: haiku
 allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-beads-loop.sh)", "Read", "TodoWrite", "Bash", "Edit", "AskUserQuestion"]
 hide-from-slash-command-tool: "true"
 ---

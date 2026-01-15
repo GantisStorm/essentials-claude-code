@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput, Bash, Read, Glob
 argument-hint: "<spec-path> [spec-path-2] [spec-path-3] ..."
 description: Convert OpenSpec specs to self-contained Beads (project)
+model: opus
 ---
 
 # Beads Creator

@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput
 argument-hint: <task-description>
 description: Create a comprehensive architectural plan for any task - detailed enough to feed directly into /implement-loop or OpenSpec
+model: opus
 context: fork
 ---
 

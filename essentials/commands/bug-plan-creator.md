@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput, Bash, Read
 argument-hint: <any-input>
 description: Deep bug investigation with architectural fix plan generation - detailed enough to feed directly into /implement-loop or OpenSpec
+model: opus
 context: fork
 ---
 

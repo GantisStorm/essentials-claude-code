@@ -1,6 +1,7 @@
 ---
 description: "Implement an OpenSpec change iteratively until all tasks complete"
 argument-hint: "<change-id> [--step|--auto] [--max-iterations N]"
+model: haiku
 allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-spec-loop.sh)", "Read", "TodoWrite", "Bash", "Edit", "AskUserQuestion"]
 hide-from-slash-command-tool: "true"
 ---

@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput, Bash, Read, AskUserQuestion
 argument-hint: <description>
 description: Create high-quality prompts from any description (project)
+model: opus
 ---
 
 # Prompt Creator

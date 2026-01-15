@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput, Bash, Read, Glob, Grep
 argument-hint: "[plan-path-or-description]"
 description: Convert plans, context, or descriptions into validated OpenSpec proposals (project)
+model: opus
 context: fork
 ---
 

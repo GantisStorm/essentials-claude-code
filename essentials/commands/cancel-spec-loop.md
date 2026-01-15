@@ -1,6 +1,7 @@
 ---
 allowed-tools: Bash
 description: Cancel active spec loop
+model: haiku
 ---
 
 # Cancel Spec Loop

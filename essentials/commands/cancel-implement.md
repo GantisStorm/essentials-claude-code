@@ -2,6 +2,7 @@
 allowed-tools: Bash
 argument-hint: ""
 description: Cancel active implement loop
+model: haiku
 ---
 
 # Cancel Implement

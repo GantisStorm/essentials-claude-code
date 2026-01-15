@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput
 argument-hint: "[directory] [--ignore <patterns>]"
 description: Generate comprehensive code maps with LSP for symbol tracking and reference verification (project)
+model: opus
 context: fork
 ---
 
