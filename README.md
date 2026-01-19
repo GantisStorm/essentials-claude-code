@@ -466,9 +466,13 @@ model: haiku
 
 | Tool | For | Install |
 |------|-----|---------|
-| Beads | `/beads-creator`, `/beads-loop` | [steveyegge/beads](https://github.com/steveyegge/beads) |
+| Beads | `/beads-creator`, `/beads-loop` | [steveyegge/beads](https://github.com/steveyegge/beads) (optional) |
 | RalphTUI | TUI dashboard for Tasks/Beads | [subsy/ralph-tui](https://github.com/subsy/ralph-tui) (optional) |
+| Context7 | `/plan-creator`, `/prompt-creator` | MCP server (optional, enhances with docs) |
+| SearXNG | `/plan-creator`, `/prompt-creator` | MCP server (optional, adds web search) |
 | Built-in LSP | `/code-quality-plan-creator`, `/codemap-creator`, `/document-creator` | Already in Claude Code |
+
+**Note:** All external tools are optional. The Simple workflow (`/plan-creator` → `/implement-loop`) works with zero dependencies. Context7 and SearXNG MCP servers enhance plan/prompt quality with external documentation and web search but are not required.
 
 ---
 
