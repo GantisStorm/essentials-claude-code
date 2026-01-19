@@ -151,20 +151,37 @@ When context compacts mid-loop, tasks/beads are self-contained (full code in des
 
 ## How Loops Work
 
-Based on [Ralph Wiggum](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) stop-hook pattern (a Claude Code plugin that provides the stop-hook loop pattern for persistent task execution).
+All loops use the [Ralph Wiggum](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) stop-hook pattern: setup creates a marker file, stop hooks intercept exit attempts, and the loop continues until completion criteria pass.
 
-**Mechanism:**
-1. Setup script creates marker file (e.g., `.claude/implement-loop.local.md` or `.claude/tasks-loop-active`)
-2. Stop hooks registered in `hooks.json` intercept exit attempts
-3. Hook checks for completion (exit criteria pass, all tasks complete, no ready beads)
-4. Not complete → block with continue prompt. Complete → allow exit, clean up marker.
+### `/implement-loop`
 
-**State tracking:**
-- `/implement-loop`: Full state in `.claude/implement-loop.local.md`
-- `/tasks-loop`: Task state in `prd.json`, iteration in `.claude/tasks-loop-active`
-- `/beads-loop`: Task state in beads DB, iteration in `.claude/beads-loop-active`
+1. Read plan file and create todos with TodoWrite
+2. Implement each todo following plan instructions
+3. Run exit criteria verification command from plan
+4. **Completion:** Exit criteria command passes
 
-**Recovery:** State files + external state (prd.json, beads DB) enable resume after context compaction.
+State: `.claude/implement-loop.local.md` (contains plan path, iteration count)
+
+### `/tasks-loop`
+
+1. Read `prd.json` and find pending tasks (`passes: false`)
+2. Pick highest priority task with no blocking dependencies
+3. Implement using self-contained task description
+4. Update `passes: true` in prd.json
+5. **Completion:** All tasks have `passes: true`
+
+State: `.claude/tasks-loop-active` (marker), `prd.json` (task state)
+
+### `/beads-loop`
+
+1. Run `bd ready` to find tasks with no blockers
+2. Pick highest priority ready task
+3. Run `bd update <id> --status in_progress`
+4. Implement using self-contained bead description
+5. Run `bd close <id>` when complete
+6. **Completion:** `bd ready` returns no tasks
+
+State: `.claude/beads-loop-active` (marker), beads DB (task state)
 
 ## Requirements
 
