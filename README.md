@@ -100,11 +100,11 @@ All loops run until complete. Optional: `--max-iterations N` to limit iterations
 
 ## Model Configuration
 
-All commands default to `opus` for maximum quality. You can customize the model for any command by editing its frontmatter.
+All commands and agents default to `opus` for maximum quality. You can customize the model by editing the YAML frontmatter.
 
-### Changing a Command's Model
+### Changing the Model
 
-Each command file in `essentials/commands/*.md` has a `model` field in its YAML frontmatter:
+Commands are in `essentials/commands/*.md`, agents in `essentials/agents/*.md`. Both use the same `model` field:
 
 ```yaml
 ---
@@ -121,16 +121,32 @@ model: opus   # Change to: opus, sonnet, or haiku
 
 ### Files to Modify
 
-| To change... | Edit |
-|--------------|------|
-| `/implement-loop` | `essentials/commands/implement-loop.md` (line 6) |
-| `/tasks-loop` | `essentials/commands/tasks-loop.md` (line 6) |
-| `/beads-loop` | `essentials/commands/beads-loop.md` (line 6) |
-| `/cancel-implement` | `essentials/commands/cancel-implement.md` (line 5) |
-| `/cancel-tasks` | `essentials/commands/cancel-tasks.md` (line 5) |
-| `/cancel-beads` | `essentials/commands/cancel-beads.md` (line 5) |
-| `/plan-creator` | `essentials/commands/plan-creator.md` (line 6) |
-| Any creator | `essentials/commands/<name>.md` |
+**Commands** (`essentials/commands/`):
+
+| Command | File | Line |
+|---------|------|------|
+| `/implement-loop` | `implement-loop.md` | 6 |
+| `/tasks-loop` | `tasks-loop.md` | 6 |
+| `/beads-loop` | `beads-loop.md` | 6 |
+| `/cancel-implement` | `cancel-implement.md` | 5 |
+| `/cancel-tasks` | `cancel-tasks.md` | 5 |
+| `/cancel-beads` | `cancel-beads.md` | 5 |
+| `/plan-creator` | `plan-creator.md` | 6 |
+| Other creators | `<name>.md` | 5-6 |
+
+**Agents** (`essentials/agents/`):
+
+| Agent | File | Line |
+|-------|------|------|
+| plan-creator | `plan-creator-default.md` | 15 |
+| bug-plan-creator | `bug-plan-creator-default.md` | 15 |
+| code-quality-plan-creator | `code-quality-plan-creator-default.md` | 15 |
+| beads-creator | `beads-creator-default.md` | 6 |
+| tasks-creator | `tasks-creator-default.md` | 6 |
+| codemap-creator | `codemap-creator-default.md` | 15 |
+| document-creator | `document-creator-default.md` | 11 |
+| prompt-creator | `prompt-creator-default.md` | 11 |
+| mr-description-creator | `mr-description-creator-default.md` | 9 |
 
 ### Cost Optimization Example
 
