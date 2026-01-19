@@ -2,7 +2,7 @@
 allowed-tools: Bash
 argument-hint: ""
 description: Cancel active beads loop
-model: haiku
+model: opus
 ---
 
 # Cancel Beads

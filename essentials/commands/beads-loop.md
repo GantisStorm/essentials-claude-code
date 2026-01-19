@@ -3,7 +3,7 @@ description: "Execute beads iteratively until all tasks complete"
 argument-hint: "[--label <label>]"
 allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-beads-loop.sh)", "Read", "TodoWrite", "Bash", "Edit"]
 hide-from-slash-command-tool: "true"
-model: haiku
+model: opus
 ---
 
 # Beads Loop Command

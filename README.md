@@ -98,15 +98,50 @@ All loops run until complete. Optional: `--max-iterations N` to limit iterations
 | `.claude/prd/` | Tasks files (RalphTUI format) |
 | `.beads/` | Beads database (created by `bd init`) |
 
-## Cost Optimization
+## Model Configuration
 
-Commands use optimized model selection:
+All commands default to `opus` for maximum quality. You can customize the model for any command by editing its frontmatter.
 
-| Command Type | Model | Rationale |
-|-------------|-------|-----------|
-| Creators (9) | `opus` | Complex reasoning, architectural planning |
-| Loops (3) | `haiku` | Fast/cheap iterative execution |
-| Cancels (3) | `haiku` | Lightweight file operations |
+### Changing a Command's Model
+
+Each command file in `essentials/commands/*.md` has a `model` field in its YAML frontmatter:
+
+```yaml
+---
+description: "Execute beads iteratively..."
+argument-hint: "[--label <label>]"
+model: opus   # Change to: opus, sonnet, or haiku
+---
+```
+
+**Available models:**
+- `opus` — Best quality, complex reasoning (default)
+- `sonnet` — Balanced quality/cost
+- `haiku` — Fast and cheap, simple tasks
+
+### Files to Modify
+
+| To change... | Edit |
+|--------------|------|
+| `/implement-loop` | `essentials/commands/implement-loop.md` (line 6) |
+| `/tasks-loop` | `essentials/commands/tasks-loop.md` (line 6) |
+| `/beads-loop` | `essentials/commands/beads-loop.md` (line 6) |
+| `/cancel-implement` | `essentials/commands/cancel-implement.md` (line 5) |
+| `/cancel-tasks` | `essentials/commands/cancel-tasks.md` (line 5) |
+| `/cancel-beads` | `essentials/commands/cancel-beads.md` (line 5) |
+| `/plan-creator` | `essentials/commands/plan-creator.md` (line 6) |
+| Any creator | `essentials/commands/<name>.md` |
+
+### Cost Optimization Example
+
+To reduce costs for iterative execution, change loops and cancels to `haiku`:
+
+```bash
+# In essentials/commands/implement-loop.md, change:
+model: opus
+# to:
+model: haiku
+```
 
 This reduces costs for repetitive loop iterations while preserving quality for planning tasks.
 

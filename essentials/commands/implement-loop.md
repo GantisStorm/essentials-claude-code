@@ -3,7 +3,7 @@ description: "Implement a plan with iterative loop until completion"
 argument-hint: "<plan_path> [--max-iterations N]"
 allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh)", "Read", "TodoWrite", "Bash", "Edit"]
 hide-from-slash-command-tool: "true"
-model: haiku
+model: opus
 ---
 
 # Implement Loop Command
