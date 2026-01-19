@@ -86,13 +86,13 @@ EXECUTION ORDER (by priority):
   P2 (after P1): task-005
 ```
 
-**Review beads:** `bd list -l "plan:<name>"` then `bd show <id>` — verify complete code snippets and exit criteria.
+**Review beads:** `bd list -l ralph` then `bd show <id>` — verify complete code snippets and exit criteria.
 
 ### Stage 4: Execute
 
 **Option A: Internal Loop**
 ```bash
-/beads-loop --label plan:<name>               # Run all beads with label
+/beads-loop                                   # Run all beads with ralph label
 /beads-loop --max-iterations 10               # Limit iterations (optional)
 /cancel-beads                                  # Stop gracefully
 ```
@@ -102,12 +102,7 @@ EXECUTION ORDER (by priority):
 ralph-tui run --tracker beads --epic <epic-id>    # Visual TUI dashboard
 ```
 
-RalphTUI requires `ralph` label on beads. Either add during creation or configure RalphTUI to use your label:
-```toml
-# .ralph-tui/config.toml
-[trackerOptions]
-labels = "plan:my-feature"
-```
+Beads are created with `ralph` label by default, compatible with both `/beads-loop` and RalphTUI.
 
 **Loop mechanism:** Stop hook checks `bd ready` for remaining tasks. If ready beads exist, loop continues.
 
@@ -126,7 +121,7 @@ Each bead must be implementable with ONLY its description. The Context Chain sec
 | "Update entity" | File + line numbers + before/after |
 
 ```bash
-bd create "Add fields to entity.ts" -t task -p 2 -l "plan:billing" -d "
+bd create "Add fields to entity.ts" -t task -p 2 -l "ralph" -d "
 ## Context Chain (disaster recovery ONLY)
 **Plan Reference**: .claude/plans/billing-plan.md
 
@@ -182,7 +177,7 @@ bd setup cursor    # Cursor IDE rules
 
 **Protected branches:** `bd init --branch beads-sync` + `bd daemon --start --auto-commit`
 
-**Labels:** `plan:<name>`, `discovered`, `tech-debt`, `blocked-external`
+**Labels:** `ralph` (default, RalphTUI compatible), `discovered`, `tech-debt`, `blocked-external`
 
 ---
 

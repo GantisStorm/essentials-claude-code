@@ -12,7 +12,7 @@ Execute beads iteratively until all ready tasks are complete.
 
 ## Arguments
 
-- `--label <label>` (optional): Filter beads by label (e.g., `--label plan:my-feature`)
+- `--label <label>` (optional): Filter beads by label (default: `ralph`)
 - `--max-iterations N` (optional): Maximum iterations before stopping (default: unlimited)
 
 ## Instructions
@@ -114,7 +114,7 @@ bd stale       # Find issues not updated recently
 ## Example Usage
 
 ```bash
-/beads-loop
-/beads-loop --label plan:add-auth
-/beads-loop --max-iterations 5
+/beads-loop                           # Run beads with ralph label (default)
+/beads-loop --label my-custom-label   # Filter by custom label
+/beads-loop --max-iterations 5        # Limit iterations
 ```

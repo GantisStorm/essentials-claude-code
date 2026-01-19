@@ -23,7 +23,7 @@ Claude Code is powerful, but without structure it can:
 ```bash
 /plugin marketplace add GantisStorm/essentials-claude-code
 /plugin install essentials@essentials-claude-code
-mkdir -p .claude/plans .claude/maps .claude/prompts
+mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 # Note: .beads/ directory is created automatically by `bd init` if using Beads workflow
 ```
 
@@ -95,7 +95,7 @@ All loops run until complete. Optional: `--max-iterations N` to limit iterations
 | `.claude/plans/` | Architectural plans |
 | `.claude/maps/` | Code maps |
 | `.claude/prompts/` | Generated prompts |
-| `./prd.json` | Tasks file (RalphTUI format) |
+| `.claude/prd/` | Tasks files (RalphTUI format) |
 | `.beads/` | Beads database (created by `bd init`) |
 
 ## Cost Optimization
@@ -178,7 +178,7 @@ Based on [Ralph Wiggum](https://github.com/anthropics/claude-code/tree/main/plug
 
 **Note on MCP servers:** Context7 and SearXNG enhance plan/prompt quality with external documentation and web search but are not required.
 
-**Note on RalphTUI:** RalphTUI provides a visual TUI dashboard for monitoring task execution. Both `/tasks-loop` and `/beads-loop` work without it.
+**Note on RalphTUI:** RalphTUI provides a visual TUI dashboard for monitoring task execution. Both `/tasks-loop` and `/beads-loop` work without it. Beads are created with `ralph` label by default for RalphTUI compatibility—custom labels require editing `beads-creator-default.md`.
 
 ## Guides
 

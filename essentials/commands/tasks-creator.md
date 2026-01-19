@@ -50,7 +50,7 @@ Each task must be SELF-CONTAINED:
 - Include exact file paths
 - Include acceptance criteria
 
-Output to ./prd.json (or ./tasks/<plan-name>.json if prd.json exists).
+Output to .claude/prd/<plan-name>.json
 ```
 
 Use `subagent_type: "tasks-creator-default"` and `run_in_background: true`.
@@ -63,14 +63,14 @@ Use `subagent_type: "tasks-creator-default"` and `run_in_background: true`.
 File: <path>
 Tasks: <count>
 
-## Execution Options
+## Next Steps
 
-| Option | Command |
-|--------|---------|
-| Internal loop | `/tasks-loop <path>` |
-| RalphTUI | `ralph-tui run --prd <path>` |
+Review tasks:
+  cat <path> | jq '.userStories | length'
 
-Next: Review tasks in prd.json, then execute with your preferred method.
+Execute (choose one):
+  /tasks-loop <path>           # Internal loop
+  ralph-tui run --prd <path>   # RalphTUI dashboard
 ```
 
 ## Self-Contained Task Example
@@ -106,7 +106,7 @@ Next: Review tasks in prd.json, then execute with your preferred method.
 |----------|--------|
 | Path not found | Report error |
 | Invalid plan format | Report what's missing |
-| prd.json exists | Write to ./tasks/<plan-name>.json instead |
+| .claude/prd/ missing | Create directory |
 
 ## Example Usage
 

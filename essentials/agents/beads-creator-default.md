@@ -109,7 +109,7 @@ Create one epic for the entire change:
 
 ```bash
 bd create "<Plan Name>" -t epic -p 1 \
-  -l "plan:<plan-name>" \
+  -l "ralph" \
   -d "## Overview
 <summary from plan>
 
@@ -239,7 +239,7 @@ function doSomething(param: string): Result | null {
 ```bash
 bd create "<Task Title>" -t task -p <priority> \
   --parent <epic-id> \
-  -l "plan:<plan-name>" \
+  -l "ralph" \
   -d "<FULL bead description as shown above>"
 ```
 
@@ -250,7 +250,7 @@ For beads with large code blocks (100+ lines), use heredoc to avoid shell escapi
 ```bash
 bd create "<Title>" -t task -p <priority> \
   --parent <epic-id> \
-  -l "plan:<plan-name>" \
+  -l "ralph" \
   -d "$(cat <<'BEAD_EOF'
 ## Context Chain (for disaster recovery ONLY)
 
@@ -435,7 +435,7 @@ Critical path length: 4 beads
 ## Step 1: List Created Beads
 
 ```bash
-bd list -l "plan:<plan-name>"
+bd list -l ralph
 bd ready
 ```
 
@@ -492,7 +492,7 @@ Return:
 BEADS CREATED
 ===============================================================
 
-EPIC_ID: <id>
+EPIC_ID: <epic-id>
 TASKS_CREATED: <count>
 READY_COUNT: <count>
 STATUS: IMPORTED
@@ -510,7 +510,15 @@ DEPENDENCY GRAPH:
   <bead-1> ──▶ <bead-2> ──▶ <bead-3>
             └──▶ <bead-4>
 
-Run `bd ready` to start with the first available task.
+## Next Steps
+
+Review beads:
+  bd list -l ralph
+  bd show <epic-id>
+
+Execute (choose one):
+  /beads-loop                                    # Internal loop
+  ralph-tui run --tracker beads --epic <epic-id> # RalphTUI dashboard
 ===============================================================
 ```
 
@@ -603,7 +611,7 @@ bd create "Add JWT validation" -t task \
 bd create "Add JWT token validation middleware" \
   -t task -p 2 \
   --parent bd-abc123 \
-  -l "plan:add-auth" \
+  -l "ralph" \
   -d "## Context Chain (disaster recovery only)
 
 **Plan Reference**: .claude/plans/auth-feature-3k7f2-plan.md

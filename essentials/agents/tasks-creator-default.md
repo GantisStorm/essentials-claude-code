@@ -425,7 +425,7 @@ In prd.json:
 
 ## Step 1: Assemble JSON
 
-Use the Write tool to create `./prd.json`:
+Use the Write tool to create `.claude/prd/<name>.json`:
 
 ```json
 {
@@ -462,7 +462,7 @@ Return:
 TASKS CREATED (prd.json)
 ===============================================================
 
-FILE: ./prd.json
+FILE: .claude/prd/<name>.json
 TOTAL_TASKS: <count>
 READY_TASKS: <count with no blockers>
 STATUS: CREATED
@@ -480,10 +480,14 @@ DEPENDENCY GRAPH:
   US-001 ──┬──▶ US-003 ──▶ US-004
   US-002 ──┘
 
-EXECUTION OPTIONS:
-  Internal: /tasks-loop ./prd.json
-  RalphTUI: ralph-tui run --prd ./prd.json
+## Next Steps
 
+Review tasks:
+  cat .claude/prd/<name>.json | jq '.userStories | length'
+
+Execute (choose one):
+  /tasks-loop .claude/prd/<name>.json           # Internal loop
+  ralph-tui run --prd .claude/prd/<name>.json   # RalphTUI dashboard
 ===============================================================
 ```
 

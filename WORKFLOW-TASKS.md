@@ -2,7 +2,7 @@
 
 > **Middle-ground option.** Simpler than Beads but supports RalphTUI's TUI dashboard. Use [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) for most tasks. Use this when you want RalphTUI's visual interface or prd.json format.
 
-[RalphTUI](https://github.com/subsy/ralph-tui) is an AI Agent Loop Orchestrator with a terminal UI for monitoring autonomous execution. This workflow creates prd.json files compatible with both RalphTUI and the internal `/tasks-loop`.
+[RalphTUI](https://github.com/subsy/ralph-tui) is an AI Agent Loop Orchestrator with a terminal UI for monitoring autonomous execution. This workflow creates `.claude/prd/*.json` files compatible with both RalphTUI and the internal `/tasks-loop`.
 
 ---
 
@@ -76,31 +76,36 @@ ultrathink and traverse and analyse the code. Ask clarifying questions before fi
 
 **Output:**
 ```
-TASKS CREATED (prd.json)
+TASKS CREATED
 
-FILE: ./prd.json
+FILE: .claude/prd/feature-3k7f2.json
 TOTAL_TASKS: 5
 READY_TASKS: 2
 
-EXECUTION OPTIONS:
-  Internal: /tasks-loop ./prd.json
-  RalphTUI: ralph-tui run --prd ./prd.json
+## Next Steps
+
+Review tasks:
+  cat .claude/prd/feature-3k7f2.json | jq '.userStories | length'
+
+Execute (choose one):
+  /tasks-loop .claude/prd/feature-3k7f2.json           # Internal loop
+  ralph-tui run --prd .claude/prd/feature-3k7f2.json   # RalphTUI dashboard
 ```
 
-**Review tasks:** Read `./prd.json` and verify each task has full implementation code, not summaries.
+**Review tasks:** Verify each task has full implementation code, not summaries.
 
 ### Stage 4: Execute
 
 **Option A: Internal Loop**
 ```bash
-/tasks-loop ./prd.json                    # Run internally
-/tasks-loop ./prd.json --max-iterations 5 # Limit iterations
-/cancel-tasks                              # Stop gracefully
+/tasks-loop .claude/prd/<name>.json                    # Run internally
+/tasks-loop .claude/prd/<name>.json --max-iterations 5 # Limit iterations
+/cancel-tasks                                           # Stop gracefully
 ```
 
 **Option B: RalphTUI (external)**
 ```bash
-ralph-tui run --prd ./prd.json            # Visual TUI dashboard
+ralph-tui run --prd .claude/prd/<name>.json            # Visual TUI dashboard
 ```
 
 ---
@@ -176,14 +181,17 @@ Each task must be implementable with ONLY its description. The Context field is 
 If you lose track:
 
 ```bash
-# Read prd.json
-cat ./prd.json | jq '.'
+# List prd files
+ls .claude/prd/
+
+# Read a prd file
+cat .claude/prd/<name>.json | jq '.'
 
 # Find pending tasks
-jq '[.userStories[] | select(.passes == false)]' ./prd.json
+jq '[.userStories[] | select(.passes == false)]' .claude/prd/<name>.json
 
 # Find ready tasks (no blockers)
-jq '.userStories as $all | [.userStories[] | select(.passes == false) | select((.dependsOn == null) or (.dependsOn | length == 0) or ((.dependsOn // []) | all(. as $dep | ($all | map(select(.id == $dep and .passes == true)) | length > 0))))]' ./prd.json
+jq '.userStories as $all | [.userStories[] | select(.passes == false) | select((.dependsOn == null) or (.dependsOn | length == 0) or ((.dependsOn // []) | all(. as $dep | ($all | map(select(.id == $dep and .passes == true)) | length > 0))))]' .claude/prd/<name>.json
 ```
 
 ---

@@ -72,12 +72,18 @@ Use `subagent_type: "beads-creator-default"` and `run_in_background: true`.
 ```
 ## Beads Created
 
-Epic: <id>
+Epic: <epic-id>
 Tasks: <count>
 
-Next Steps:
-1. Review: bd list -l "plan:<name>"
-2. Start: /beads-loop --label plan:<name>
+## Next Steps
+
+Review beads:
+  bd list -l ralph
+  bd show <epic-id>
+
+Execute (choose one):
+  /beads-loop                                    # Internal loop
+  ralph-tui run --tracker beads --epic <epic-id> # RalphTUI dashboard
 ```
 
 ## Self-Contained Bead Example
@@ -91,7 +97,7 @@ bd create "Update auth" -t task
 ```
 bd create "Add JWT validation" -t task -p 2 \
   --parent <epic-id> \
-  -l "plan:add-auth" \
+  -l "ralph" \
   -d "## Context Chain
 
 **Plan Reference**: .claude/plans/auth-3k7f2-plan.md
