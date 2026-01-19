@@ -1,8 +1,42 @@
-# Beads Workflow for Persistent Execution
+# Beads Workflow (Optional)
 
-> **Don't start here.** This is the most token-expensive workflow. Use [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) first. Escalate to beads only when the simple workflow fails—AI hallucinates mid-task, loses track, or the feature spans multiple days.
+> **This workflow is optional and requires the Beads CLI.** Use the [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Beads only when you need persistent memory across sessions, or when AI hallucinates mid-task.
 
-[Beads](https://github.com/steveyegge/beads) provides persistent, structured memory that survives session boundaries and context compaction. Use for large features spanning multiple sessions, or when plans cause hallucinations mid-implementation.
+## When to Use This Workflow
+
+- Multi-day features spanning multiple sessions
+- AI hallucinates or loses track mid-task
+- Context keeps compacting and losing progress
+- Need persistent memory that survives session boundaries
+
+**Note:** The built-in `/beads-loop` works without RalphTUI. RalphTUI is only needed if you want the visual dashboard.
+
+---
+
+## Requirements
+
+**Beads CLI is required for this workflow:**
+
+```bash
+brew tap steveyegge/beads && brew install bd
+# Or: npm install -g @beads/bd
+```
+
+---
+
+## Overview
+
+```
+┌─────────────────────────────────┐     ┌─────────────────────────────────┐
+│ PLANNING                        │     │ EXECUTION (choose one)          │
+│                                 │     │                                 │
+│ /plan-creator <task>            │     │ /beads-loop                     │
+│        ↓                        │────▶│   (built-in, requires bd CLI)   │
+│ /beads-creator plan.md          │     │                                 │
+│                                 │     │ ralph-tui run --tracker beads   │
+│ Output: beads in local DB       │     │   (optional TUI dashboard)      │
+└─────────────────────────────────┘     └─────────────────────────────────┘
+```
 
 ---
 
@@ -17,7 +51,7 @@ Atomic, self-contained task units in a local graph database. Unlike plans (sessi
 | Migration Pattern | Exact before/after for file edits |
 | Exit Criteria | Specific verification commands |
 | Dependencies | `depends_on`/`blocks` relationships |
-| Labels | Link to source (`plan:feature-name`) |
+| Labels | Link to source (`ralph` by default) |
 
 **Key insight:** When context compacts, `bd ready` always shows what's next. Each bead has everything needed—no reading other files.
 
@@ -25,9 +59,7 @@ Atomic, self-contained task units in a local graph database. Unlike plans (sessi
 
 ## Setup
 
-**Install:** `brew tap steveyegge/beads && brew install bd` (or npm: `npm install -g @beads/bd`)
-
-**Initialize:**
+### Initialize Beads (choose one)
 
 | Mode | Command | When to Use |
 |------|---------|-------------|
@@ -35,84 +67,71 @@ Atomic, self-contained task units in a local graph database. Unlike plans (sessi
 | Full Git | `bd init` | Team projects, sync via git |
 | Protected Branch | `bd init --branch beads-sync` | When main is protected |
 
-**Stealth Mode** (`--stealth`): Keeps `.beads/` local only - no git sync, no team collaboration. Use for personal or brownfield projects.
-
-**Essential commands:**
-| Command | Action |
-|---------|--------|
-| `bd ready` | List tasks with no blockers |
-| `bd blocked` | Show tasks waiting on dependencies |
-| `bd create "Title" -p 0` | Create P0 task |
-| `bd dep add <child> <parent>` | Link dependencies |
-| `bd close <id> --reason "Done"` | Complete task |
-| `bd sync` | Force immediate sync |
+**Stealth Mode:** Keeps `.beads/` local only — no git sync. Use for personal or brownfield projects.
 
 ---
 
-## The 4-Stage Workflow
+## Usage
 
-```
-PLANNING (Human Control)                    EXECUTION (AI Autonomy)
-┌────────────────────────────────────┐      ┌─────────────────────────────────┐
-│ 1. Analysis: "ultrathink..."       │      │ 3. /beads-creator <plan>        │
-│ 2. /plan-creator → validate plan   │─────▶│ 4. /beads-loop                  │
-│                                    │      │    bd ready → implement → close │
-└────────────────────────────────────┘      └─────────────────────────────────┘
-```
-
-### Stages 1-2: Planning
-
-```
-ultrathink and traverse and analyse the code. Ask clarifying questions before finalising.
-```
-
+### Stage 1: Create Plan
 ```bash
-/plan-creator <task>                # Create plan
+/plan-creator Add complete auth system
 ```
 
-**Validate before beads:** Read plan, verify implementation code is correct, check task breakdown. Skipping leads to wasted work.
-
-### Stage 3: Import to Beads
-
+### Stage 2: Convert to Beads
 ```bash
-/beads-creator .claude/plans/feature-3k7f2-plan.md
+/beads-creator .claude/plans/auth-system-3k7f2-plan.md
+# Creates beads with 'ralph' label (RalphTUI compatible)
 ```
 
-**Output shows execution order:**
-```
-EXECUTION ORDER (by priority):
-  P0 (no blockers): task-001, task-002
-  P1 (after P0): task-003, task-004
-  P2 (after P1): task-005
-```
+### Stage 3: Execute
 
-**Review beads:** `bd list -l ralph` then `bd show <id>` — verify complete code snippets and exit criteria.
-
-### Stage 4: Execute
-
-**Option A: Internal Loop**
+**Option A: Built-in Loop (requires Beads CLI)**
 ```bash
-/beads-loop                                   # Run all beads with ralph label
-/beads-loop --max-iterations 10               # Limit iterations (optional)
-/cancel-beads                                  # Stop gracefully
+/beads-loop                         # Run all beads with ralph label
+/beads-loop --label custom-label    # Filter by custom label
+/beads-loop --max-iterations 10     # Limit iterations
+/cancel-beads                        # Stop gracefully
 ```
 
-**Option B: RalphTUI (external)**
+**Option B: RalphTUI Dashboard (optional)**
 ```bash
-ralph-tui run --tracker beads --epic <epic-id>    # Visual TUI dashboard
+# Install RalphTUI first: bun install -g ralph-tui && ralph-tui setup
+ralph-tui run --tracker beads --epic <epic-id>
 ```
-
-Beads are created with `ralph` label by default, compatible with both `/beads-loop` and RalphTUI.
-
-**Loop mechanism:** Stop hook checks `bd ready` for remaining tasks. If ready beads exist, loop continues.
-
-**Loop cycle:** `bd ready` → pick highest priority → implement → `bd close` → repeat until no ready beads.
 
 ---
 
-## The Self-Contained Bead Rule
+## Essential Beads Commands
 
-Each bead must be implementable with ONLY its description. The Context Chain section is for disaster recovery only.
+```bash
+bd ready                             # List tasks with no blockers
+bd blocked                           # Show tasks waiting on dependencies
+bd list -l ralph                     # List tasks with ralph label
+bd show <id>                         # Full task details
+bd create "Title" -p 0               # Create P0 task
+bd update <id> --status in_progress  # Start working
+bd close <id> --reason "Done"        # Complete task
+bd sync                              # Force immediate sync
+```
+
+---
+
+## Execution Comparison
+
+| Feature | `/beads-loop` | `ralph-tui` |
+|---------|---------------|-------------|
+| Installation | Beads CLI only | Requires bun + ralph-tui |
+| Interface | Terminal output | TUI dashboard |
+| Dependencies | Beads CLI | Beads CLI + RalphTUI |
+| Pause/Resume | `/cancel-beads` + restart | Keyboard shortcuts |
+| Multi-agent | Claude Code only | Claude, OpenCode, Factory Droid |
+
+---
+
+## The Self-Contained Rule
+
+Each bead must be implementable with ONLY its description.
 
 | Bad | Good |
 |-----|------|
@@ -120,13 +139,11 @@ Each bead must be implementable with ONLY its description. The Context Chain sec
 | "Run tests" | `npm test -- stripe-price` |
 | "Update entity" | File + line numbers + before/after |
 
+**Example bead creation:**
 ```bash
 bd create "Add fields to entity.ts" -t task -p 2 -l "ralph" -d "
-## Context Chain (disaster recovery ONLY)
-**Plan Reference**: .claude/plans/billing-plan.md
-
 ## Requirements
-<COPY full text from plan - not a reference>
+<FULL requirements - not a reference>
 
 ## Reference Implementation
 EDIT: path/to/file.ts
@@ -138,27 +155,35 @@ npm test -- stripe-price && npm run typecheck
 "
 ```
 
-The `## Context Chain` section is for disaster recovery only—normally the bead description has everything needed.
+---
+
+## Context Recovery
+
+If you lose track:
+
+```bash
+bd ready                        # See what's next
+bd blocked                      # See what's waiting on dependencies
+bd list --status in_progress    # Find current work
+bd show <id>                    # Full task details
+```
 
 ---
 
-## When to Use Beads vs Other Workflows
+## Maintenance
 
-| Situation | Workflow |
-|-----------|----------|
-| Single session, most tasks | [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) |
-| Want RalphTUI dashboard, simpler format | [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) |
-| Multi-session, context loss | **Beads** (this workflow) |
-| AI hallucinating mid-task | **Beads** (this workflow) |
-| Need persistent memory across days | **Beads** (this workflow) |
-| Bug fix, small task | `bd create` directly |
-| Found during work | `bd create --discovered-from <parent>` |
+Periodically check health:
+
+```bash
+bd doctor      # Check for orphaned issues, version mismatches
+bd stale       # Find issues not updated recently
+```
 
 ---
 
 ## Land the Plane Protocol
 
-Work is NOT complete until `git push` succeeds.
+Work is NOT complete until `git push` succeeds:
 
 ```bash
 bd close <id> --reason "Completed"
@@ -181,11 +206,38 @@ bd setup cursor    # Cursor IDE rules
 
 ---
 
-## Resources
+## RalphTUI (Optional)
+
+[RalphTUI](https://github.com/subsy/ralph-tui) provides a visual TUI dashboard. Beads are created with `ralph` label by default for compatibility.
+
+**Install:**
+```bash
+bun install -g ralph-tui
+ralph-tui setup
+```
+
+**Run:**
+```bash
+ralph-tui run --tracker beads --epic <epic-id>
+```
+
+**Resources:**
+- [RalphTUI Beads Tracker](https://ralph-tui.com/docs/plugins/trackers/beads)
+- [RalphTUI GitHub](https://github.com/subsy/ralph-tui)
+
+---
+
+## Beads Resources
 
 - [Beads GitHub](https://github.com/steveyegge/beads)
 - [Installing bd](https://github.com/steveyegge/beads/blob/main/docs/INSTALLING.md)
 - [Protected Branches](https://github.com/steveyegge/beads/blob/main/docs/PROTECTED_BRANCHES.md)
-- [RalphTUI Beads Tracker](https://ralph-tui.com/docs/plugins/trackers/beads)
 
-**Related:** [Simple workflow](WORKFLOW-SIMPLE.md) | [Tasks workflow](WORKFLOW-TASKS.md) | [Main guide](README.md)
+---
+
+## Related
+
+- [README.md](README.md) — Main guide
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default workflow, zero dependencies
+- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — Optional: prd.json format, RalphTUI integration
+- [COMPARISON.md](COMPARISON.md) — Why verification-enforced completion matters

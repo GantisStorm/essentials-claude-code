@@ -1,26 +1,48 @@
-# Tasks Workflow for RalphTUI Integration
+# Tasks Workflow (Optional)
 
-> **Middle-ground option.** Simpler than Beads but supports RalphTUI's TUI dashboard. Use [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) for most tasks. Use this when you want RalphTUI's visual interface or prd.json format.
+> **This workflow is optional.** Use the [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want the prd.json format or RalphTUI's visual dashboard.
 
-[RalphTUI](https://github.com/subsy/ralph-tui) is an AI Agent Loop Orchestrator with a terminal UI for monitoring autonomous execution. This workflow creates `.claude/prd/*.json` files compatible with both RalphTUI and the internal `/tasks-loop`.
+## When to Use This Workflow
+
+- You want the prd.json format for task tracking
+- You want RalphTUI's TUI dashboard (optional)
+- You prefer JSON-based task management
+
+**Note:** The built-in `/tasks-loop` works without RalphTUI. RalphTUI is only needed if you want the visual dashboard.
+
+---
+
+## Overview
+
+```
+┌─────────────────────────────────┐     ┌─────────────────────────────────┐
+│ PLANNING                        │     │ EXECUTION (choose one)          │
+│                                 │     │                                 │
+│ /plan-creator <task>            │     │ /tasks-loop prd.json            │
+│        ↓                        │────▶│   (built-in, no dependencies)   │
+│ /tasks-creator plan.md          │     │                                 │
+│                                 │     │ ralph-tui run --prd prd.json    │
+│ Output: .claude/prd/*.json      │     │   (optional TUI dashboard)      │
+└─────────────────────────────────┘     └─────────────────────────────────┘
+```
 
 ---
 
 ## What is prd.json?
 
-A JSON file containing self-contained tasks following RalphTUI's schema:
+A JSON file containing self-contained tasks:
 
 ```json
 {
-  "name": "Feature Name",
-  "description": "Brief description",
-  "branchName": "feature/name",
+  "name": "User Authentication",
+  "description": "JWT-based auth system",
+  "branchName": "feature/user-auth",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Task title",
-      "description": "FULL implementation details",
-      "acceptanceCriteria": ["Specific criterion 1"],
+      "title": "Add JWT validation middleware",
+      "description": "## Requirements\n...\n## Reference Implementation\n```typescript\n// FULL 80+ lines of code\n```\n## Exit Criteria\nnpm test -- auth",
+      "acceptanceCriteria": ["Validates tokens", "Returns 401 on invalid"],
       "priority": 1,
       "passes": false,
       "dependsOn": []
@@ -29,114 +51,53 @@ A JSON file containing self-contained tasks following RalphTUI's schema:
 }
 ```
 
-**Key insight**: Each task's `description` contains everything needed to implement - the executor never needs to read the original plan.
+**Key rule:** Each task's `description` contains EVERYTHING needed to implement. The executor never reads the original plan.
 
 ---
 
-## Setup
+## Usage
 
-**Install RalphTUI** (optional - only if using external execution):
+### Stage 1: Create Plan
 ```bash
-bun install -g ralph-tui
-ralph-tui setup
+/plan-creator Add user authentication with JWT
 ```
 
-**No external tools needed** for internal `/tasks-loop` execution.
-
----
-
-## The 4-Stage Workflow
-
-```
-PLANNING (Human Control)                    EXECUTION (Choice)
-┌────────────────────────────────────┐      ┌─────────────────────────────────┐
-│ 1. Analysis: "ultrathink..."       │      │ 3. /tasks-creator <plan>        │
-│ 2. /plan-creator → validate plan   │─────▶│ 4. Execute:                     │
-│                                    │      │    /tasks-loop OR ralph-tui     │
-└────────────────────────────────────┘      └─────────────────────────────────┘
-```
-
-### Stages 1-2: Planning
-
-```
-ultrathink and traverse and analyse the code. Ask clarifying questions before finalising.
-```
-
+### Stage 2: Convert to prd.json
 ```bash
-/plan-creator <task>                # Create architectural plan
+/tasks-creator .claude/plans/user-auth-3k7f2-plan.md
+# Output: .claude/prd/user-auth-3k7f2.json
 ```
 
-**Validate before tasks:** Read plan, verify implementation code is correct, check task breakdown. The plan is the source of truth - `/tasks-creator` copies from it verbatim.
+### Stage 3: Execute
 
-### Stage 3: Convert to prd.json
-
+**Option A: Built-in Loop (no dependencies)**
 ```bash
-/tasks-creator .claude/plans/feature-3k7f2-plan.md
+/tasks-loop .claude/prd/user-auth-3k7f2.json
+/tasks-loop .claude/prd/user-auth-3k7f2.json --max-iterations 5  # Limit iterations
+/cancel-tasks                                                     # Stop gracefully
 ```
 
-**Output:**
-```
-TASKS CREATED
-
-FILE: .claude/prd/feature-3k7f2.json
-TOTAL_TASKS: 5
-READY_TASKS: 2
-
-## Next Steps
-
-Review tasks:
-  cat .claude/prd/feature-3k7f2.json | jq '.userStories | length'
-
-Execute (choose one):
-  /tasks-loop .claude/prd/feature-3k7f2.json           # Internal loop
-  ralph-tui run --prd .claude/prd/feature-3k7f2.json   # RalphTUI dashboard
-```
-
-**Review tasks:** Verify each task has full implementation code, not summaries.
-
-### Stage 4: Execute
-
-**Option A: Internal Loop**
+**Option B: RalphTUI Dashboard (optional)**
 ```bash
-/tasks-loop .claude/prd/<name>.json                    # Run internally
-/tasks-loop .claude/prd/<name>.json --max-iterations 5 # Limit iterations
-/cancel-tasks                                           # Stop gracefully
-```
-
-**Option B: RalphTUI (external)**
-```bash
-ralph-tui run --prd .claude/prd/<name>.json            # Visual TUI dashboard
+# Install RalphTUI first: bun install -g ralph-tui && ralph-tui setup
+ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
 ```
 
 ---
 
-## Execution Options Comparison
+## Execution Comparison
 
 | Feature | `/tasks-loop` | `ralph-tui` |
 |---------|---------------|-------------|
 | Installation | None (built-in) | Requires bun + ralph-tui |
 | Interface | Terminal output | TUI dashboard |
+| Dependencies | Zero | RalphTUI |
 | Pause/Resume | `/cancel-tasks` + restart | Keyboard shortcuts |
 | Multi-agent | Claude Code only | Claude, OpenCode, Factory Droid |
-| Subagent tree | No | Yes (toggle with T) |
 
 ---
 
-## The Self-Contained Task Rule
-
-Each task must be implementable with ONLY its description. The Context field is for disaster recovery only.
-
-| Bad | Good |
-|-----|------|
-| "See plan for details" | FULL code (50-200+ lines) in description |
-| "Run tests" | `npm test -- auth-middleware` |
-| "Update the file" | File + line numbers + BEFORE/AFTER code |
-
-**Litmus test:** Could someone implement this with ONLY the task description?
-
----
-
-## prd.json Schema Reference
+## prd.json Schema
 
 ### Root Object
 
@@ -152,27 +113,34 @@ Each task must be implementable with ONLY its description. The Context field is 
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | Yes | Unique ID (US-001) |
+| `id` | string | Yes | Unique ID (US-001, US-002...) |
 | `title` | string | Yes | Short title |
 | `description` | string | Yes | FULL implementation details |
 | `acceptanceCriteria` | string[] | Yes | Verification criteria |
-| `priority` | number | No | 1=highest, 2=default |
+| `priority` | number | No | 1=highest (default: 2) |
 | `passes` | boolean | Yes | Always `false` initially |
 | `dependsOn` | string[] | No | IDs of blocking tasks |
 
-**CRITICAL**: Use `userStories` not `tasks`, use `passes` not `status`.
+### Critical Schema Rules
+
+- Use `userStories` — NOT `tasks` or `items`
+- Use `passes: false` — NOT `status: "pending"`
+- Use `acceptanceCriteria` — NOT `criteria` or `tests`
+- Use `dependsOn` — NOT `dependencies` or `blockedBy`
 
 ---
 
-## When to Use Tasks vs Other Workflows
+## The Self-Contained Rule
 
-| Situation | Workflow |
-|-----------|----------|
-| Single session, most tasks | [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) |
-| Want RalphTUI dashboard | **Tasks** (this workflow) |
-| Simple JSON format needed | **Tasks** (this workflow) |
-| Multi-session, context loss | [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) |
-| Persistent across sessions | [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) |
+Each task must be implementable with ONLY its description.
+
+| Bad | Good |
+|-----|------|
+| "See plan for details" | FULL code (50-200+ lines) in description |
+| "Run tests" | `npm test -- auth-middleware` |
+| "Update the file" | File + line numbers + BEFORE/AFTER code |
+
+**Litmus test:** Could someone implement this with ONLY the task description?
 
 ---
 
@@ -190,16 +158,36 @@ cat .claude/prd/<name>.json | jq '.'
 # Find pending tasks
 jq '[.userStories[] | select(.passes == false)]' .claude/prd/<name>.json
 
-# Find ready tasks (no blockers)
-jq '.userStories as $all | [.userStories[] | select(.passes == false) | select((.dependsOn == null) or (.dependsOn | length == 0) or ((.dependsOn // []) | all(. as $dep | ($all | map(select(.id == $dep and .passes == true)) | length > 0))))]' .claude/prd/<name>.json
+# Count completed vs pending
+jq '{completed: [.userStories[] | select(.passes == true)] | length, pending: [.userStories[] | select(.passes == false)] | length}' .claude/prd/<name>.json
 ```
 
 ---
 
-## Resources
+## RalphTUI (Optional)
 
+[RalphTUI](https://github.com/subsy/ralph-tui) is an AI Agent Loop Orchestrator with a terminal UI.
+
+**Install:**
+```bash
+bun install -g ralph-tui
+ralph-tui setup
+```
+
+**Run:**
+```bash
+ralph-tui run --prd .claude/prd/feature.json
+```
+
+**Resources:**
 - [RalphTUI Documentation](https://ralph-tui.com/docs)
 - [RalphTUI GitHub](https://github.com/subsy/ralph-tui)
-- [RalphTUI JSON Tracker](https://ralph-tui.com/docs/plugins/trackers/json)
 
-**Related:** [Simple workflow](WORKFLOW-SIMPLE.md) | [Beads workflow](WORKFLOW-BEADS.md) | [Main guide](README.md)
+---
+
+## Related
+
+- [README.md](README.md) — Main guide
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default workflow, zero dependencies
+- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Optional: Persistent memory across sessions
+- [COMPARISON.md](COMPARISON.md) — Why verification-enforced completion matters
