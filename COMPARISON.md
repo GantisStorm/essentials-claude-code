@@ -59,22 +59,6 @@ Interactive back-and-forth. Human guides every step.
 
 ---
 
-### Spec-First
-
-```
-Request → Specification → Approval → Generate → "Done"
-```
-
-Create detailed specs or PRDs before coding. Human approves design.
-
-**Strengths:** Structured documentation. Team-oriented. Catches design issues before coding. Auditable.
-
-**Weaknesses:** Process overhead for simple tasks. Specs can drift from implementation. May still lack runtime verification.
-
-**Best for:** Teams, enterprise, compliance-heavy environments.
-
----
-
 ### Plan-First + Verification-Enforced (Essentials)
 
 ```

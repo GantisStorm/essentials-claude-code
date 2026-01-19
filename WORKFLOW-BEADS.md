@@ -8,7 +8,7 @@
 
 ## What are Beads?
 
-Atomic, self-contained task units in a local graph database. Unlike plans (session-scoped) or specs (project-scoped), beads **persist** across sessions.
+Atomic, self-contained task units in a local graph database. Unlike plans (session-scoped), beads **persist** across sessions.
 
 | Component | Purpose |
 |-----------|---------|

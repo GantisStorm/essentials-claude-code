@@ -185,7 +185,7 @@ Based on [Ralph Wiggum](https://github.com/anthropics/claude-code/tree/main/plug
 - [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Single-session features, bug fixes, refactoring
 - [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — RalphTUI integration with prd.json format
 - [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent memory that survives sessions and context compaction
-- [COMPARISON.md](COMPARISON.md) — Why verification-enforced completion matters (code-first vs conversation vs spec-first vs essentials)
+- [COMPARISON.md](COMPARISON.md) — Why verification-enforced completion matters (code-first vs conversation vs essentials)
 
 ## License
 

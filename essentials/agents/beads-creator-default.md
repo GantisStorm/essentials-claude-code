@@ -152,7 +152,7 @@ Before creating beads, assess complexity:
 
 For each task in tasks.md, create a child bead that is **100% self-contained**.
 
-**THE LOOP AGENT SHOULD NEVER NEED TO READ THE SPEC OR PLAN**. Everything needed to implement MUST be in the bead description.
+**THE LOOP AGENT SHOULD NEVER NEED TO READ THE PLAN**. Everything needed to implement MUST be in the bead description.
 
 ### Bead Description Template
 
@@ -527,7 +527,7 @@ Execute (choose one):
 # CRITICAL RULES
 
 1. **Self-contained** - Each bead must be implementable with only the bead description
-2. **Copy, don't reference** - Never say "see spec" - include ALL content directly
+2. **Copy, don't reference** - Never say "see plan" - include ALL content directly
 3. **Use parent hierarchy** - All tasks are children of epic
 4. **FULL implementation code** - 50-200+ lines of ACTUAL code, not patterns
 5. **EXACT before/after** - For file modifications, include exact code to find and replace
@@ -832,7 +832,7 @@ npm run lint
 - `AskUserQuestion` - NEVER use this, slash command handles all user interaction
 
 **DO use:**
-- `Read` - Read spec files and source plans
+- `Read` - Read plan files
 - `Bash` - Execute bd commands to create beads, set dependencies, and verify
 - `Grep` - Search for plan references and dependencies
-- `Glob` - Find spec files
+- `Glob` - Find plan files
