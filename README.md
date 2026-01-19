@@ -1,26 +1,43 @@
 # Essentials for Claude Code
 
-**Plan first. Implement until done.** No more "it's complete" when tests are failing.
+A plugin that adds **verification-enforced completion** to Claude Code. Plans define exit criteria (exact test commands), loops run until those criteria pass. The AI cannot declare "done" — only passing tests can.
 
-## The Problem
+## What This Plugin Provides
 
-Claude Code is powerful, but without structure it can:
-- Start coding before understanding the full picture
-- Lose track of what's done when context gets long
-- Say "done" when tests are still failing
-- Hallucinate on large features that exceed context
+**15 commands** organized into three workflows:
 
-**Why this happens:** AI declares "done" when code is written, not when code works. There's no verification requirement, so "done" means "I finished typing" not "tests pass."
+| Workflow | What It Does | Best For |
+|----------|--------------|----------|
+| **Simple** | Plan → implement loop | 80% of tasks (start here) |
+| **Tasks** | Plan → prd.json → task loop | RalphTUI dashboard integration |
+| **Beads** | Plan → beads DB → bead loop | Multi-session, context recovery |
 
-**The Solution:** Plan first, then loop until exit criteria pass.
+**Core concept:** Every workflow follows the same pattern:
 
-```bash
-/plan-creator Add user authentication with JWT
-/implement-loop .claude/plans/user-auth-3k7f2-plan.md
-# Loop continues until exit criteria PASS - not until AI says "done"
+```
+1. CREATE PLAN     →  Architectural plan with full code + exit criteria
+2. EXECUTE LOOP    →  Implement until exit criteria PASS
+3. VERIFIED DONE   →  Loop ends only when tests pass (not when AI says "done")
 ```
 
-The loop cannot end until verification passes. "Done" means actually done.
+## The Problem This Solves
+
+```
+Without Essentials:
+  AI writes code → "Done!"
+  You run tests → 3 failing
+  "Fix these" → "Fixed!"
+  You run tests → 1 still failing
+  [repeat until you give up]
+
+With Essentials:
+  /plan-creator Add auth       → Creates plan with exit criteria
+  /implement-loop plan.md      → Loops until criteria PASS
+  [loop runs tests, fails, fixes, retries automatically]
+  "Exit criteria passed"       → Actually done
+```
+
+The loop cannot end until verification passes. No more "it's complete" with failing tests.
 
 ---
 
