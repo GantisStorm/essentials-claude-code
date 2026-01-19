@@ -1,4 +1,4 @@
-# Beads Workflow for Large Plans
+# Beads Workflow for Persistent Execution
 
 > **Don't start here.** This is the most token-expensive workflow. Use [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) first. Escalate to beads only when the simple workflow fails—AI hallucinates mid-task, loses track, or the feature spans multiple days.
 
@@ -17,7 +17,7 @@ Atomic, self-contained task units in a local graph database. Unlike plans (sessi
 | Migration Pattern | Exact before/after for file edits |
 | Exit Criteria | Specific verification commands |
 | Dependencies | `depends_on`/`blocks` relationships |
-| Labels | Link to specs (`openspec:feature-name`) |
+| Labels | Link to source (`plan:feature-name`) |
 
 **Key insight:** When context compacts, `bd ready` always shows what's next. Each bead has everything needed—no reading other files.
 
@@ -27,30 +27,40 @@ Atomic, self-contained task units in a local graph database. Unlike plans (sessi
 
 **Install:** `brew tap steveyegge/beads && brew install bd` (or npm: `npm install -g @beads/bd`)
 
-**Initialize:** `bd init --stealth` (keeps `.beads/` out of git, perfect for client projects)
+**Initialize:**
+
+| Mode | Command | When to Use |
+|------|---------|-------------|
+| Stealth | `bd init --stealth` | Personal/brownfield, local only |
+| Full Git | `bd init` | Team projects, sync via git |
+| Protected Branch | `bd init --branch beads-sync` | When main is protected |
+
+**Stealth Mode** (`--stealth`): Keeps `.beads/` local only - no git sync, no team collaboration. Use for personal or brownfield projects.
 
 **Essential commands:**
 | Command | Action |
 |---------|--------|
 | `bd ready` | List tasks with no blockers |
+| `bd blocked` | Show tasks waiting on dependencies |
 | `bd create "Title" -p 0` | Create P0 task |
 | `bd dep add <child> <parent>` | Link dependencies |
 | `bd close <id> --reason "Done"` | Complete task |
+| `bd sync` | Force immediate sync |
 
 ---
 
-## The 5-Stage Workflow
+## The 4-Stage Workflow
 
 ```
 PLANNING (Human Control)                    EXECUTION (AI Autonomy)
 ┌────────────────────────────────────┐      ┌─────────────────────────────────┐
-│ 1. Analysis: "ultrathink..."       │      │ 4. /beads-creator <spec>        │
-│ 2. /plan-creator → /proposal-creator│─────▶│ 5. /beads-loop                  │
-│ 3. Validate spec before proceeding │      │    bd ready → implement → close │
+│ 1. Analysis: "ultrathink..."       │      │ 3. /beads-creator <plan>        │
+│ 2. /plan-creator → validate plan   │─────▶│ 4. /beads-loop                  │
+│                                    │      │    bd ready → implement → close │
 └────────────────────────────────────┘      └─────────────────────────────────┘
 ```
 
-### Stages 1-3: Planning
+### Stages 1-2: Planning
 
 ```
 ultrathink and traverse and analyse the code. Ask clarifying questions before finalising.
@@ -58,22 +68,15 @@ ultrathink and traverse and analyse the code. Ask clarifying questions before fi
 
 ```bash
 /plan-creator <task>                # Create plan
-/proposal-creator <plan-path>       # Convert to OpenSpec
 ```
 
-**Validate before beads:** Read spec, verify `design.md` code is correct, check task breakdown. Skipping leads to wasted work.
+**Validate before beads:** Read plan, verify implementation code is correct, check task breakdown. Skipping leads to wasted work.
 
-### Stage 4: Import to Beads
+### Stage 3: Import to Beads
 
 ```bash
-# Single spec:
-/beads-creator openspec/changes/<name>/
-
-# Multiple specs (from auto-decomposed proposal):
-/beads-creator openspec/changes/<name-1>/ openspec/changes/<name-2>/
+/beads-creator .claude/plans/feature-3k7f2-plan.md
 ```
-
-**Auto-decomposition:** Beads >200 lines are automatically split—parent marked `decomposed`, child sub-beads created with `--parent`. Multi-spec preserves cross-spec dependencies.
 
 **Output shows execution order:**
 ```
@@ -83,32 +86,32 @@ EXECUTION ORDER (by priority):
   P2 (after P1): task-005
 ```
 
-**Review beads:** `bd list -l "openspec:<name>"` then `bd show <id>` — verify complete code snippets and exit criteria.
+**Review beads:** `bd list -l "plan:<name>"` then `bd show <id>` — verify complete code snippets and exit criteria.
 
-### Stage 5: Execute
+### Stage 4: Execute
 
+**Option A: Internal Loop**
 ```bash
-/beads-loop --label openspec:<name>           # Step mode (default)
-/beads-loop --auto --label openspec:<name>    # Auto mode
+/beads-loop --label plan:<name>               # Run all beads with label
+/beads-loop --max-iterations 10               # Limit iterations (optional)
 /cancel-beads                                  # Stop gracefully
 ```
 
-**Step mode:** After each bead, outputs execution status then pauses:
-```
-===============================================================
-BEAD COMPLETED: task-001
-===============================================================
-Progress: 1/5 beads complete
-
-EXECUTION ORDER (remaining):
-  Next → task-002: Add validation (P0)
-  Then → task-003: Write tests (P1, blocked until P0 done)
-===============================================================
+**Option B: RalphTUI (external)**
+```bash
+ralph-tui run --tracker beads --epic <epic-id>    # Visual TUI dashboard
 ```
 
-**Loop mechanism:** Stop hook checks `bd ready` for remaining tasks. If ready beads exist, loop continues. State tracked in `.claude/beads-loop.local.md`.
+RalphTUI requires `ralph` label on beads. Either add during creation or configure RalphTUI to use your label:
+```toml
+# .ralph-tui/config.toml
+[trackerOptions]
+labels = "plan:my-feature"
+```
 
-**Loop cycle:** `bd ready` → pick highest priority → implement → `bd close` → (if OpenSpec: mark tasks.md) → repeat until no ready beads.
+**Loop mechanism:** Stop hook checks `bd ready` for remaining tasks. If ready beads exist, loop continues.
+
+**Loop cycle:** `bd ready` → pick highest priority → implement → `bd close` → repeat until no ready beads.
 
 ---
 
@@ -123,13 +126,12 @@ Each bead must be implementable with ONLY its description. The Context Chain sec
 | "Update entity" | File + line numbers + before/after |
 
 ```bash
-bd create "Add fields to entity.ts" -t task -p 2 -l "openspec:billing" -d "
+bd create "Add fields to entity.ts" -t task -p 2 -l "plan:billing" -d "
 ## Context Chain (disaster recovery ONLY)
-**Spec Reference**: openspec/changes/billing/
 **Plan Reference**: .claude/plans/billing-plan.md
 
 ## Requirements
-<COPY full text from spec - not a reference>
+<COPY full text from plan - not a reference>
 
 ## Reference Implementation
 EDIT: path/to/file.ts
@@ -145,12 +147,15 @@ The `## Context Chain` section is for disaster recovery only—normally the bead
 
 ---
 
-## When to Use What
+## When to Use Beads vs Other Workflows
 
-| Situation | Tool |
-|-----------|------|
-| New feature | OpenSpec first |
-| Spec approved | OpenSpec + Beads |
+| Situation | Workflow |
+|-----------|----------|
+| Single session, most tasks | [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) |
+| Want RalphTUI dashboard, simpler format | [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) |
+| Multi-session, context loss | **Beads** (this workflow) |
+| AI hallucinating mid-task | **Beads** (this workflow) |
+| Need persistent memory across days | **Beads** (this workflow) |
 | Bug fix, small task | `bd create` directly |
 | Found during work | `bd create --discovered-from <parent>` |
 
@@ -177,7 +182,7 @@ bd setup cursor    # Cursor IDE rules
 
 **Protected branches:** `bd init --branch beads-sync` + `bd daemon --start --auto-commit`
 
-**Labels:** `openspec:<name>`, `spec:<name>`, `discovered`, `tech-debt`, `blocked-external`
+**Labels:** `plan:<name>`, `discovered`, `tech-debt`, `blocked-external`
 
 ---
 
@@ -186,5 +191,6 @@ bd setup cursor    # Cursor IDE rules
 - [Beads GitHub](https://github.com/steveyegge/beads)
 - [Installing bd](https://github.com/steveyegge/beads/blob/main/docs/INSTALLING.md)
 - [Protected Branches](https://github.com/steveyegge/beads/blob/main/docs/PROTECTED_BRANCHES.md)
+- [RalphTUI Beads Tracker](https://ralph-tui.com/docs/plugins/trackers/beads)
 
-**Related:** [Simple workflow](WORKFLOW-SIMPLE.md) | [Spec workflow](WORKFLOW-SPEC.md) | [Main guide](README.md)
+**Related:** [Simple workflow](WORKFLOW-SIMPLE.md) | [Tasks workflow](WORKFLOW-TASKS.md) | [Main guide](README.md)

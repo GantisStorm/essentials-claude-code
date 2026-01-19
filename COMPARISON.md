@@ -225,7 +225,7 @@ If you need these things, excellent tools exist. Essentials solves a different p
 
 ## The Three Tiers
 
-> **Start with Simple.** 80% of tasks don't need specs or beads. Escalate only when you hit problems—hallucinations, lost context, multi-day features.
+> **Start with Simple.** 80% of tasks don't need tasks or beads conversion. Escalate only when you hit problems—hallucinations, lost context, multi-day features, or want RalphTUI's dashboard.
 
 Match workflow to task size:
 
@@ -238,24 +238,25 @@ Match workflow to task size:
 
 Single session. Exit criteria in plan. Loop until pass. **This handles 80% of tasks.**
 
-### Medium: Plan → Spec → Spec Loop (When You Want Review)
+### Medium: Plan → Tasks → Tasks Loop (RalphTUI Compatible)
 
 ```bash
 /plan-creator Add JWT authentication
-/proposal-creator .claude/plans/jwt-auth-abc12-plan.md
-# Review the spec, verify design.md code is correct
-/spec-loop jwt-auth
+/tasks-creator .claude/plans/jwt-auth-abc12-plan.md
+# Review prd.json, verify task descriptions have full code
+/tasks-loop ./prd.json                  # Internal execution
+# OR: ralph-tui run --prd ./prd.json   # TUI dashboard
 ```
 
-Adds human review of spec before execution. **Use when you want to verify the design before any code is written.** Also useful for team handoffs.
+Creates prd.json file with self-contained tasks. **Use when you want RalphTUI's TUI dashboard or prefer the prd.json format.** Each task has full implementation code—no reading the original plan.
 
-### Large: Plan → Spec → Beads → Beads Loop (When Simple Fails)
+### Beads: Plan → Beads → Beads Loop (When Simple Fails)
 
 ```bash
 /plan-creator Add complete auth system
-/proposal-creator .claude/plans/auth-system-xyz99-plan.md
-/beads-creator openspec/changes/auth-system/
-/beads-loop --label openspec:auth-system
+/beads-creator .claude/plans/auth-system-xyz99-plan.md
+/beads-loop --label plan:auth-system              # Internal execution
+# OR: ralph-tui run --tracker beads --epic <id>  # TUI dashboard
 ```
 
 Full persistence. Each bead is self-contained. Survives sessions, context compaction, interruptions. **Use when Simple tier fails—AI hallucinates mid-task, loses track, or feature spans multiple days.** This is the most token-expensive workflow.
@@ -282,7 +283,7 @@ Conversation tools have no learning curve. Essentials has three tiers to learn. 
 
 **Token Cost vs Context Recovery**
 
-The full pipeline (plan → spec → beads) copies implementation code multiple times. This is intentional—each bead must be self-contained for context recovery. But it's expensive. For simple tasks, skip specs and beads entirely.
+The tasks and beads workflows (plan → tasks/beads) copy implementation code into each task/bead. This is intentional—each must be self-contained for context recovery. But it's expensive. For simple tasks, use `/implement-loop` directly.
 
 ---
 

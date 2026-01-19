@@ -1,8 +1,8 @@
 # Simple Workflow: Plan + Implement
 
-> **This is the default workflow. 80% of tasks don't need specs or beads.** Start here. Escalate only when you hit problems—hallucinations, lost context, multi-day features.
+> **This is the default workflow. 80% of tasks don't need tasks or beads conversion.** Start here. Escalate only when you hit problems—hallucinations, lost context, multi-day features, or want RalphTUI's dashboard.
 
-Single-session features, bug fixes, and refactoring. For larger work: [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md). For validation before coding: [WORKFLOW-SPEC.md](WORKFLOW-SPEC.md).
+Single-session features, bug fixes, and refactoring. For RalphTUI integration: [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md). For persistent memory: [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md).
 
 ## Overview
 
@@ -57,32 +57,14 @@ Fixing a plan is cheap. Debugging bad generated code is expensive.
 /implement-loop .claude/plans/user-authentication-3k7f2-plan.md
 ```
 
-**Modes:**
-| Mode | Command | Behavior |
-|------|---------|----------|
-| Step (default) | `/implement-loop plan.md` | Pauses after each todo |
-| Auto | `/implement-loop plan.md --auto` | Runs continuously |
+**Options:**
+| Option | Command | Behavior |
+|--------|---------|----------|
+| Default | `/implement-loop plan.md` | Runs until exit criteria pass |
+| Limited | `/implement-loop plan.md --max-iterations 10` | Stops after N iterations |
 | Cancel | `/cancel-implement` | Stops, preserves progress |
 
-**Step mode:** After each todo, outputs execution status then pauses:
-```
-===============================================================
-TODO COMPLETED: Add validation logic
-===============================================================
-Progress: 2/5 todos complete
-
-EXECUTION ORDER (remaining):
-  Next → Todo 3: Write unit tests
-  Then → Todo 4: Run exit criteria
-===============================================================
-```
-Select **Continue** to proceed, or **Stop** to end gracefully (preserves progress).
-
-**Auto-decomposition:** After reading plan, agent assesses complexity. If >5 files, >500 lines, or >2 subsystems → auto-creates grouped sub-todos via `TodoWrite`.
-
-**Loop mechanism:** Stop hook in `hooks.json` intercepts exit attempts, checks transcript for completion signals (`exit criteria passed`). State tracked in `.claude/implement-loop.local.md`.
-
-**Exit vs Stop:** The loop *exits* automatically when all exit criteria pass. User-initiated *Stop* (via step mode or `/cancel-implement`) ends the loop early but preserves all progress.
+**Loop mechanism:** Stop hook checks transcript for completion signals (`exit criteria passed`). State tracked in `.claude/implement-loop.local.md`.
 
 ---
 
@@ -97,6 +79,6 @@ Select **Continue** to proceed, or **Stop** to end gracefully (preserves progres
 ## Context Recovery
 
 When context compacts mid-loop:
-1. Re-read the plan file (path in `.claude/implement-loop.local.md`)
+1. Re-read the plan file
 2. Check todo list status to see completed/pending items
 3. Continue with the next pending todo

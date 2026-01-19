@@ -1,6 +1,6 @@
 # Slash Command Template
 
-This template defines the standard structure for slash commands in `essentials/commands/*.md`.
+Standard structure for slash commands in `essentials/commands/*.md`.
 
 ---
 
@@ -11,169 +11,58 @@ This template defines the standard structure for slash commands in `essentials/c
 allowed-tools: <Tool1, Tool2, ...>
 argument-hint: "<argument pattern>"
 description: <One-line description>
-context: fork  # Optional: runs command in isolated context (use for heavy exploration commands)
+context: fork  # Optional: runs in isolated context
 ---
 
 # <Command Title>
 
-<One to two sentence overview of what this command does.>
-
-**IMPORTANT**: <Key behavioral note, e.g., output handling>.
-
-## Why <Feature Name>?
-
-<Brief rationale explaining the benefits of this approach.>
-
-<Bullet points highlighting key advantages>:
-- **<Advantage 1>** - <Brief explanation>
-- **<Advantage 2>** - <Brief explanation>
-- **<Advantage 3>** - <Brief explanation>
-
-## What Good <Output Type> Include
-
-1. **<Section 1>**
-   - <Detail 1>
-   - <Detail 2>
-
-2. **<Section 2>**
-   - <Detail 1>
-   - <Detail 2>
-
-3. **<Section 3>**
-   - <Detail 1>
-   - <Detail 2>
+<One sentence overview.>
 
 ## Arguments
 
-<Description of argument handling>:
-- <Argument type 1>: `<example>`
-- <Argument type 2>: `<example>`
-- <Argument type 3>: `<example>`
+<Description of arguments with examples>
 
 ## Instructions
 
 ### Step 1: <Step Name>
 
-<Description of what to do>
+<Step description with code blocks if needed>
 
-```bash
-# Example commands
-<command 1>
-<command 2>
-```
+### Step 2: Launch Agent
 
-### Step 2: <Step Name>
-
-Launch `<agent-name>` in background:
+Launch `<agent-name>`:
 
 ```
-<Agent prompt template>
-
-## Requirements
-
-- <Requirement 1>
-- <Requirement 2>
-
-## Process
-
-1. <Phase 1>
-2. <Phase 2>
-...
+<Agent prompt with requirements and phases>
 
 Return:
-<Return format>
+<expected return format>
 ```
 
 Use `subagent_type: "<agent-type>"` and `run_in_background: true`.
 
-### Step 3: <Step Name>
+### Step 3: Report Result
 
 ```
-## <Output Title>
+## <Result Title>
 
-**<Field 1>**: <value>
-**<Field 2>**: <value>
+**<Key field>**: <value>
 
-### <Subsection>
-
-<Content>
-
-### Next Steps
-
-1. <Step 1>
-2. <Step 2>
-3. <Step 3>
-```
-
-## Workflow Diagram
-
-> **Note**: <Any notes about the diagram>
-
-```
-/<command-name> <arguments>
-    │
-    ▼
-┌───────────────────────────────────────────────────────────────┐
-│ STEP 1: <STEP NAME>                                           │
-│                                                               │
-│  • <Action 1>                                                 │
-│  • <Action 2>                                                 │
-│  • <Action 3>                                                 │
-└───────────────────────────────────────────────────────────────┘
-    │
-    ▼
-┌───────────────────────────────────────────────────────────────┐
-│ STEP 2: <STEP NAME>                                           │
-│                                                               │
-│  Agent: <agent-name>                                          │
-│  Mode: run_in_background: true                                │
-│                                                               │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │ AGENT PHASES:                                           │  │
-│  │                                                         │  │
-│  │  Phase 1: <PHASE NAME>                                  │  │
-│  │     • <Action 1>                                        │  │
-│  │     • <Action 2>                                        │  │
-│  │                                                         │  │
-│  │  Phase 2: <PHASE NAME>                                  │  │
-│  │     • <Action 1>                                        │  │
-│  │     • <Action 2>                                        │  │
-│  │                                                         │  │
-│  │  Phase N: <PHASE NAME>                                  │  │
-│  │     → <Output location>                                 │  │
-│  └─────────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────────┘
-    │
-    ▼
-┌───────────────────────────────────────────────────────────────┐
-│ STEP 3: <STEP NAME>                                           │
-│                                                               │
-│  Output:                                                      │
-│  • <Output item 1>                                            │
-│  • <Output item 2>                                            │
-│  • <Output item 3>                                            │
-└───────────────────────────────────────────────────────────────┘
+Next Steps:
+1. <step>
+2. <step>
 ```
 
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
-| <Error 1> | <Action to take> |
-| <Error 2> | <Action to take> |
-| <Error 3> | <Action to take> |
+| <error> | <action> |
 
 ## Example Usage
 
 ```bash
-# <Description of example 1>
-/<command-name> <example args 1>
-
-# <Description of example 2>
-/<command-name> <example args 2>
-
-# <Description of example 3>
-/<command-name> <example args 3>
+/<command> <example>
 ```
 ```
 
@@ -182,83 +71,34 @@ Use `subagent_type: "<agent-type>"` and `run_in_background: true`.
 ## Section Requirements
 
 ### Frontmatter (Required)
-- `allowed-tools`: Comma-separated list of tools the command can use
-- `argument-hint`: Pattern showing expected arguments (e.g., `<file1> [file2]`)
-- `description`: Single-line description for help text
-- Optional: `context: fork` for commands that spawn heavy background agents (isolates context from main session)
-- Optional: `hide-from-slash-command-tool: "true"` for internal commands
+- `allowed-tools`: Comma-separated list of tools
+- `argument-hint`: Pattern showing expected arguments
+- `description`: Single-line description
+- Optional: `context: fork` for heavy background agents
 
 ### Title & Overview (Required)
-- H1 title matching the command name
-- One to two sentence description
-- **IMPORTANT** note for key behavioral requirements
-
-### Why Section (Recommended)
-- Explains the rationale for the approach
-- Bullet points with **bold** advantage names
-- Helps users understand the value
-
-### What Good Output Includes (Recommended)
-- Numbered list of output sections
-- Nested bullet points for details
-- Helps set expectations
+- H1 title matching command name
+- One sentence description
 
 ### Arguments (Required)
-- Description of what arguments are accepted
-- Bullet list with examples
-- Handle edge cases (no args, multiple formats)
+- What arguments are accepted
+- Examples of usage
 
 ### Instructions (Required)
-- Numbered steps (Step 1, Step 2, etc.)
-- Each step has clear actions
-- Include example commands/prompts
+- Numbered steps
 - Agent launch format with `subagent_type` and `run_in_background`
-- Final step shows output format
-
-### Workflow Diagram (Required)
-- ASCII box diagram showing flow
-- Shows orchestrator steps and agent phases
-- Uses consistent box characters: `┌─┐│└─┘▼▶`
-- Nested boxes for agent internals
+- Result reporting format
 
 ### Error Handling (Required)
-- Table format with Scenario and Action columns
-- Cover common failure cases
-- Clear remediation actions
+- Table with Scenario and Action columns
+- Common failure cases
 
 ### Example Usage (Required)
-- Code block with bash highlighting
-- Multiple examples covering different use cases
-- Comments explaining each example
+- Bash code block with examples
 
 ---
 
 ## Special Command Types
-
-### Commands with Step Mode
-
-For commands that pause for user confirmation:
-
-```markdown
-## Step Mode (Default)
-
-Step mode pauses after <action> for human control.
-
-**After <action>, you MUST use AskUserQuestion:**
-
-```
-Use AskUserQuestion with:
-- question: "<Question text>"
-- header: "<Short header>"
-- options:
-  - label: "Continue (Recommended)"
-    description: "<What continue does>"
-  - label: "Stop"
-    description: "<What stop does>"
-```
-
-Use `--auto` flag to skip pauses.
-```
 
 ### Cancel Commands
 
@@ -266,8 +106,7 @@ For commands that cancel loops:
 
 ```markdown
 ---
-allowed-tools: Bash, Read, TodoWrite
-argument-hint: ""
+allowed-tools: Bash
 description: Cancel active <loop-name> loop
 ---
 
@@ -277,8 +116,11 @@ Cancel the active <loop-name> loop.
 
 ## Instructions
 
-1. Set a flag or state indicating the loop should stop
-2. Report cancellation to the user
+1. Check if state file exists
+2. If exists: Remove file, report cancellation
+3. If not: Report "No active loop found"
 
-The <loop-command> checks for this flag and will gracefully exit.
+## After Cancellation
+
+Progress is preserved. Resume with: `/<loop-command>`
 ```

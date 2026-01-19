@@ -29,33 +29,33 @@ mkdir -p .claude/plans .claude/maps .claude/prompts
 
 ## Workflows
 
-> **80% of tasks need only the Simple workflow.** Start there. Escalate to Medium/Large only when you hit problems (hallucinations, lost context, multi-day features).
+> **80% of tasks need only the Simple workflow.** Start there. Escalate only when you hit problems (hallucinations, lost context, multi-day features).
 
-| Size | Commands | When to Use |
-|------|----------|-------------|
-| **Simple** | `/plan-creator` → `/implement-loop` | Single session, most tasks (start here) |
-| **Medium** | Plan → `/proposal-creator` → `/spec-loop` | Want human review before coding |
-| **Large** | Plan → Proposal → `/beads-creator` → `/beads-loop` | AI hallucinating, multi-session, spans days |
+| Workflow | Commands | Execution | When to Use |
+|----------|----------|-----------|-------------|
+| **Simple** | `/plan-creator` → `/implement-loop` | Internal | Single session, most tasks (start here) |
+| **Tasks** | Plan → `/tasks-creator` | `/tasks-loop` or RalphTUI | RalphTUI dashboard, prd.json format |
+| **Beads** | Plan → `/beads-creator` | `/beads-loop` or RalphTUI | Multi-session, context loss, hallucinations |
 
 ```mermaid
 flowchart LR
     P["/plan-creator<br/>/bug-plan-creator<br/>/code-quality-plan-creator"] --> Plans[".claude/plans/"]
     Plans --> IL["/implement-loop"]
-    Plans --> PC["/proposal-creator"]
-    PC --> SL["/spec-loop"]
-    PC --> BC["/beads-creator"]
-    BC --> BL["/beads-loop"]
+    Plans --> TC["/tasks-creator"]
+    Plans --> BC["/beads-creator"]
+    TC --> TL["/tasks-loop<br/>or RalphTUI"]
+    BC --> BL["/beads-loop<br/>or RalphTUI"]
 
     IL --> Done1(("✓ Exit criteria pass"))
-    SL --> Done2(("✓ All tasks complete"))
+    TL --> Done2(("✓ All tasks complete"))
     BL --> Done3(("✓ No ready beads"))
 ```
 
-**Small:** Single-session features, bug fixes, refactoring. `/plan-creator` analyzes codebase → `/implement-loop` executes until exit criteria pass.
+**Simple:** Single-session features, bug fixes, refactoring. `/plan-creator` analyzes codebase → `/implement-loop` executes until exit criteria pass.
 
-**Medium:** Human validation before coding. `/plan-creator` → `/proposal-creator` creates OpenSpec → **human reviews spec** → `/spec-loop` implements tasks until all complete.
+**Tasks:** RalphTUI integration with prd.json format. `/plan-creator` → `/tasks-creator` creates prd.json → `/tasks-loop` executes internally or `ralph-tui run --prd` for TUI dashboard.
 
-**Large:** Persistent memory across sessions. `/plan-creator` → `/proposal-creator` → `/beads-creator` creates self-contained beads → `/beads-loop` executes. Survives context compaction and session restarts.
+**Beads:** Persistent memory across sessions. `/plan-creator` → `/beads-creator` creates self-contained beads → `/beads-loop` executes internally or `ralph-tui run --tracker beads` for TUI dashboard.
 
 ## Commands
 
@@ -66,18 +66,18 @@ flowchart LR
 | `/plan-creator <task>` | Create implementation plan | `.claude/plans/{task}-{hash}-plan.md` |
 | `/bug-plan-creator <error> <desc>` | Bug investigation plan | `.claude/plans/bug-fix-{desc}-{hash}-plan.md` |
 | `/code-quality-plan-creator <files>` | Code quality analysis | `.claude/plans/code-quality-{file}-{hash}-plan.md` |
-| `/proposal-creator [plan]` | Convert plan → OpenSpec | `openspec/changes/<id>/` |
-| `/beads-creator <spec> [spec2] ...` | Convert spec(s) → Beads | Beads database |
+| `/tasks-creator <plan>` | Convert plan → prd.json | `./prd.json` |
+| `/beads-creator <plan>` | Convert plan → Beads | Beads database |
 
 ### Loops
 
-All loops: `--step` (default, pause after each task) or `--auto` (continuous). Optional: `--max-iterations N`.
+All loops run until complete. Optional: `--max-iterations N` to limit iterations.
 
-| Command | Completes When | Cancel | Step Options |
-|---------|----------------|--------|--------------|
-| `/implement-loop <plan>` | Exit criteria pass | `/cancel-implement` | Continue, Stop |
-| `/spec-loop <change-id>` | All tasks `[x]` | `/cancel-spec-loop` | Continue, Stop, Pick task |
-| `/beads-loop [--label X]` | No ready beads | `/cancel-beads` | Continue, Stop, Pick bead |
+| Command | Completes When | Cancel |
+|---------|----------------|--------|
+| `/implement-loop <plan>` | Exit criteria pass | `/cancel-implement` |
+| `/tasks-loop [prd-path]` | All tasks `passes: true` | `/cancel-tasks` |
+| `/beads-loop [--label X]` | No ready beads | `/cancel-beads` |
 
 ### Utilities
 
@@ -95,7 +95,7 @@ All loops: `--step` (default, pause after each task) or `--auto` (continuous). O
 | `.claude/plans/` | Architectural plans |
 | `.claude/maps/` | Code maps |
 | `.claude/prompts/` | Generated prompts |
-| `openspec/changes/` | OpenSpec proposals |
+| `./prd.json` | Tasks file (RalphTUI format) |
 | `.beads/` | Beads database (created by `bd init`) |
 
 ## Best Practices
@@ -103,128 +103,75 @@ All loops: `--step` (default, pause after each task) or `--auto` (continuous). O
 1. **Start simple** — 80% of tasks need only `/plan-creator` → `/implement-loop`. Scale up only when you hit problems.
 2. **Exit criteria are non-negotiable** — Not "tests pass" but exact commands: `npm test -- auth`.
 3. **Review before looping** — Loops execute autonomously. Editing plans is cheap; debugging bad code is expensive.
-4. **Token cost is a tradeoff** — The full pipeline copies code multiple times (plan → spec → beads) for context recovery. This is intentional but expensive—don't use it for simple tasks.
+4. **Token cost is a tradeoff** — The full pipeline copies code multiple times (plan → tasks/beads) for context recovery. This is intentional but expensive—don't use it for simple tasks.
 
 | After | Review |
 |-------|--------|
 | Plan | Architecture, file structure, exit criteria |
-| Spec | Requirements, design.md code, task breakdown |
+| Tasks | Task descriptions contain full code, not summaries |
 | Beads | Bead descriptions, code snippets, dependencies |
 
-## Auto-Decomposition
+## Context Chain
 
-Large tasks are **automatically** split—no user prompt needed. Agent assesses complexity after reading input and decomposes immediately if thresholds exceeded.
+Each output includes back-references for disaster recovery:
 
-| Command | Triggers | Decomposition |
-|---------|----------|---------------|
-| `/implement-loop` | >5 files, >500 lines, >2 subsystems | Grouped sub-todos via `TodoWrite` |
-| `/proposal-creator` | >2 subsystems, >2000 lines | Multiple specs with `depends_on` |
-| `/beads-creator` | >200 lines per bead | Parent marked `decomposed`, child sub-beads with priorities |
-
-**Output format:**
-```
-COMPLEXITY ASSESSMENT:
-- Files: N (threshold: 5)
-- Lines: N (threshold: 500)
-- Subsystems: N (threshold: 2)
-- Decision: [DIRECT | AUTO_DECOMPOSED]
-- Groups created: [list if decomposed]
-```
-
-### Decomposition Timeline
-
-```
-PLAN                          SPECS (auto-decomposed)           BEADS
-────                          ─────────────────────             ─────
-.claude/plans/                openspec/changes/                 .beads/
-└── billing-plan.md           ├── billing-backend/              ├── epic-001 → task-001, task-002, task-003
-    │ 3000 lines              ├── billing-frontend/             ├── epic-002 → task-004, task-005 [blocked by epic-001]
-    │ 3 subsystems            └── billing-tests/                └── epic-003 → task-006, task-007 [blocked by epic-002]
-    ▼                                   │
-/proposal-creator                       ▼
-(>2 subsystems → 3 specs)    /beads-creator backend/ frontend/ tests/
-                                        │
-                             Creates cross-spec dependencies with execution order:
-
-/beads-creator output:
-EXECUTION ORDER (by priority):
-  P0: task-001, task-002, task-003 (backend - no blockers)
-  P1: task-004, task-005 (frontend - after backend)
-  P2: task-006, task-007 (tests - after frontend)
-```
-
-### Context Chain
-
-Each stage includes a `## Plan Reference` section with `**Source Plan**: <path>` for disaster recovery:
-
+**Tasks Path:**
 ```
 .claude/plans/billing-plan.md        ◄── SOURCE OF TRUTH
   │
-  ├──► proposal.md
-  │    ## Plan Reference
-  │    **Source Plan**: `.claude/plans/billing-plan.md`
-  │
-  ├──► design.md
-  │    ## Plan Reference
-  │    **Source Plan**: `.claude/plans/billing-plan.md`
-  │    + Reference Implementation (FULL code COPIED from plan)
-  │
-  ├──► tasks.md
-  │    ## Plan Reference
-  │    **Source Plan**: `.claude/plans/billing-plan.md`
-  │    + Exit Criteria (EXACT commands COPIED from plan)
+  └──► prd.json
+       ## Context (disaster recovery ONLY)
+       **Plan Reference**: .claude/plans/billing-plan.md
+       + FULL code in task description (self-contained)
+```
+
+**Beads Path:**
+```
+.claude/plans/billing-plan.md        ◄── SOURCE OF TRUTH
   │
   └──► beads
        ## Context Chain (disaster recovery ONLY)
-       **Spec Reference**: openspec/changes/billing/
        **Plan Reference**: .claude/plans/billing-plan.md
+       + FULL code in bead description (self-contained)
 ```
 
-When context compacts mid-loop, the agent reads the `## Plan Reference` section to find the source plan path. Beads are self-contained (full code in description) but include back-references for recovery.
+When context compacts mid-loop, tasks/beads are self-contained (full code in description) but include back-references for recovery.
 
 ## How Loops Work
 
 Based on [Ralph Wiggum](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) stop-hook pattern (a Claude Code plugin that provides the stop-hook loop pattern for persistent task execution).
 
 **Mechanism:**
-1. Setup script creates state file (e.g., `.claude/implement-loop.local.md`)
+1. Setup script creates marker file (e.g., `.claude/implement-loop.local.md` or `.claude/tasks-loop-active`)
 2. Stop hooks registered in `hooks.json` intercept exit attempts
-3. Hook checks transcript for completion signals (`exit criteria passed`, `all todos completed`)
-4. Not complete → block with continue prompt. Complete → allow exit, clean up state.
+3. Hook checks for completion (exit criteria pass, all tasks complete, no ready beads)
+4. Not complete → block with continue prompt. Complete → allow exit, clean up marker.
 
-**State file tracks:** `iteration`, `max_iterations`, `plan_path`, `step_mode`, `started_at`
+**State tracking:**
+- `/implement-loop`: Full state in `.claude/implement-loop.local.md`
+- `/tasks-loop`: Task state in `prd.json`, iteration in `.claude/tasks-loop-active`
+- `/beads-loop`: Task state in beads DB, iteration in `.claude/beads-loop-active`
 
-**Step mode:** After each task, outputs execution status then triggers `AskUserQuestion`:
-```
-===============================================================
-TODO COMPLETED: Add validation logic
-===============================================================
-Progress: 2/5 todos complete
-
-EXECUTION ORDER (remaining):
-  Next → Todo 3: Write unit tests
-  Then → Todo 4: Run integration tests
-  Then → Todo 5: Run exit criteria
-===============================================================
-```
-
-**Auto mode:** Follows same execution order without pause.
-
-**Recovery:** State file + `plan_reference` in specs enable resume after context compaction or new session.
+**Recovery:** State files + external state (prd.json, beads DB) enable resume after context compaction.
 
 ## Requirements
 
 | Tool | For | Install |
 |------|-----|---------|
-| OpenSpec | `/proposal-creator`, `/spec-loop` | [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) |
 | Beads | `/beads-creator`, `/beads-loop` | [steveyegge/beads](https://github.com/steveyegge/beads) |
+| RalphTUI | Alternative execution for Tasks/Beads | [subsy/ralph-tui](https://github.com/subsy/ralph-tui) (optional) |
 | Built-in LSP | `/code-quality-plan-creator`, `/codemap-creator`, `/document-creator` | Already included in Claude Code |
-| Context7 | `/plan-creator`, `/prompt-creator` | `/plugin install context7` |
+| Context7 | `/plan-creator`, `/prompt-creator` | MCP server (optional) |
+| SearXNG | `/plan-creator`, `/prompt-creator` | MCP server (optional) |
+
+**Note on MCP servers:** Context7 and SearXNG enhance plan/prompt quality with external documentation and web search but are not required.
+
+**Note on RalphTUI:** RalphTUI provides a visual TUI dashboard for monitoring task execution. Both `/tasks-loop` and `/beads-loop` work without it.
 
 ## Guides
 
 - [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Single-session features, bug fixes, refactoring
-- [WORKFLOW-SPEC.md](WORKFLOW-SPEC.md) — Human validation between requirements and implementation
+- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — RalphTUI integration with prd.json format
 - [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent memory that survives sessions and context compaction
 - [COMPARISON.md](COMPARISON.md) — Why verification-enforced completion matters (code-first vs conversation vs spec-first vs essentials)
 
