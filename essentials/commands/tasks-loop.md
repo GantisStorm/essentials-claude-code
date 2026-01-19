@@ -3,6 +3,7 @@ description: "Execute prd.json tasks iteratively until all complete"
 argument-hint: "[prd-path]"
 allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-tasks-loop.sh)", "Read", "TodoWrite", "Bash", "Edit", "Write"]
 hide-from-slash-command-tool: "true"
+model: haiku
 ---
 
 # Tasks Loop Command

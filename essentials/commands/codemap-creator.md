@@ -3,6 +3,7 @@ allowed-tools: Task, TaskOutput
 argument-hint: "<root_dir> [--ignore <patterns>]"
 description: Generate hierarchical code map from any directory as root, with nested tree structure (project)
 context: fork
+model: opus
 ---
 
 # Code Map Creator

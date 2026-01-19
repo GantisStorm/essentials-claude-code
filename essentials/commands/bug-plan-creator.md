@@ -3,6 +3,7 @@ allowed-tools: Task, TaskOutput, Bash, Read
 argument-hint: <any-input>
 description: Deep bug investigation with architectural fix plan generation - detailed enough to feed directly into /implement-loop, /tasks-creator, or /beads-creator
 context: fork
+model: opus
 ---
 
 # Bug Investigation & Architectural Fix Planning

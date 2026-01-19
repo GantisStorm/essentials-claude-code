@@ -12,6 +12,7 @@ allowed-tools: <Tool1, Tool2, ...>
 argument-hint: "<argument pattern>"
 description: <One-line description>
 context: fork  # Optional: runs in isolated context
+model: opus    # Optional: opus (default), sonnet, or haiku
 ---
 
 # <Command Title>
@@ -75,6 +76,9 @@ Next Steps:
 - `argument-hint`: Pattern showing expected arguments
 - `description`: Single-line description
 - Optional: `context: fork` for heavy background agents
+- Optional: `model: opus|sonnet|haiku` - Model selection for cost optimization (default: opus)
+  - `opus`: Complex reasoning tasks (creators, planners)
+  - `haiku`: Fast/cheap iterative tasks (loops, cancels)
 
 ### Title & Overview (Required)
 - H1 title matching command name
@@ -108,6 +112,7 @@ For commands that cancel loops:
 ---
 allowed-tools: Bash
 description: Cancel active <loop-name> loop
+model: haiku
 ---
 
 # Cancel <Loop Name>

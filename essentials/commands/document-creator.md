@@ -3,6 +3,7 @@ allowed-tools: Task, TaskOutput, Glob, Read
 argument-hint: "<dir1> [dir2] ... [dirN]"
 description: Generate DEVGUIDE.md architectural documentation using LSP (project)
 context: fork
+model: opus
 ---
 
 # Document Creator

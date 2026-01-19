@@ -98,6 +98,18 @@ All loops run until complete. Optional: `--max-iterations N` to limit iterations
 | `./prd.json` | Tasks file (RalphTUI format) |
 | `.beads/` | Beads database (created by `bd init`) |
 
+## Cost Optimization
+
+Commands use optimized model selection:
+
+| Command Type | Model | Rationale |
+|-------------|-------|-----------|
+| Creators (9) | `opus` | Complex reasoning, architectural planning |
+| Loops (3) | `haiku` | Fast/cheap iterative execution |
+| Cancels (3) | `haiku` | Lightweight file operations |
+
+This reduces costs for repetitive loop iterations while preserving quality for planning tasks.
+
 ## Best Practices
 
 1. **Start simple** — 80% of tasks need only `/plan-creator` → `/implement-loop`. Scale up only when you hit problems.

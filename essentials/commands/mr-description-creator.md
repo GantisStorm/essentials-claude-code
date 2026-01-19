@@ -3,6 +3,7 @@ allowed-tools: Task, TaskOutput, Bash, Read, Glob, Grep, AskUserQuestion
 argument-hint: "[--template 'markdown']"
 description: Generate and apply MR/PR description directly via gh or glab CLI (project)
 skills: ["github-cli", "gitlab-cli"]
+model: opus
 ---
 
 # MR/PR Description Creator

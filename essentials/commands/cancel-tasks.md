@@ -2,6 +2,7 @@
 allowed-tools: Bash
 argument-hint: ""
 description: Cancel active tasks loop
+model: haiku
 ---
 
 # Cancel Tasks

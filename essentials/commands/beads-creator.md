@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput, Bash, Read, Glob
 argument-hint: "<plan-path>"
 description: Convert plans to self-contained Beads (project)
+model: opus
 ---
 
 # Beads Creator

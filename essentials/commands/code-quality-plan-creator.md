@@ -3,6 +3,7 @@ allowed-tools: Task, TaskOutput
 argument-hint: "<file1> [file2] ... [fileN]"
 description: LSP-powered architectural code quality analysis - generates comprehensive improvement plans for /implement-loop, /tasks-creator, or /beads-creator
 context: fork
+model: opus
 ---
 
 # Architectural Code Quality Planning (LSP-Powered)

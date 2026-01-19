@@ -2,6 +2,7 @@
 allowed-tools: Task, TaskOutput, Bash, Read, Glob, Write
 argument-hint: "<plan-path>"
 description: Convert plans to prd.json for RalphTUI or /tasks-loop
+model: opus
 ---
 
 # Tasks Creator
