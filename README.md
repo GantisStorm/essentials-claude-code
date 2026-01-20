@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://www.freelogovectors.net/wp-content/uploads/2023/05/essentials_logo_freelogovectors.net_.png" alt="Essentials" width="350"/>
+<img src="logo.jpg" alt="Essentials for Claude Code" width="450"/>
 
 # Essentials for Claude Code
 
