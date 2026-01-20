@@ -14,7 +14,7 @@
 
 With Ralph TUI dashboard and Beads persistence support.
 
-[Quick Start](#-quick-start) | [Commands](#-commands) | [How It Works](#-how-it-works) | [Workflows](#-optional-advanced-workflows) | [Troubleshooting](#-troubleshooting)
+[Quick Start](#quick-start) | [Commands](#commands) | [How It Works](#how-it-works) | [Workflows](#optional-advanced-workflows) | [Troubleshooting](#troubleshooting)
 
 </div>
 
