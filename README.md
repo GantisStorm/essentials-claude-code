@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.jpg" alt="Essentials for Claude Code" width="450"/>
+<img src="logo.png" alt="Essentials for Claude Code" width="450"/>
 
 # Essentials for Claude Code
 
