@@ -1,91 +1,43 @@
 <div align="center">
 
-<img src="https://www.freelogovectors.net/wp-content/uploads/2023/05/essentials_logo_freelogovectors.net_.png" alt="Essentials" width="400"/>
+<img src="https://www.freelogovectors.net/wp-content/uploads/2023/05/essentials_logo_freelogovectors.net_.png" alt="Essentials" width="350"/>
 
 # Essentials for Claude Code
-
-### *"The loop cannot end until verification passes."*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Built%20for-Claude%20Code-blueviolet)](https://claude.ai/code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-**Verification-driven loops for Claude Code. Plans define exit criteria. Loops run until tests pass.**
+**Verification-driven loops for Claude Code.**
 
-With Ralph TUI dashboard and Beads persistence support.
+Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
-[Quick Start](#quick-start) | [Commands](#commands) | [How It Works](#how-it-works) | [Workflows](#optional-advanced-workflows) | [Troubleshooting](#troubleshooting)
+Integrates with [Ralph TUI](https://github.com/subsy/ralph-tui) and [Beads](https://github.com/steveyegge/beads) for dashboard visualization and persistent task tracking.
 
 </div>
 
 ---
 
-## What is this?
-
-Essentials is a Claude Code plugin that enforces verification-driven completion. The AI cannot declare "done" — only passing tests can.
+## The Problem
 
 ```
-Without Essentials:                          With Essentials:
-  AI writes code → "Done!"                     /plan-creator Add auth
-  You run tests → 3 failing                    /implement-loop plan.md
-  "Fix these" → "Fixed!"                       [loop runs, fails, fixes, retries]
-  You run tests → 1 still failing              "Exit criteria passed" → Actually done
-  [repeat until you give up]
+You: "Add authentication"
+AI:  *writes code* "Done!"
+You: *runs tests* — 3 failing
+You: "Fix these"
+AI:  "Fixed!"
+You: *runs tests* — still failing
+     [repeat until you give up]
 ```
 
-## Why "Essentials"?
+## The Solution
 
-Because verification-enforced completion is essential. Plans include exact exit criteria. Loops retry until those criteria pass. "Done" means objectively done with passing tests, not "I wrote code."
-
----
-
-## Requirements
-
-**Zero dependencies for the Simple workflow.** Just install and go.
-
-Optional integrations:
-
-| Tool | Required? | For | Install |
-|------|-----------|-----|---------|
-| **None** | — | Simple workflow | Just install the plugin |
-| Beads CLI | Optional | `/beads-creator`, `/beads-loop` | [steveyegge/beads](https://github.com/steveyegge/beads) |
-| RalphTUI | Optional | TUI dashboard | [subsy/ralph-tui](https://github.com/subsy/ralph-tui) |
-| Context7 | Optional | Enhanced docs in plans | MCP server |
-| SearXNG | Optional | Web search in plans | MCP server |
-| Built-in LSP | Included | `/code-quality-plan-creator`, `/codemap-creator` | Already in Claude Code |
-
----
-
-## Installation
-
-### From Marketplace
-
-```bash
-# Add the marketplace
-/plugin marketplace add GantisStorm/essentials-claude-code
-
-# Install the plugin
-/plugin install essentials@essentials-claude-code
-
-# Create directories
-mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
-
-# Restart Claude Code
 ```
-
-### From GitHub
-
-```bash
-/plugin install https://github.com/GantisStorm/essentials-claude-code
-mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
-```
-
-### Local Development
-
-```bash
-git clone https://github.com/GantisStorm/essentials-claude-code.git
-cd essentials-claude-code
-claude --plugin-dir $(pwd)
+You: /plan-creator Add authentication
+You: /implement-loop .claude/plans/auth-plan.md
+AI:  *implements, tests fail, fixes, tests fail, fixes...*
+AI:  "Exit criteria passed" ✓
+     [loop cannot end until tests pass]
 ```
 
 ---
@@ -93,136 +45,145 @@ claude --plugin-dir $(pwd)
 ## Quick Start
 
 ```bash
-# Create a plan with exit criteria
+# Install
+/plugin marketplace add GantisStorm/essentials-claude-code
+/plugin install essentials@essentials-claude-code
+mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
+
+# Create plan → Execute loop → Done when tests pass
 /plan-creator Add user authentication with JWT
-
-# Review the plan
-cat .claude/plans/user-auth-3k7f2-plan.md
-
-# Execute until tests pass
 /implement-loop .claude/plans/user-auth-3k7f2-plan.md
-# Loop continues until exit criteria PASS
 ```
 
-That's it. No external tools required. The loop runs until your tests pass.
+**Zero external dependencies.** The loop runs until your exit criteria pass.
+
+---
+
+## Three Workflows
+
+Pick the one that fits your needs:
+
+| Workflow | Best For | Dependencies |
+|----------|----------|--------------|
+| **Simple** | 80% of tasks | None |
+| **Tasks** | RalphTUI dashboard | Optional: [RalphTUI](https://github.com/subsy/ralph-tui) |
+| **Beads** | Multi-session persistence | Required: [Beads CLI](https://github.com/steveyegge/beads) |
+
+### Simple (Start Here)
+
+```bash
+/plan-creator Add JWT authentication
+/implement-loop .claude/plans/jwt-auth-plan.md
+# Loop runs until exit criteria pass
+```
+
+### Tasks (prd.json + RalphTUI)
+
+```bash
+/plan-creator Add JWT authentication
+/tasks-creator .claude/plans/jwt-auth-plan.md
+/tasks-loop .claude/prd/jwt-auth.json
+# Or visualize with: ralph-tui run --prd .claude/prd/jwt-auth.json
+```
+
+### Beads (Persistent Memory)
+
+```bash
+bd init
+/plan-creator Add JWT authentication
+/beads-creator .claude/plans/jwt-auth-plan.md
+/beads-loop
+# Survives context loss, multi-day features, session crashes
+```
+
+---
+
+## How Loops Work
+
+```
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│   Plan ──→ Implement ──→ Run Exit Criteria          │
+│                              │                      │
+│                         Pass? ───→ DONE ✓           │
+│                              │                      │
+│                         Fail? ───→ Fix ──┐          │
+│                              ▲           │          │
+│                              └───────────┘          │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+The loop **cannot** end until verification passes. No exceptions.
 
 ---
 
 ## Commands
 
-### Planning
+### Create Plans
 
-| Command | What it does | Output |
-|---------|--------------|--------|
-| `/plan-creator <task>` | Create implementation plan with exit criteria | `.claude/plans/{task}-{hash}-plan.md` |
-| `/bug-plan-creator <error> <desc>` | Deep bug investigation plan | `.claude/plans/bug-fix-{desc}-{hash}-plan.md` |
-| `/code-quality-plan-creator <files>` | LSP-powered code quality analysis | `.claude/plans/code-quality-{file}-{hash}-plan.md` |
+| Command | Purpose |
+|---------|---------|
+| `/plan-creator <task>` | Implementation plan with exit criteria |
+| `/bug-plan-creator <error> <desc>` | Bug investigation + fix plan |
+| `/code-quality-plan-creator <files>` | LSP-powered quality analysis |
 
-### Execution Loops
+### Execute Loops
 
-| Command | Completes When | Cancel |
-|---------|----------------|--------|
+| Command | Stops When | Cancel With |
+|---------|------------|-------------|
 | `/implement-loop <plan>` | Exit criteria pass | `/cancel-implement` |
-| `/tasks-loop [prd-path]` | All tasks `passes: true` | `/cancel-tasks` |
-| `/beads-loop [--label X]` | No ready beads remain | `/cancel-beads` |
+| `/tasks-loop [prd.json]` | All tasks pass | `/cancel-tasks` |
+| `/beads-loop [--label]` | No ready beads | `/cancel-beads` |
+
+### Convert Formats
+
+| Command | Converts To |
+|---------|-------------|
+| `/tasks-creator <plan>` | prd.json for RalphTUI |
+| `/beads-creator <plan>` | Beads issues |
 
 ### Utilities
 
-| Command | What it does |
-|---------|--------------|
-| `/codemap-creator [dir]` | Generate JSON code map with LSP |
-| `/document-creator <dir>` | Generate DEVGUIDE.md documentation |
-| `/prompt-creator <desc>` | Create quality prompts |
-| `/mr-description-creator` | Create PR/MR description via gh/glab CLI |
-
-### Converters
-
-| Command | What it does |
-|---------|--------------|
-| `/tasks-creator <plan>` | Convert plan to prd.json format |
-| `/beads-creator <plan>` | Convert plan to beads format |
+| Command | Purpose |
+|---------|---------|
+| `/codemap-creator [dir]` | JSON code map via LSP |
+| `/document-creator <dir>` | DEVGUIDE.md generation |
+| `/prompt-creator <desc>` | Quality prompt creation |
+| `/mr-description-creator` | PR/MR descriptions via gh/glab |
 
 ---
 
-## How It Works
+## What's In A Plan?
 
-```
-         "Add user authentication"
-                   |
-                   v
-        +--------------------+
-        |    Plan Creator    |  <- Full code + exit criteria
-        +--------------------+
-                   |
-                   v
-        +--------------------+
-        |   Implement Loop   |  <- Execute todos from plan
-        +--------------------+
-                   |
-                   v
-        +--------------------+
-        |  Run Exit Criteria |  <- npm test -- auth
-        +--------------------+
-                   |
-          Pass?   |   Fail?
-           ↓             ↓
-        +------+    +--------+
-        | Done |    | Fix it |──→ Run Exit Criteria again
-        +------+    +--------+
+Plans are markdown files in `.claude/plans/`. They contain everything needed:
+
+```markdown
+## Reference Implementation
+[Complete code, 50-200+ lines — not pseudocode]
+
+## Migration Patterns
+[Exact before/after with file:line references]
+
+## Exit Criteria
+npm test -- auth && npm run typecheck
+[Specific commands, not "run tests"]
+
+## Architecture
+[Current system understanding]
+
+## Testing Strategy
+[What tests to add]
 ```
 
-### The Loops
-
-All loops use the [Ralph Wiggum](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) stop-hook pattern. **No external tools required** — the loops are built into this plugin.
-
-| Loop | How it works |
-|------|--------------|
-| **implement-loop** | Read plan → Create todos → Implement → Run exit criteria → Pass? Done. Fail? Fix and retry. |
-| **tasks-loop** | Read prd.json → Find pending tasks → Implement → Mark `passes: true` → Repeat until all pass. |
-| **beads-loop** | Run `bd ready` → Pick task → Implement → `bd close` → Repeat until no ready beads. |
-
-### What's in a Plan?
-
-Plans are the source of truth. Each plan contains:
-
-- **Reference Implementation** — Complete code (50-200+ lines)
-- **Migration Patterns** — Exact before/after with line numbers
-- **Exit Criteria** — Specific commands (`npm test -- auth`, not "run tests")
-- **Architecture** — Current system understanding
-- **Testing Strategy** — What tests to add
+**The Self-Contained Rule:** Each task must be implementable with ONLY its description. No "see design.md" allowed. When context compacts, the executor only has the task.
 
 ---
 
-## The Self-Contained Rule
+## prd.json Schema
 
-Each task/bead must be implementable with ONLY its description.
+For the Tasks workflow:
 
-| Bad | Good |
-|-----|------|
-| "See design.md" | FULL code (50-200+ lines) in description |
-| "Run tests" | `npm test -- stripe-price` |
-| "Update entity" | File + line numbers + before/after code |
-
-**Why?** When context compacts, the executor only has the task description. No lookups allowed.
-
----
-
-## Optional: Advanced Workflows
-
-> **Most users only need the Simple workflow above.** The following are optional for specific use cases.
-
-### Tasks Workflow
-
-For prd.json format or RalphTUI dashboard integration.
-
-```bash
-/plan-creator Add user authentication with JWT
-/tasks-creator .claude/plans/user-auth-3k7f2-plan.md   # Convert to prd.json
-/tasks-loop .claude/prd/user-auth-3k7f2.json           # Built-in loop
-# OR: ralph-tui run --prd .claude/prd/user-auth.json   # Optional: RalphTUI dashboard
-```
-
-**prd.json schema:**
 ```json
 {
   "name": "Feature Name",
@@ -230,8 +191,8 @@ For prd.json format or RalphTUI dashboard integration.
     {
       "id": "US-001",
       "title": "Task title",
-      "description": "FULL implementation details (50-200+ lines)",
-      "acceptanceCriteria": ["Specific criterion"],
+      "description": "FULL implementation (50-200+ lines)",
+      "acceptanceCriteria": ["Criterion 1", "Criterion 2"],
       "priority": 1,
       "passes": false,
       "dependsOn": []
@@ -240,141 +201,111 @@ For prd.json format or RalphTUI dashboard integration.
 }
 ```
 
-**Key fields:** Use `userStories` (not `tasks`), use `passes` (not `status`).
-
-See [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) for full schema reference.
-
-### Beads Workflow
-
-For multi-session work, context recovery, or when AI hallucinates mid-task.
-
-**Requires:** [Beads CLI](https://github.com/steveyegge/beads) (`brew tap steveyegge/beads && brew install bd`)
-
-```bash
-bd init                                                  # Initialize beads DB
-/plan-creator Add complete auth system
-/beads-creator .claude/plans/auth-system-3k7f2-plan.md   # Convert to beads
-/beads-loop                                              # Built-in loop
-# OR: ralph-tui run --tracker beads --epic <id>          # Optional: RalphTUI dashboard
-```
-
-**When to use Beads:**
-- Multi-day features spanning sessions
-- AI hallucinates or loses track mid-task
-- Context keeps compacting
-- Need persistent memory across sessions
-
-See [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) for full documentation.
+**Key:** Use `userStories` not `tasks`. Use `passes` not `status`.
 
 ---
 
 ## Project Structure
 
 ```
-.claude/
-├── plans/              # Architectural plans (source of truth)
-├── prd/                # prd.json files (Tasks workflow)
-├── maps/               # Code maps from codemap-creator
-└── prompts/            # Generated prompts
-
-.beads/                 # Beads database (if using Beads workflow)
-
-essentials/
-├── commands/           # 15 slash commands
-├── agents/             # Backing agents for commands
-├── hooks/              # Stop hook implementations
-├── scripts/            # Setup scripts for loops
-└── skills/             # github-cli and gitlab-cli skills
+your-project/
+├── .claude/
+│   ├── plans/          # Source of truth
+│   ├── prd/            # prd.json files
+│   ├── maps/           # Code maps
+│   └── prompts/        # Generated prompts
+└── .beads/             # Beads DB (if using)
 ```
 
 ---
 
 ## Model Configuration
 
-All commands default to `opus`. Change by editing YAML frontmatter:
+Edit YAML frontmatter in `essentials/commands/*.md` or `essentials/agents/*.md`:
 
 ```yaml
 ---
-model: opus   # Options: opus, sonnet, haiku
+model: opus    # opus | sonnet | haiku
 ---
 ```
 
-**Files:** `essentials/commands/*.md` and `essentials/agents/*.md`
-
-| Model | Best For |
-|-------|----------|
+| Model | Use For |
+|-------|---------|
 | `opus` | Complex reasoning (default) |
-| `sonnet` | Balanced quality/cost |
-| `haiku` | Fast, cheap, simple tasks |
+| `sonnet` | Balanced cost/quality |
+| `haiku` | Fast, simple tasks |
+
+---
+
+## Requirements
+
+| Tool | Required? | Purpose |
+|------|-----------|---------|
+| None | — | Simple workflow works out of the box |
+| [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | `brew tap steveyegge/beads && brew install bd` |
+| [RalphTUI](https://github.com/subsy/ralph-tui) | For dashboard | TUI visualization |
+| Context7 MCP | Optional | Enhanced docs in plans |
+| SearXNG MCP | Optional | Web search in plans |
 
 ---
 
 ## Troubleshooting
 
-**Loop not stopping?**
-Check that your exit criteria command returns exit code 0 on success. The loop only stops when the command passes.
+**Loop won't stop?**
+Exit criteria must return exit code 0. Check your test command.
 
-**Exit criteria wrong?**
-Edit the plan file directly. Plans are markdown — just fix the exit criteria section and re-run the loop.
-
-**Want to start over?**
-Use the cancel command (`/cancel-implement`, `/cancel-tasks`, or `/cancel-beads`) then start fresh.
+**Wrong exit criteria?**
+Edit `.claude/plans/your-plan.md` directly, then re-run the loop.
 
 **Context filling up?**
-Plans live in `.claude/plans/` (external files). When context compacts, the loop re-reads the plan and continues from the todo list.
+Plans are external files. Loop re-reads them after context compacts.
 
-**Tasks not found in prd.json?**
-Use `userStories` (not `tasks`) and `passes` (not `status`). See the schema above.
+**prd.json tasks not found?**
+Use `userStories` and `passes` fields. See schema above.
 
-**Beads CLI not found?**
-Install with: `brew tap steveyegge/beads && brew install bd`
+**Beads CLI missing?**
+`brew tap steveyegge/beads && brew install bd`
 
 ---
 
 ## Best Practices
 
-1. **Start with Simple** — 80% of tasks need only `/plan-creator` → `/implement-loop`
-2. **Exit criteria are exact commands** — `npm test -- auth`, not "run tests"
-3. **Review before looping** — Fixing plans is cheap; debugging bad code is expensive
-4. **Escalate when needed** — Use Tasks/Beads only for multi-session or context issues
+1. **Start simple** — `/plan-creator` + `/implement-loop` handles 80% of tasks
+2. **Exit criteria = exact commands** — `npm test -- auth`, not "run tests"
+3. **Review plans before looping** — Cheaper to fix a plan than debug bad code
+4. **Escalate when needed** — Tasks/Beads for multi-session or context issues
 
 ---
 
-## Guides
+## Documentation
 
-- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default workflow, zero dependencies
-- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — Optional: prd.json format, RalphTUI integration
-- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Optional: Persistent memory across sessions
-- [COMPARISON.md](COMPARISON.md) — Why verification-enforced completion matters
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Zero-dependency default
+- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — prd.json + RalphTUI
+- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent multi-session
+- [COMPARISON.md](COMPARISON.md) — Why verification matters
 
 ---
 
 ## Contributing
 
-PRs welcome! This project is friendly to first-time contributors.
-
 1. Fork it
-2. Create your feature branch (`git checkout -b feature/amazing`)
-3. Commit your changes
-4. Push to the branch
-5. Open a PR
+2. Create your branch (`git checkout -b feature/thing`)
+3. Commit changes
+4. Push and open a PR
 
 ---
 
 ## Credits
 
-- [Ralph Wiggum loop pattern](https://ghuntley.com/ralph/) by Geoffrey Huntley
+- [Ralph Wiggum pattern](https://ghuntley.com/ralph/) by Geoffrey Huntley
 - Built for [Claude Code](https://claude.ai/code)
-- Inspired by every developer tired of AI saying "done" when tests still fail
 
 ---
 
 <div align="center">
 
-**Made with verification and determination**
-
-*"Done means actually done."*
-
 MIT License
+
+*"Done" means tests pass. No exceptions.*
 
 </div>
