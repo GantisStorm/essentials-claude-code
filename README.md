@@ -8,9 +8,9 @@
 [![Claude Code](https://img.shields.io/badge/Built%20for-Claude%20Code-blueviolet)](https://claude.ai/code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-**Verification-driven loops for Claude Code.**
+**Verification-driven loops for brownfield development.**
 
-Plans define exit criteria. Loops run until tests pass. Done means actually done.
+A Claude Code plugin for adding features to existing codebases. Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
 Integrates with [Ralph TUI](https://github.com/subsy/ralph-tui) and [Beads](https://github.com/steveyegge/beads) for dashboard visualization and persistent task tracking.
 
@@ -118,15 +118,95 @@ The loop **cannot** end until verification passes. No exceptions.
 
 ---
 
+## Plan Creators: Choose the Right Tool
+
+This plugin provides three specialized plan creators. Each is optimized for a specific type of work.
+
+### `/plan-creator` — New Features (Brownfield)
+
+**Use for:** Adding new functionality to existing codebases.
+
+```bash
+/plan-creator Add OAuth2 authentication with Google login
+/plan-creator Add user profile page with avatar upload
+/plan-creator Integrate Stripe payment processing
+```
+
+**What it does:**
+- Investigates existing codebase patterns
+- Researches external APIs/libraries
+- Creates architectural plan with reference implementation
+- Specifies exact file changes with before/after code
+
+### `/bug-plan-creator` — Bug Fixes
+
+**Use for:** Investigating and fixing bugs, errors, crashes.
+
+```bash
+/bug-plan-creator "TypeError at auth.py:45" "Login fails when user has no profile"
+/bug-plan-creator ./logs/error.log "API returns 500 on POST /users"
+/bug-plan-creator "ConnectionError: timeout" "Check docker logs for db container"
+```
+
+**What it does:**
+- Parses error logs and stack traces
+- Traces code paths from entry to failure
+- Performs line-by-line analysis of suspicious code
+- Checks recent git changes for regressions
+- Creates fix plan with regression tests
+
+### `/code-quality-plan-creator` — Quality Improvements
+
+**Use for:** Refactoring, dead code removal, security hardening.
+
+```bash
+/code-quality-plan-creator src/auth.ts
+/code-quality-plan-creator src/services/api.ts src/utils/helpers.ts
+/code-quality-plan-creator src/**/*.ts
+```
+
+**What it does:**
+- Uses LSP for semantic code analysis
+- Finds dead code via reference checking
+- Evaluates SOLID principles, DRY, KISS
+- Checks for OWASP security vulnerabilities
+- Scores code quality across 11 dimensions
+
+### Running Multiple Analyses in Parallel
+
+Code quality analysis runs **one agent per file**. Analyze multiple files simultaneously:
+
+```bash
+# Analyze 3 files in parallel (launches 3 agents)
+/code-quality-plan-creator src/auth.ts src/api.ts src/utils.ts
+
+# Analyze entire directory
+/code-quality-plan-creator src/services/*
+```
+
+Each file gets its own plan in `.claude/plans/`:
+- `code-quality-auth-3k7f2-plan.md`
+- `code-quality-api-9m4n1-plan.md`
+- `code-quality-utils-2j8p5-plan.md`
+
+---
+
 ## Commands
 
 ### Create Plans
 
-| Command | Purpose |
-|---------|---------|
-| `/plan-creator <task>` | Implementation plan with exit criteria |
-| `/bug-plan-creator <error> <desc>` | Bug investigation + fix plan |
-| `/code-quality-plan-creator <files>` | LSP-powered quality analysis |
+Three specialized plan creators for different tasks:
+
+| Command | Use For | Specialization |
+|---------|---------|----------------|
+| `/plan-creator <feature>` | New features & enhancements | Brownfield feature development |
+| `/bug-plan-creator <error> <desc>` | Bug fixes | Root cause analysis, regression prevention |
+| `/code-quality-plan-creator <files>` | Code quality improvements | LSP-powered dead code, SOLID, security |
+
+**Choose the right one:**
+- Adding a login page? → `/plan-creator`
+- TypeError at line 45? → `/bug-plan-creator`
+- Clean up unused code? → `/code-quality-plan-creator`
 
 ### Execute Loops
 

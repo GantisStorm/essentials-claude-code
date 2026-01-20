@@ -10,6 +10,11 @@ model: opus
 
 Investigate bugs from any input - error logs, stack traces, user reports. Creates an architectural fix plan with exact code specifications.
 
+**Use the right tool:**
+- **Bug fixes** → `/bug-plan-creator` (this command)
+- **New features/enhancements** → `/plan-creator`
+- **Code quality improvements** → `/code-quality-plan-creator`
+
 **Note**: Only view-only git commands allowed (no state modifications).
 
 ## Arguments

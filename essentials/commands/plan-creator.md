@@ -1,20 +1,25 @@
 ---
 allowed-tools: Task, TaskOutput
-argument-hint: <task-description>
-description: Create a comprehensive architectural plan for any task - detailed enough to feed directly into /implement-loop, /tasks-creator, or /beads-creator
+argument-hint: <feature-description>
+description: Create architectural plans for new features in existing codebases (brownfield development) - detailed enough to feed directly into /implement-loop, /tasks-creator, or /beads-creator. For bugs use /bug-plan-creator, for code quality use /code-quality-plan-creator.
 context: fork
 model: opus
 ---
 
 # Architectural Plan Creator
 
-Create a comprehensive architectural plan for any task. Plans specify HOW to implement, not just WHAT.
+Create comprehensive architectural plans for **new features in existing codebases** (brownfield development). Plans specify HOW to implement, not just WHAT.
+
+**Use the right tool:**
+- **New features/enhancements** → `/plan-creator` (this command)
+- **Bug fixes** → `/bug-plan-creator`
+- **Code quality improvements** → `/code-quality-plan-creator`
 
 ## Arguments
 
-Takes any task description:
-- `"Add OAuth2 authentication"`
-- `"Fix login timeout issue"`
+Takes a feature description:
+- `"Add OAuth2 authentication with Google login"`
+- `"Add user profile page with avatar upload"`
 - `"Refactor auth module to use dependency injection"`
 
 ## Instructions
@@ -71,6 +76,7 @@ Next Steps:
 
 ```bash
 /plan-creator Add OAuth2 authentication with Google login
-/plan-creator Fix the login timeout issue when session expires
+/plan-creator Add user profile page with avatar upload
 /plan-creator Refactor the auth module to use dependency injection
+/plan-creator Add real-time notifications with WebSockets
 ```

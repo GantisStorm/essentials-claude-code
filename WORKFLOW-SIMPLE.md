@@ -1,6 +1,6 @@
 # Simple Workflow: Plan + Implement
 
-> **This is the default workflow with zero external dependencies.** Handles 80% of tasks. Only escalate to Tasks or Beads when you hit specific problems (multi-session work, persistent context loss, or want RalphTUI dashboard).
+> **This is the default workflow with zero external dependencies.** A brownfield development workflow for adding features, fixing bugs, and improving code quality in existing codebases. Handles 80% of tasks. Only escalate to Tasks or Beads when you hit specific problems (multi-session work, persistent context loss, or want RalphTUI dashboard).
 
 ## Overview
 
@@ -36,20 +36,64 @@ The plan is the **source of truth**. When context compacts, the loop re-reads it
 
 ## Stage 1: Planning
 
-### Option A: Feature Development
+Choose the right plan creator for your task:
+
+### Option A: New Features → `/plan-creator`
+
+**Use for:** Adding new functionality to existing codebases (brownfield development).
+
 ```bash
 /plan-creator Add user authentication with JWT tokens
+/plan-creator Add user profile page with avatar upload
+/plan-creator Integrate Stripe payment processing
 ```
 
-### Option B: Bug Fix
+**What it does:**
+- Investigates existing codebase patterns and conventions
+- Researches external APIs/libraries (via MCP if available)
+- Creates architectural plan with complete reference implementation
+- Specifies exact file changes with before/after code
+
+### Option B: Bug Fixes → `/bug-plan-creator`
+
+**Use for:** Investigating and fixing bugs, errors, crashes, regressions.
+
 ```bash
 /bug-plan-creator "TypeError at auth.py:45" "Login fails when user has no profile"
+/bug-plan-creator ./logs/error.log "API returns 500 on POST /users"
+/bug-plan-creator "ConnectionError: timeout" "Check docker logs for db"
 ```
 
-### Option C: Code Quality
+**What it does:**
+- Parses error logs, stack traces, and diagnostic output
+- Traces complete code path from entry point to failure
+- Performs line-by-line analysis of suspicious code sections
+- Checks recent git history for regression-causing changes
+- Creates fix plan with regression test requirements
+
+### Option C: Code Quality → `/code-quality-plan-creator`
+
+**Use for:** Refactoring, dead code removal, SOLID improvements, security hardening.
+
 ```bash
-/code-quality-plan-creator src/auth.ts src/api.ts
+# Single file
+/code-quality-plan-creator src/auth.ts
+
+# Multiple files (runs in parallel - one agent per file)
+/code-quality-plan-creator src/auth.ts src/api.ts src/utils.ts
+
+# Entire directory
+/code-quality-plan-creator src/services/*
 ```
+
+**What it does:**
+- Uses LSP for semantic code understanding (not just text search)
+- Finds dead code via reference checking (zero false positives)
+- Evaluates SOLID principles, DRY, KISS, YAGNI
+- Checks for OWASP Top 10 security vulnerabilities
+- Scores code quality across 11 dimensions (target: ≥9.1/10)
+
+**Parallel execution:** When analyzing multiple files, each file gets its own agent running simultaneously. Results are collected and each file gets its own plan.
 
 ### Review Before Executing
 

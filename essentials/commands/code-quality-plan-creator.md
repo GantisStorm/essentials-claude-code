@@ -10,6 +10,11 @@ model: opus
 
 Analyze code quality using Claude Code's built-in LSP for semantic understanding. Generates architectural improvement plans.
 
+**Use the right tool:**
+- **Code quality improvements** → `/code-quality-plan-creator` (this command)
+- **New features/enhancements** → `/plan-creator`
+- **Bug fixes** → `/bug-plan-creator`
+
 ## Built-in LSP Operations
 
 - `documentSymbol` — Get all symbols in a document
