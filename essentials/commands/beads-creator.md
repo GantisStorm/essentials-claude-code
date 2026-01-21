@@ -65,7 +65,13 @@ Each bead must be SELF-CONTAINED:
 Create epic first, then child tasks with --parent.
 ```
 
-Use `subagent_type: "beads-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:beads-creator-default"
+run_in_background: true
+```
+
+Wait with TaskOutput (block: true).
 
 ### Step 4: Report Result
 

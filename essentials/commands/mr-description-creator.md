@@ -107,7 +107,13 @@ MR_URL: <url>
 STATUS: <CREATED or UPDATED>
 ```
 
-Use `subagent_type: "mr-description-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:mr-description-creator-default"
+run_in_background: true
+```
+
+Wait with TaskOutput (block: true).
 
 ### Step 6: Report Result
 

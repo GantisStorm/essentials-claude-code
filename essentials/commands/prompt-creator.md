@@ -39,7 +39,13 @@ Output file: <generated path>
 Research the codebase for context, then write the enhanced prompt.
 ```
 
-Use `subagent_type: "prompt-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:prompt-creator-default"
+run_in_background: true
+```
+
+Wait with TaskOutput (block: true).
 
 ### Step 3: Report Result
 

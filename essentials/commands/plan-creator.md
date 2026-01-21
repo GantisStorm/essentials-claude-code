@@ -47,7 +47,11 @@ Requirements:
 Write the plan to `.claude/plans/` following standard format.
 ```
 
-Use `subagent_type: "plan-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:plan-creator-default"
+run_in_background: true
+```
 
 Wait with TaskOutput (block: true).
 

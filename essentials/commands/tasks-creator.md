@@ -53,7 +53,13 @@ Each task must be SELF-CONTAINED:
 Output to .claude/prd/<plan-name>.json
 ```
 
-Use `subagent_type: "tasks-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:tasks-creator-default"
+run_in_background: true
+```
+
+Wait with TaskOutput (block: true).
 
 ### Step 4: Report Result
 

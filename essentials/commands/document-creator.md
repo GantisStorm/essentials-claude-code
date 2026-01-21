@@ -80,7 +80,11 @@ STATUS: CREATED
 RULES_SUGGESTION: [Yes/No - whether to suggest adding rules]
 ```
 
-Use `subagent_type: "document-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:document-creator-default"
+run_in_background: true
+```
 
 **Launch ALL agents in a single message for parallel execution.**
 

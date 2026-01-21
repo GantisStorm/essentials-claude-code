@@ -74,7 +74,13 @@ Return:
 - TOTAL CHANGES count
 ```
 
-Use `subagent_type: "bug-plan-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:bug-plan-creator-default"
+run_in_background: true
+```
+
+Wait with TaskOutput (block: true).
 
 ### Step 3: Report Result
 

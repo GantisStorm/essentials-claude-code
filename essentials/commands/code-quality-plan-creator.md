@@ -67,9 +67,13 @@ Return:
 - TOTAL CHANGES count
 ```
 
-Use `subagent_type: "code-quality-plan-creator-default"` and `run_in_background: true`.
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:code-quality-plan-creator-default"
+run_in_background: true
+```
 
-Launch ALL agents in a single message for parallel execution.
+**Launch ALL agents in a single message for parallel execution.**
 
 ### Step 3: Collect Results
 
