@@ -59,7 +59,17 @@ Atomic, self-contained task units in a local graph database. Unlike plans (sessi
 
 ## Setup
 
-### Initialize Beads (choose one)
+### Step 1: Install Beads CLI
+
+```bash
+# macOS
+brew tap steveyegge/beads && brew install bd
+
+# Or via npm
+npm install -g @anthropics/beads
+```
+
+### Step 2: Initialize Beads
 
 | Mode | Command | When to Use |
 |------|---------|-------------|
@@ -68,6 +78,30 @@ Atomic, self-contained task units in a local graph database. Unlike plans (sessi
 | Protected Branch | `bd init --branch beads-sync` | When main is protected |
 
 **Stealth Mode:** Keeps `.beads/` local only — no git sync. Use for personal or brownfield projects.
+
+### Step 3: Complete Setup with Doctor
+
+After `bd init`, run the doctor to fix common issues:
+
+```bash
+bd doctor --fix
+```
+
+This fixes:
+- Git hooks (for auto-sync)
+- Claude integration
+- Version tracking
+- Sync branch config
+
+### Step 4: (Optional) Install RalphTUI
+
+Only needed if you want the visual TUI dashboard:
+
+```bash
+# Requires Bun runtime
+bun install -g ralph-tui
+ralph-tui setup
+```
 
 ---
 
@@ -208,7 +242,7 @@ bd setup cursor    # Cursor IDE rules
 
 ## RalphTUI (Optional)
 
-[RalphTUI](https://github.com/subsy/ralph-tui) provides a visual TUI dashboard. Beads are created with `ralph` label by default for compatibility.
+[RalphTUI](https://github.com/subsy/ralph-tui) provides a visual TUI dashboard.
 
 **Install:**
 ```bash
@@ -220,6 +254,34 @@ ralph-tui setup
 ```bash
 ralph-tui run --tracker beads --epic <epic-id>
 ```
+
+### Important: Task Hierarchy
+
+Tasks must be **children** of the epic (using `--parent`) to appear when running with `--epic`:
+
+```bash
+# Create epic first
+bd create --title "Feature Name" --type epic
+# Output: beads-abc123
+
+# Create tasks as children of the epic
+bd create --title "Task 1" --type task --parent beads-abc123 -l ralph
+bd create --title "Task 2" --type task --parent beads-abc123 -l ralph
+```
+
+**Note:** The `/beads-creator` command handles this automatically—it creates an epic and adds all tasks as children with the `ralph` label.
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `s` | Start execution |
+| `p` | Pause/Resume |
+| `q` | Quit |
+| `j/k` | Navigate tasks |
+| `o` | Cycle views (details → output → prompt) |
+| `T` | Toggle subagent tree |
+| `?` | Show all shortcuts |
 
 **Resources:**
 - [RalphTUI Beads Tracker](https://ralph-tui.com/docs/plugins/trackers/beads)
