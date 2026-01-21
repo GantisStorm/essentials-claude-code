@@ -4,7 +4,6 @@
 
 # Essentials for Claude Code
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code](https://img.shields.io/badge/Built%20for-Claude%20Code-blueviolet)](https://claude.ai/code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
@@ -383,8 +382,6 @@ Use `userStories` and `passes` fields. See schema above.
 ---
 
 <div align="center">
-
-MIT License
 
 *"Done" means tests pass. No exceptions.*
 
