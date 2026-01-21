@@ -168,6 +168,8 @@ jq '{completed: [.userStories[] | select(.passes == true)] | length, pending: [.
 
 [RalphTUI](https://github.com/subsy/ralph-tui) is an AI Agent Loop Orchestrator with a terminal UI.
 
+**Note:** RalphTUI is for **execution only**. Use this plugin's `/plan-creator` → `/tasks-creator` workflow to create tasks. RalphTUI then runs them.
+
 ### Install
 
 ```bash
@@ -200,14 +202,6 @@ ralph-tui run --prd ./prd.json --headless        # No TUI, just output
 | `o` | Cycle views (details → output → prompt) |
 | `T` | Toggle subagent tree |
 | `?` | Show all shortcuts |
-
-### Create PRD with RalphTUI
-
-RalphTUI can also create PRDs interactively:
-
-```bash
-ralph-tui create-prd --chat    # AI-guided PRD creation
-```
 
 **Resources:**
 - [RalphTUI Documentation](https://ralph-tui.com/docs)

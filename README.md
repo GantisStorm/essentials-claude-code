@@ -323,9 +323,11 @@ model: opus    # opus | sonnet | haiku
 |------|-----------|---------|
 | None | — | Simple workflow works out of the box |
 | [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | `brew tap steveyegge/beads && brew install bd` |
-| [RalphTUI](https://github.com/subsy/ralph-tui) | For dashboard | TUI visualization |
+| [RalphTUI](https://github.com/subsy/ralph-tui) | For dashboard | TUI visualization (execution only) |
 | Context7 MCP | Optional | Enhanced docs in plans |
 | SearXNG MCP | Optional | Web search in plans |
+
+**Note:** RalphTUI is for **execution only**. This plugin provides planning (`/plan-creator`) and task conversion (`/tasks-creator`, `/beads-creator`). RalphTUI runs the resulting tasks/beads with a visual dashboard.
 
 ---
 

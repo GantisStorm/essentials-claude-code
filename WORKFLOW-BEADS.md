@@ -242,15 +242,24 @@ bd setup cursor    # Cursor IDE rules
 
 ## RalphTUI (Optional)
 
-[RalphTUI](https://github.com/subsy/ralph-tui) provides a visual TUI dashboard.
+[RalphTUI](https://github.com/subsy/ralph-tui) provides a visual TUI dashboard for **execution only**.
 
-**Install:**
+**Note:** Use this plugin's `/plan-creator` → `/beads-creator` workflow to create beads. RalphTUI then runs them.
+
+### Install
+
 ```bash
+# Requires Bun runtime (https://bun.sh)
+curl -fsSL https://bun.sh/install | bash
+
+# Install RalphTUI
 bun install -g ralph-tui
+
+# Setup (creates config, detects agents)
 ralph-tui setup
 ```
 
-**Run:**
+### Run
 ```bash
 ralph-tui run --tracker beads --epic <epic-id>
 ```

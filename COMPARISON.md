@@ -229,10 +229,10 @@ Single session. Exit criteria in plan. Loop until pass. **This handles 80% of ta
 /tasks-creator .claude/plans/jwt-auth-abc12-plan.md
 # Review prd.json, verify task descriptions have full code
 /tasks-loop ./prd.json                  # Internal execution
-# OR: ralph-tui run --prd ./prd.json   # TUI dashboard
+# OR: ralph-tui run --prd ./prd.json   # TUI dashboard (execution only)
 ```
 
-Creates prd.json file with self-contained tasks. **Use when you want RalphTUI's TUI dashboard or prefer the prd.json format.** Each task has full implementation code—no reading the original plan.
+Creates prd.json file with self-contained tasks. **Use when you want RalphTUI's TUI dashboard or prefer the prd.json format.** Each task has full implementation code—no reading the original plan. RalphTUI is for execution only—this plugin creates the plans and tasks.
 
 ### Beads: Plan → Beads → Beads Loop (When Simple Fails)
 
@@ -240,10 +240,10 @@ Creates prd.json file with self-contained tasks. **Use when you want RalphTUI's 
 /plan-creator Add complete auth system
 /beads-creator .claude/plans/auth-system-xyz99-plan.md
 /beads-loop --label plan:auth-system              # Internal execution
-# OR: ralph-tui run --tracker beads --epic <id>  # TUI dashboard
+# OR: ralph-tui run --tracker beads --epic <id>  # TUI dashboard (execution only)
 ```
 
-Full persistence. Each bead is self-contained. Survives sessions, context compaction, interruptions. **Use when Simple tier fails—AI hallucinates mid-task, loses track, or feature spans multiple days.** This is the most token-expensive workflow.
+Full persistence. Each bead is self-contained. Survives sessions, context compaction, interruptions. **Use when Simple tier fails—AI hallucinates mid-task, loses track, or feature spans multiple days.** This is the most token-expensive workflow. RalphTUI is for execution only—this plugin creates the plans and beads.
 
 ---
 
