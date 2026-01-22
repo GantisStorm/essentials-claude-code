@@ -264,6 +264,77 @@ ralph-tui setup    # Interactive wizard
 ralph-tui setup --force  # Overwrite existing
 ```
 
+### Custom Prompt Templates (Disable Auto-Commit)
+
+**Important:** The `autoCommit = false` config setting only controls whether RalphTUI itself commits. The **default prompt template** still instructs the AI agent to commit after each task. To fully disable commits, use a custom template.
+
+Create `.ralph-tui/templates/json.hbs`:
+
+```bash
+mkdir -p .ralph-tui/templates
+```
+
+Then create the file with this content (RalphTUI's default template with commit step removed):
+
+```handlebars
+{{!-- Full PRD for project context (agent studies this first) --}}
+{{#if prdContent}}
+We are working in a project to implement the following Product Requirements Document (PRD):
+
+{{prdContent}}
+
+---
+{{/if}}
+
+{{!-- Task details --}}
+## Your Task: {{taskId}} - {{taskTitle}}
+
+{{#if taskDescription}}
+### Description
+{{taskDescription}}
+{{/if}}
+
+{{#if acceptanceCriteria}}
+### Acceptance Criteria
+{{acceptanceCriteria}}
+{{/if}}
+
+{{#if dependsOn}}
+**Prerequisites**: {{dependsOn}}
+{{/if}}
+
+{{#if recentProgress}}
+## Recent Progress
+{{recentProgress}}
+{{/if}}
+
+## Workflow
+1. Study the PRD context above to understand the bigger picture
+2. Study `.ralph-tui/progress.md` to understand overall status, implementation progress, and learnings including codebase patterns and gotchas
+3. Implement this single story following acceptance criteria
+4. Run quality checks: typecheck, lint, etc.
+5. Document learnings in `.ralph-tui/progress.md`
+6. Signal completion
+
+## Stop Condition
+**IMPORTANT**: If the work is already complete, verify it meets the
+acceptance criteria and signal completion immediately.
+
+When finished, signal completion with:
+<promise>COMPLETE</promise>
+```
+
+**Template locations (checked in order):**
+1. `--prompt ./path.hbs` (CLI flag)
+2. `.ralph-tui/templates/json.hbs` (project)
+3. `~/.config/ralph-tui/templates/json.hbs` (global)
+4. Built-in default
+
+**View current template:**
+```bash
+ralph-tui template show
+```
+
 ---
 
 ## Comparison

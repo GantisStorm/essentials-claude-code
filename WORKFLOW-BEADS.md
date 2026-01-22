@@ -166,6 +166,80 @@ bd create --title "Task 1" --type task --parent beads-abc123 -l ralph
 
 The `/beads-creator` command handles this automatically.
 
+### Custom Prompt Templates (Disable Auto-Commit)
+
+**Important:** The `autoCommit = false` config setting only controls whether RalphTUI itself commits. The **default prompt template** still instructs the AI agent to commit after each task. To fully disable commits, use a custom template.
+
+Create `.ralph-tui/templates/beads-bv.hbs`:
+
+```bash
+mkdir -p .ralph-tui/templates
+```
+
+Then create the file with this content (RalphTUI's default template with commit step removed):
+
+```handlebars
+{{!-- Full PRD for project context (if available) --}}
+{{#if prdContent}}
+We are working in a project to implement the following Product Requirements Document (PRD):
+
+{{prdContent}}
+
+---
+{{/if}}
+
+## Bead Details
+- **ID**: {{taskId}}
+- **Title**: {{taskTitle}}
+{{#if epicId}}
+- **Epic**: {{epicId}}{{#if epicTitle}} - {{epicTitle}}{{/if}}
+{{/if}}
+{{#if taskDescription}}
+- **Description**: {{taskDescription}}
+{{/if}}
+
+{{#if acceptanceCriteria}}
+## Acceptance Criteria
+{{acceptanceCriteria}}
+{{/if}}
+
+{{#if dependsOn}}
+**Prerequisites**: {{dependsOn}}
+{{/if}}
+
+{{#if recentProgress}}
+## Recent Progress
+{{recentProgress}}
+{{/if}}
+
+## Workflow
+1. Study the PRD context above (if available)
+2. Study `.ralph-tui/progress.md` to understand overall status, implementation progress, and learnings including codebase patterns and gotchas
+3. Implement the requirements (stay on current branch)
+4. Run your project's quality checks
+5. Close the bead: `bd close {{taskId}} --db {{beadsDbPath}} --reason "..."`
+6. Document learnings in `.ralph-tui/progress.md`
+7. Signal completion
+
+## Stop Condition
+**IMPORTANT**: If the work is already complete, verify it works
+correctly and signal completion immediately.
+
+When finished, signal completion with:
+<promise>COMPLETE</promise>
+```
+
+**Template locations (checked in order):**
+1. `--prompt ./path.hbs` (CLI flag)
+2. `.ralph-tui/templates/beads-bv.hbs` (project)
+3. `~/.config/ralph-tui/templates/beads-bv.hbs` (global)
+4. Built-in default
+
+**View current template:**
+```bash
+ralph-tui template show
+```
+
 ---
 
 ## Comparison
