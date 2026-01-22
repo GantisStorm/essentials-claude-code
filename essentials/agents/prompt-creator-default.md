@@ -125,7 +125,7 @@ Use any available MCP tools for research. Common ones include:
 
 ## Step 1: Apply Decision Framework
 
-Decide: Slash Command (user-invoked) or Subagent (background worker).
+Decide: Slash Command, Subagent, Feature Request (for /plan-creator), or Bug Report (for /bug-plan-creator).
 
 **Decision Framework:**
 ```
@@ -141,9 +141,23 @@ Subagent indicators:
 - Processes specific subtask
 - Returns structured results to parent
 
-Example:
+Feature Request indicators (for /plan-creator):
+- User wants to describe a feature to build
+- Keywords: "feature", "plan for", "add capability", "implement"
+- Will be input to /plan-creator command
+- Needs architectural context and clear requirements
+
+Bug Report indicators (for /bug-plan-creator):
+- User wants to describe a bug to fix
+- Keywords: "bug", "error", "fix", "issue", "broken"
+- Will be input to /bug-plan-creator command
+- Needs reproduction steps and error context
+
+Examples:
 Description: "review PRs for security" -> Subagent (background analysis)
 Description: "command to review code quality" -> Slash Command (user-invoked orchestrator)
+Description: "feature to add user authentication" -> Feature Request (input for /plan-creator)
+Description: "bug report for login failing" -> Bug Report (input for /bug-plan-creator)
 ```
 
 ---
@@ -246,6 +260,132 @@ color: [purple|blue|green]
 # TOOL USAGE GUIDELINES
 
 [Which tools to use, when, and how]
+```
+
+### Feature Request Structure (for /plan-creator)
+
+Creates well-formatted feature descriptions that produce better architectural plans.
+
+```markdown
+# Feature: [Clear, Specific Title]
+
+## Overview
+
+[2-3 sentences explaining what this feature does and why it's needed]
+
+## User Story
+
+**As a** [user type]
+**I want** [capability]
+**So that** [benefit/value]
+
+## Requirements
+
+### Functional Requirements
+1. [Specific requirement with measurable outcome]
+2. [Another requirement]
+3. [Continue...]
+
+### Non-Functional Requirements
+- **Performance**: [Any performance constraints]
+- **Security**: [Security considerations]
+- **Compatibility**: [Integration requirements]
+
+## Acceptance Criteria
+
+- [ ] [Testable criterion 1]
+- [ ] [Testable criterion 2]
+- [ ] [Continue...]
+
+## Technical Context (if known)
+
+- **Affected areas**: [Which parts of codebase]
+- **Dependencies**: [External services, libraries]
+- **Constraints**: [Technical limitations to consider]
+
+## Out of Scope
+
+- [What this feature explicitly does NOT include]
+```
+
+**Usage**: Copy the generated feature request and run:
+```bash
+/plan-creator <paste feature request>
+```
+
+### Bug Report Structure (for /bug-plan-creator)
+
+Creates well-formatted bug reports that produce better fix plans.
+
+**Input can include:**
+- Error messages or stack traces
+- Log file paths (e.g., `./logs/error.log`)
+- Diagnostic commands (e.g., `docker logs api --tail 100`)
+- User descriptions of the problem
+
+When logs or file paths are provided, READ them and extract relevant error context.
+
+```markdown
+# Bug: [Clear, Specific Title]
+
+## Summary
+
+[1-2 sentences describing the bug]
+
+## Environment
+
+- **Version/Branch**: [version or commit]
+- **OS/Platform**: [if relevant]
+- **Related config**: [any relevant settings]
+
+## Steps to Reproduce
+
+1. [First step]
+2. [Second step]
+3. [Continue until bug occurs]
+
+## Expected Behavior
+
+[What should happen]
+
+## Actual Behavior
+
+[What actually happens]
+
+## Error Details
+
+```
+[Extracted from logs/stack traces - include file:line references]
+[Key error messages with timestamps if available]
+[Relevant stack frames showing code path]
+```
+
+## Log Analysis
+
+[If logs were provided, summarize key findings:]
+- **Error pattern**: [What errors appear]
+- **Frequency**: [How often in logs]
+- **First occurrence**: [Timestamp if available]
+- **Related warnings**: [Any preceding warnings]
+
+## Impact
+
+- **Severity**: [Critical/High/Medium/Low]
+- **Affected users**: [Who is impacted]
+- **Workaround**: [Any temporary fix, or "None"]
+
+## Additional Context
+
+- **First noticed**: [When did this start]
+- **Frequency**: [Always/Sometimes/Rarely]
+- **Related issues**: [Links to related bugs if any]
+```
+
+**Usage**: Copy the generated bug report and run:
+```bash
+/bug-plan-creator <paste bug report>
+# Or with log file:
+/bug-plan-creator ./logs/error.log "API returns 500 on login"
 ```
 
 ## Step 2: Eliminate Anti-Patterns

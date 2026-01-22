@@ -10,12 +10,20 @@ context: fork
 
 Transform rough, vibe-y prompt ideas into detailed, effective prompts tuned to your codebase.
 
+**Supports 4 prompt types:**
+- **Slash Commands** — User-invoked commands
+- **Subagents** — Background worker agents
+- **Feature Requests** — Well-formatted input for `/plan-creator`
+- **Bug Reports** — Well-formatted input for `/bug-plan-creator`
+
 ## Arguments
 
 Takes any rough prompt description:
-- `"a prompt that reviews code for security"`
-- `"help me debug stuff"`
-- `"analyze my recon data and suggest next steps"`
+- `"a prompt that reviews code for security"` → Slash command or subagent
+- `"help me debug stuff"` → Slash command or subagent
+- `"feature: add user authentication with OAuth"` → Feature request for /plan-creator
+- `"bug: login fails when user has no profile"` → Bug report for /bug-plan-creator
+- `"bug: ./logs/error.log API returns 500"` → Bug report with log analysis
 
 ## Instructions
 
@@ -59,7 +67,16 @@ Ready to use. For edits, ask the main agent to modify the file.
 ## Example Usage
 
 ```bash
+# Create slash commands or subagents
 /prompt-creator "a prompt that reviews PRs for security issues"
 /prompt-creator "help me analyze pentesting results"
-/prompt-creator "debug my async code"
+
+# Create feature requests for /plan-creator
+/prompt-creator "feature: add user authentication with JWT and refresh tokens"
+/prompt-creator "feature: implement real-time notifications with WebSockets"
+
+# Create bug reports for /bug-plan-creator
+/prompt-creator "bug: API returns 500 when user profile is null"
+/prompt-creator "bug: memory leak in WebSocket connection handler"
+/prompt-creator "bug: ./logs/error.log connection timeout on database queries"
 ```
