@@ -329,6 +329,63 @@ model: opus    # opus | sonnet | haiku
 
 **Note:** RalphTUI is for **execution only**. This plugin provides planning (`/plan-creator`) and task conversion (`/tasks-creator`, `/beads-creator`). RalphTUI runs the resulting tasks/beads with a visual dashboard.
 
+### Installing RalphTUI (Optional)
+
+RalphTUI provides a visual TUI dashboard for task execution. Skip this if using built-in `/tasks-loop` or `/beads-loop`.
+
+**Prerequisites:**
+
+```bash
+# Install Bun runtime (required for RalphTUI)
+curl -fsSL https://bun.sh/install | bash
+# Or: brew install oven-sh/bun/bun
+
+# Verify
+bun --version   # Should be 1.0.0+
+```
+
+**Install:**
+
+```bash
+# Install with Bun (recommended)
+bun install -g ralph-tui
+
+# Or with npm
+npm install -g ralph-tui
+
+# Verify
+ralph-tui --version
+```
+
+**Setup (per project):**
+
+```bash
+cd your-project
+ralph-tui setup
+```
+
+The setup wizard detects agents, creates `.ralph-tui/config.toml`, and configures trackers.
+
+**Run:**
+
+```bash
+# Tasks workflow
+ralph-tui run --prd .claude/prd/feature.json
+
+# Beads workflow
+ralph-tui run --tracker beads --epic <epic-id>
+```
+
+**Verify installation:**
+
+```bash
+ralph-tui plugins agents    # List detected agents
+ralph-tui plugins trackers  # List detected trackers
+ralph-tui config show       # View configuration
+```
+
+See [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) or [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) for full documentation including keyboard shortcuts.
+
 ---
 
 ## Troubleshooting

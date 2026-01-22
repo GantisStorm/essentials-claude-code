@@ -246,22 +246,78 @@ bd setup cursor    # Cursor IDE rules
 
 **Note:** Use this plugin's `/plan-creator` → `/beads-creator` workflow to create beads. RalphTUI then runs them.
 
-### Install
+### Prerequisites
+
+**Bun Runtime (Required)**
+
+RalphTUI requires Bun >= 1.0.0 as its runtime. While you can install the package using npm, Bun must be installed to run ralph-tui.
 
 ```bash
-# Requires Bun runtime (https://bun.sh)
+# macOS/Linux
 curl -fsSL https://bun.sh/install | bash
 
-# Install RalphTUI
+# macOS (Homebrew)
+brew install oven-sh/bun/bun
+
+# Verify
+bun --version   # Should be 1.0.0 or higher
+```
+
+**AI Coding Agent**
+
+RalphTUI orchestrates AI coding agents. You need at least one:
+- **Claude Code** — Anthropic's official CLI (you have this)
+- **OpenCode** — Open-source alternative
+- **Factory Droid** — Factory Droid CLI
+
+### Installation
+
+```bash
+# Install globally with Bun (recommended)
 bun install -g ralph-tui
 
-# Setup (creates config, detects agents)
+# Or with npm
+npm install -g ralph-tui
+
+# Or run without installing
+bunx ralph-tui@latest
+
+# Verify
+ralph-tui --version
+```
+
+### Setup
+
+After installing, initialize in your project:
+
+```bash
+cd your-project
 ralph-tui setup
 ```
 
+The setup wizard will:
+- **Detect agents** — Find installed AI coding agents
+- **Create configuration** — Generate `.ralph-tui/config.toml`
+- **Install skills** — Add bundled skills (optional, this plugin provides better alternatives)
+- **Detect trackers** — Find existing Beads setup
+
+**Re-run setup anytime:** `ralph-tui setup --force`
+
+### Verify Installation
+
+```bash
+ralph-tui --version       # Check version
+ralph-tui plugins agents  # List detected agents
+ralph-tui plugins trackers # List detected trackers
+ralph-tui config show      # View configuration
+```
+
 ### Run
+
 ```bash
 ralph-tui run --tracker beads --epic <epic-id>
+ralph-tui run --tracker beads --epic <epic-id> --iterations 10
+ralph-tui run --tracker beads --epic <epic-id> --headless
 ```
 
 ### Important: Task Hierarchy
@@ -282,15 +338,56 @@ bd create --title "Task 2" --type task --parent beads-abc123 -l ralph
 
 ### Keyboard Shortcuts
 
+**Execution Control**
+
 | Key | Action |
 |-----|--------|
 | `s` | Start execution |
 | `p` | Pause/Resume |
+| `+ / =` | Add 10 iterations |
+| `- / _` | Remove 10 iterations |
 | `q` | Quit |
-| `j/k` | Navigate tasks |
-| `o` | Cycle views (details → output → prompt) |
-| `T` | Toggle subagent tree |
 | `?` | Show all shortcuts |
+
+**Navigation**
+
+| Key | Action |
+|-----|--------|
+| `j / ↓` | Navigate down |
+| `k / ↑` | Navigate up |
+| `Tab` | Switch focus between panels |
+| `Enter` | Drill into selected item |
+| `Esc` | Go back / close dialog |
+
+**View Controls**
+
+| Key | Action |
+|-----|--------|
+| `o` | Cycle right panel views (details → output → prompt) |
+| `O` | Jump directly to prompt preview |
+| `d` | Toggle progress dashboard |
+| `h` | Toggle show/hide closed tasks |
+| `r` | Refresh task list |
+| `T` | Toggle subagent tree panel |
+| `t` | Cycle subagent detail level |
+
+### Troubleshooting
+
+**"Agent not found"**
+```bash
+which claude              # Verify agent CLI is installed
+ralph-tui plugins agents  # See detected agents
+```
+
+**"bun: command not found"**
+
+Add to your shell profile (`.bashrc`, `.zshrc`):
+```bash
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+```
+
+Then restart terminal or `source ~/.bashrc`.
 
 **Resources:**
 - [RalphTUI Beads Tracker](https://ralph-tui.com/docs/plugins/trackers/beads)
