@@ -151,6 +151,7 @@ The loop **cannot** end until verification passes. No exceptions.
 | `/mr-description-creator` | PR/MR descriptions via gh/glab |
 | `/reset-prd <path>` | Reset prd.json to initial state |
 | `/reset-beads <epic-id>` | Reopen all tasks in a beads epic |
+| `/ralph-config <json\|beads>` | Write RalphTUI config for workflow |
 
 ---
 

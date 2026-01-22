@@ -164,22 +164,55 @@ The `ralph-tui setup` command creates a `.ralph-tui/` folder in your project wit
 └── iterations/       # Iteration logs (created during runs)
 ```
 
-### config.toml
+### Recommended Configurations
+
+**For Tasks (prd.json):**
 
 ```toml
 # .ralph-tui/config.toml
 configVersion = "2.1"
-tracker = "json"              # "json" for prd.json, "beads-bv" for Beads
-agent = "claude"              # "claude", "opencode", "droid"
-maxIterations = 10            # 0 = unlimited
+maxIterations = 0                              # Unlimited - complete all tasks
+agent = "claude"
+tracker = "json"
 autoCommit = false
-
-[trackerOptions]
-# path = "./prd.json"         # For json tracker
+subagentTracingDetail = "full"                 # Show nested output and hierarchy
 
 [agentOptions]
-# model = "claude-sonnet-4-20250514"
+model = "claude-opus-4-5-20251101"             # Use Opus for best results
+
+[trackerOptions]
+# path is passed via CLI: ralph-tui run --prd ./path.json
+
+[notifications]
+sound = "system"
 ```
+
+**For Beads:**
+
+```toml
+# .ralph-tui/config.toml
+configVersion = "2.1"
+maxIterations = 0                              # Unlimited - complete all tasks
+agent = "claude"
+tracker = "beads-bv"
+autoCommit = false
+subagentTracingDetail = "full"                 # Show nested output and hierarchy
+
+[agentOptions]
+model = "claude-opus-4-5-20251101"             # Use Opus for best results
+
+[trackerOptions]
+# epicId is passed via CLI: ralph-tui run --epic <epic-id>
+
+[notifications]
+sound = "system"
+```
+
+**Key settings:**
+- `maxIterations = 0` — Run until all tasks complete
+- `model = "claude-opus-4-20250514"` — Best reasoning for complex tasks
+- `subagentTracingDetail = "full"` — Full visibility into agent activity
+- `sound = "system"` — Desktop notifications on completion
 
 ### Switching Trackers
 

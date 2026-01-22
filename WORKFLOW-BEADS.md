@@ -130,13 +130,26 @@ For installation, see [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md#ralphtui-optional).
 ralph-tui setup    # Select beads-bv tracker when prompted
 ```
 
-Or edit `.ralph-tui/config.toml`:
+Then update `.ralph-tui/config.toml` with [recommended settings](WORKFLOW-TASKS.md#recommended-configurations):
+
 ```toml
-tracker = "beads-bv"
+configVersion = "2.1"
+maxIterations = 0
 agent = "claude"
+tracker = "beads-bv"
+autoCommit = false
+subagentTracingDetail = "full"
+
+[agentOptions]
+model = "claude-opus-4-5-20251101"
+
+[trackerOptions]
+
+[notifications]
+sound = "system"
 ```
 
-**Switching workflows?** If you use both Tasks and Beads in the same repo, see [Managing .ralph-tui/ Folder](WORKFLOW-TASKS.md#managing-ralph-tui-folder) for how to switch trackers.
+**Switching workflows?** See [Managing .ralph-tui/ Folder](WORKFLOW-TASKS.md#managing-ralph-tui-folder) for switching between Tasks and Beads trackers.
 
 ### Beads-Specific Usage
 
