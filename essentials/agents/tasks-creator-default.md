@@ -147,21 +147,11 @@ Plans created by `/plan-creator` follow this structure. Extract from these secti
 
 5. **Files list determines task count** - Each file in `## Files` typically becomes one task (may be combined for small related files).
 
-## What NOT to Do
+## Do / Don't
 
-- ❌ Summarize 80 lines of code as "implement the auth middleware"
-- ❌ Write "see plan for implementation details"
-- ❌ Invent requirements not in the plan
-- ❌ Skip the Migration Pattern section
-- ❌ Paraphrase the Reference Implementation
+✅ **DO**: Copy entire Reference Implementation code, copy entire BEFORE/AFTER migration patterns, copy exact verification commands, preserve line numbers and signatures exactly
 
-## What TO Do
-
-- ✅ Copy the entire Reference Implementation code block
-- ✅ Copy the entire BEFORE/AFTER migration pattern
-- ✅ Copy exact verification commands from Exit Criteria
-- ✅ Copy exact requirements from Architectural Narrative
-- ✅ Preserve line numbers, file paths, function signatures exactly
+❌ **DON'T**: Summarize code as "implement X", write "see plan", invent requirements, skip Migration Patterns, paraphrase code
 
 ---
 
@@ -408,15 +398,6 @@ In prd.json:
 [PROCEED | REVISE | MANUAL_REVIEW]
 ```
 
-### Quality Thresholds
-
-| Metric | Good | Acceptable | Needs Work |
-|--------|------|------------|------------|
-| Tasks count | 3-10 | 11-15 | 15+ |
-| With code | >90% | 70-90% | <70% |
-| Acceptance criteria | 100% | 90-99% | <90% |
-| Max deps chain | ≤3 | 4 | 5+ |
-
 ---
 
 # PHASE 6: WRITE prd.json
@@ -508,57 +489,24 @@ Execute (choose one):
 
 # SELF-VERIFICATION CHECKLIST
 
-**Phase 1 - Extract Information:**
-- [ ] Read the plan file
-- [ ] Extracted all key information (plan name, tasks, requirements, exit criteria, code)
+**Extract & Assess:**
+- [ ] Read the plan file and extracted all key information
+- [ ] Counted files, identified task boundaries, determined granularity
 
-**Phase 2 - Assess Complexity:**
-- [ ] Counted files to modify
-- [ ] Identified natural task boundaries
-- [ ] Determined appropriate task granularity
+**Create & Dependencies:**
+- [ ] Each task has FULL implementation code, EXACT before/after, EXACT exit criteria
+- [ ] All dependencies explicitly declared, no circular deps, tests depend on implementations
 
-**Phase 3 - Create Descriptions:**
-- [ ] Each task has FULL implementation code (not patterns)
-- [ ] Each task has EXACT before/after for modifications
-- [ ] Each task has EXACT exit criteria commands
-- [ ] Each task lists ALL files to modify with paths
-
-**Phase 4 - Build Dependencies:**
-- [ ] All dependencies explicitly declared
-- [ ] No circular dependencies
-- [ ] Test tasks depend on implementation tasks
-
-**Phase 5 - Validate Quality:**
-- [ ] All tasks have acceptance criteria
-- [ ] Dependency chain length reasonable (<5)
-- [ ] No orphaned or redundant tasks
-
-**Phase 6 - Write prd.json:**
-- [ ] Valid JSON syntax
-- [ ] All `passes: false`
-- [ ] RalphTUI schema compliance
+**Validate & Write:**
+- [ ] All tasks have acceptance criteria, reasonable dependency chains (<5)
+- [ ] Valid JSON syntax, all `passes: false`, RalphTUI schema compliance
 
 **Output:**
-- [ ] Used minimal structured output format
-- [ ] Included file path, task count, ready count
-- [ ] Included execution order and dependency graph
-- [ ] Included both execution options
+- [ ] Minimal structured format with file path, counts, execution order, dependency graph
 
 ---
 
 # ANTI-PATTERNS: WHAT NOT TO DO
-
-**TERRIBLE** - No context at all:
-```json
-{
-  "id": "US-001",
-  "title": "Update user auth",
-  "description": "Update the auth system",
-  "acceptanceCriteria": ["Auth works"],
-  "passes": false
-}
-```
-Loop agent has NO IDEA what to do.
 
 **BAD** - References other files instead of including content:
 ```json
@@ -571,19 +519,6 @@ Loop agent has NO IDEA what to do.
 }
 ```
 Loop agent has to read 3 files to understand the task.
-
-**BAD** - Wrong schema:
-```json
-{
-  "tasks": [
-    {
-      "status": "pending",
-      "criteria": ["Test passes"]
-    }
-  ]
-}
-```
-RalphTUI will reject this - wrong field names.
 
 **MEDIOCRE** - Has some info but missing code:
 ```json
@@ -633,15 +568,3 @@ Loop agent knows WHAT but not HOW - will have to figure it out.
 5. **Line numbers** for where to edit
 6. **Correct RalphTUI schema** (`passes`, `acceptanceCriteria`, etc.)
 
----
-
-## Tools Available
-
-**Do NOT use:**
-- `AskUserQuestion` - NEVER use this, slash command handles all user interaction
-
-**DO use:**
-- `Read` - Read plan files
-- `Write` - Write prd.json output
-- `Grep` - Search for patterns in codebase
-- `Glob` - Find files

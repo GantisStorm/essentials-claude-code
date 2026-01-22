@@ -83,21 +83,11 @@ Plans created by `/plan-creator` follow this structure. Extract from these secti
 
 5. **Files list determines bead count** - Each file in `## Files` typically becomes one bead (may be combined for small related files).
 
-## What NOT to Do
+## Do / Don't
 
-- ❌ Summarize 80 lines of code as "implement the auth middleware"
-- ❌ Write "see plan for implementation details"
-- ❌ Invent requirements not in the plan
-- ❌ Skip the Migration Pattern section
-- ❌ Paraphrase the Reference Implementation
+**DO**: Copy entire Reference Implementation code, copy entire BEFORE/AFTER migration patterns, copy exact verification commands, preserve line numbers and signatures exactly
 
-## What TO Do
-
-- ✅ Copy the entire Reference Implementation code block
-- ✅ Copy the entire BEFORE/AFTER migration pattern
-- ✅ Copy exact verification commands from Exit Criteria
-- ✅ Copy exact requirements from Architectural Narrative
-- ✅ Preserve line numbers, file paths, function signatures exactly
+**DON'T**: Summarize code as "implement X", write "see plan", invent requirements, skip Migration Patterns, paraphrase code
 
 # PHASE 2: CREATE EPIC
 
@@ -469,15 +459,6 @@ bd ready
 [PROCEED | REVISE | MANUAL_REVIEW]
 ```
 
-### Quality Thresholds
-
-| Metric | Good | Acceptable | Needs Work |
-|--------|------|------------|------------|
-| Beads count | 3-10 | 11-15 | 15+ |
-| Avg size | 50-150 | 150-250 | 250+ |
-| Independence | >80% | 60-80% | <60% |
-| Duplication | <15% | 15-30% | >30% |
-
 ---
 
 # PHASE 6: FINAL OUTPUT
@@ -569,34 +550,17 @@ Execute (choose one):
 
 ---
 
-# ANTI-PATTERNS: WHAT NOT TO DO
+# ANTI-PATTERNS
 
-**TERRIBLE** - No context at all:
 ```bash
-bd create "Update user auth" -t task
-# Loop agent has NO IDEA what to do
-```
+# BAD - No context or references external files
+bd create "Update user auth" -t task  # Loop agent has NO IDEA what to do
+bd create "Add JWT validation" -t task -d "See design.md for details"  # References instead of includes
 
-**BAD** - References other files instead of including content:
-```bash
-bd create "Add JWT validation" -t task \
-  -d "## Task
-See design.md for implementation details.
-Follow the pattern in auth.md.
-Run tests when done."
-# Loop agent has to read 3 files to understand the task
-```
-
-**MEDIOCRE** - Has some info but missing code:
-```bash
-bd create "Add JWT validation" -t task \
-  -d "## Requirements
+# MEDIOCRE - Has some info but missing implementation code
+bd create "Add JWT validation" -t task -d "## Requirements
 - Add JWT validation middleware
-- Return 401 on invalid tokens
-
-## Files
-- src/middleware/auth.ts"
-# Loop agent knows WHAT but not HOW - will have to figure it out
+- Return 401 on invalid tokens"  # Knows WHAT but not HOW
 ```
 
 ---
@@ -627,9 +591,6 @@ The middleware validates tokens and attaches the decoded user to the request.
 - Expired token → 401 with error code 'token_expired'
 - Valid token → Attach decoded payload to req.user, call next()
 
-**Environment Variables Required:**
-- JWT_SECRET: The secret key for verifying tokens
-
 ## Reference Implementation
 
 CREATE FILE: \`src/middleware/auth.ts\`
@@ -638,7 +599,6 @@ CREATE FILE: \`src/middleware/auth.ts\`
 import { Request, Response, NextFunction } from 'express'
 import jwt, { TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken'
 
-// Type for decoded JWT payload
 interface JWTPayload {
   userId: string
   email: string
@@ -647,190 +607,66 @@ interface JWTPayload {
   exp: number
 }
 
-// Extend Express Request to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JWTPayload
-    }
-  }
-}
-
-/**
- * JWT Token Validation Middleware
- *
- * Validates the Authorization header and attaches decoded user to request.
- * Returns 401 with specific error codes on failure.
- */
 export function validateToken(req: Request, res: Response, next: NextFunction): void {
-  // Get Authorization header
   const authHeader = req.headers.authorization
-
-  // Check if Authorization header exists
   if (!authHeader) {
-    res.status(401).json({
-      error: 'missing_token',
-      message: 'Authorization header is required'
-    })
+    res.status(401).json({ error: 'missing_token', message: 'Authorization header is required' })
     return
   }
 
-  // Check Bearer format
   const parts = authHeader.split(' ')
   if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    res.status(401).json({
-      error: 'malformed_token',
-      message: 'Authorization header must be in format: Bearer <token>'
-    })
-    return
-  }
-
-  const token = parts[1]
-
-  // Get secret from environment
-  const secret = process.env.JWT_SECRET
-  if (!secret) {
-    console.error('JWT_SECRET not configured')
-    res.status(500).json({
-      error: 'server_error',
-      message: 'Authentication not configured'
-    })
+    res.status(401).json({ error: 'malformed_token', message: 'Authorization must be: Bearer <token>' })
     return
   }
 
   try {
-    // Verify and decode token
-    const decoded = jwt.verify(token, secret) as JWTPayload
-
-    // Attach user to request
+    const decoded = jwt.verify(parts[1], process.env.JWT_SECRET!) as JWTPayload
     req.user = decoded
-
-    // Continue to next middleware
     next()
   } catch (err) {
     if (err instanceof TokenExpiredError) {
-      res.status(401).json({
-        error: 'token_expired',
-        message: 'Token has expired, please login again'
-      })
-      return
+      res.status(401).json({ error: 'token_expired', message: 'Token has expired' })
+    } else {
+      res.status(401).json({ error: 'invalid_token', message: 'Token validation failed' })
     }
-
-    if (err instanceof JsonWebTokenError) {
-      res.status(401).json({
-        error: 'invalid_token',
-        message: 'Token signature is invalid'
-      })
-      return
-    }
-
-    // Unknown error
-    console.error('Token validation error:', err)
-    res.status(401).json({
-      error: 'invalid_token',
-      message: 'Token validation failed'
-    })
-  }
-}
-
-/**
- * Optional: Require specific role
- */
-export function requireRole(role: 'user' | 'admin') {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user) {
-      res.status(401).json({
-        error: 'unauthorized',
-        message: 'Authentication required'
-      })
-      return
-    }
-
-    if (req.user.role !== role && req.user.role !== 'admin') {
-      res.status(403).json({
-        error: 'forbidden',
-        message: \`Role '\${role}' required\`
-      })
-      return
-    }
-
-    next()
   }
 }
 \`\`\`
 
-## Integration Point
+## Migration Pattern
 
-MODIFY FILE: \`src/routes/api.ts\`
+MODIFY FILE: \`src/routes/api.ts\` (line 15)
 
-**BEFORE** (find this code around line 15):
+**BEFORE**:
 \`\`\`typescript
-import express from 'express'
-
-const router = express.Router()
-
-// Public routes
-router.get('/health', (req, res) => res.json({ status: 'ok' }))
-
-// Protected routes (currently unprotected!)
 router.get('/users', usersController.list)
 router.post('/users', usersController.create)
 \`\`\`
 
-**AFTER** (replace with this):
+**AFTER**:
 \`\`\`typescript
-import express from 'express'
-import { validateToken, requireRole } from '../middleware/auth'
-
-const router = express.Router()
-
-// Public routes (no auth required)
-router.get('/health', (req, res) => res.json({ status: 'ok' }))
-
-// Protected routes (require valid JWT)
+import { validateToken } from '../middleware/auth'
 router.get('/users', validateToken, usersController.list)
-router.post('/users', validateToken, requireRole('admin'), usersController.create)
+router.post('/users', validateToken, usersController.create)
 \`\`\`
 
 ## Exit Criteria
 
 \`\`\`bash
-# All these must pass (exit code 0)
 npm test -- --grep 'auth middleware'
 npm run typecheck
 npm run lint
 \`\`\`
 
-### Verification Checklist
+### Checklist
 - [ ] Missing Authorization header returns 401 with 'missing_token'
-- [ ] Malformed token returns 401 with 'malformed_token'
-- [ ] Invalid signature returns 401 with 'invalid_token'
-- [ ] Expired token returns 401 with 'token_expired'
+- [ ] Invalid/expired tokens return appropriate 401 errors
 - [ ] Valid token attaches decoded user to req.user
 - [ ] Protected routes in api.ts use validateToken middleware
 
 ## Files to Modify
 
-- \`src/middleware/auth.ts\` (CREATE) - Full auth middleware implementation
-- \`src/routes/api.ts\` (EDIT lines 15-25) - Add middleware imports and usage"
+- \`src/middleware/auth.ts\` (CREATE) - Auth middleware
+- \`src/routes/api.ts\` (EDIT line 15) - Add middleware to routes"
 ```
-
-**Key differences from bad examples:**
-1. **FULL code** (80+ lines) not just a pattern
-2. **EXACT before/after** for file modifications
-3. **ALL edge cases** explicitly listed
-4. **EXACT test commands** not "run tests"
-5. **Line numbers** for where to edit
-
----
-
-## Tools Available
-
-**Do NOT use:**
-- `AskUserQuestion` - NEVER use this, slash command handles all user interaction
-
-**DO use:**
-- `Read` - Read plan files
-- `Bash` - Execute bd commands to create beads, set dependencies, and verify
-- `Grep` - Search for plan references and dependencies
-- `Glob` - Find plan files

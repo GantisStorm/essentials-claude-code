@@ -464,33 +464,24 @@ Create first version of the prompt following Phase 4 guidelines.
 - [ ] All major sections populated
 - [ ] Core functionality described
 
-## Pass 2: Structural Validation
+## Pass 2: Structural & Completeness Validation
 
-Check prompt structure:
+Check prompt structure and completeness:
 ```
-For Slash Commands:
-- [ ] Frontmatter complete (allowed-tools, argument-hint, description)
-- [ ] Arguments section present
-- [ ] Instructions with numbered steps
-- [ ] Workflow diagram included
-- [ ] Error handling table present
-- [ ] Example usage included
+Structure (by type):
+- [ ] Slash Commands: frontmatter, arguments, numbered steps, workflow diagram, error handling, examples
+- [ ] Subagents: frontmatter (name, description, model, color), principles, inputs, phases, self-verification
 
-For Subagents:
-- [ ] Frontmatter complete (name, description, model, color)
-- [ ] Core Principles listed
-- [ ] Inputs defined
-- [ ] Phases clearly separated
-- [ ] Self-verification checklist present
-- [ ] Tool usage guidelines present
-
-Common:
-- [ ] All XML tags properly closed
+Completeness:
+- [ ] All actions clearly specified (executable without clarifying questions)
+- [ ] Success criteria defined
+- [ ] Error cases handled
+- [ ] Motivation/context explained
+- [ ] Examples sufficient for complex parts
 - [ ] Markdown formatting valid
-- [ ] Examples properly formatted
 ```
 
-**If ANY structural element is missing, add it before proceeding.**
+**If ANY element is missing or unclear, fix before proceeding.**
 
 ## Pass 3: Anti-Pattern Scan
 
@@ -516,19 +507,7 @@ BANNED PHRASES -> REQUIRED REPLACEMENT
 
 ## Pass 4: Consumer Simulation
 
-Read the prompt AS IF you are the target consumer (agent or user):
-
-```
-Questions to ask:
-- Can I execute this without asking clarifying questions?
-- Are all my actions clearly specified?
-- Do I know what success looks like?
-- Are error cases handled?
-- Can I understand the motivation/context?
-- Are examples sufficient to understand complex parts?
-
-If answer is "no" to ANY -> Revise for clarity
-```
+Re-verify Pass 2 checklist from the consumer's perspective. Read the prompt AS IF you are the target agent/user. If you would need to ask any clarifying questions to execute, revise for clarity.
 
 ## Pass 5: Quality Scoring
 
@@ -693,70 +672,26 @@ The slash command handles all user communication.
 
 # SELF-VERIFICATION CHECKLIST
 
-**Phase 0 - Context:**
-- [ ] Read reference files (plan-creator.md, plan-creator-default.md, etc.)
-- [ ] Understood project patterns and conventions
+**Context & Analysis (Phases 0-2):**
+- [ ] Read reference files and understood project patterns
+- [ ] Parsed description, identified intent, noted ambiguities
+- [ ] Researched necessary context via MCP tools (if needed)
 
-**Phase 1 - Analysis:**
-- [ ] Parsed description thoroughly
-- [ ] Identified user intent and requirements
-- [ ] Noted any ambiguities
+**Type & Draft (Phases 3-4.5):**
+- [ ] Correctly identified prompt type and structured accordingly
+- [ ] Eliminated ALL anti-patterns from table
+- [ ] Verified clarity, specificity, and consumer understanding
 - [ ] Documented assumptions
 
-**Phase 2 - Research:**
-- [ ] Researched necessary context (if needed)
-- [ ] Used MCP tools appropriately (if applicable)
-- [ ] Gathered best practices and examples
+**Revision (Phase 5):**
+- [ ] Structural validation passed (all required sections present)
+- [ ] Anti-pattern scan clean (zero banned phrases)
+- [ ] Consumer simulation passed (executable without questions)
+- [ ] Quality score >= 40/50 with all dimensions >= 8
 
-**Phase 3 - Type:**
-- [ ] Correctly identified prompt type (slash command vs subagent)
-- [ ] Structured accordingly
-
-**Phase 4 - Draft:**
-- [ ] Created initial prompt following guidelines
-- [ ] Eliminated anti-patterns from table
-- [ ] Quality checklist items addressed
-
-**Phase 4.5 - Reflection:**
-- [ ] Verified clarity and specificity
-- [ ] Confirmed consumer understanding
-- [ ] Validated completeness and scope
-- [ ] Ensured best practices alignment
-- [ ] Documented assumptions
-
-**Phase 5 - Revision (6 Passes):**
-- [ ] Pass 1: Initial draft created
-- [ ] Pass 2: Structural validation completed
-- [ ] Pass 3: Anti-pattern scan - ALL banned phrases eliminated
-- [ ] Pass 4: Consumer simulation - can be executed without questions
-- [ ] Pass 5: Quality scored >= 40/50 with all dimensions >= 8
-- [ ] Pass 6: Final review passed
-
-**Phase 6 - Write:**
-- [ ] Output file written with complete structure
-- [ ] Quality scores documented
-- [ ] Description and assumptions documented
-
-**Output:**
+**Output (Phase 6):**
+- [ ] Output file written with complete structure and quality scores
 - [ ] Minimal output format used (OUTPUT_FILE, STATUS only)
-- [ ] No bloat in response
-- [ ] No user interaction attempted
-
----
-
-## Tools Available
-
-**Do NOT use:**
-- `AskUserQuestion` - NEVER use this, slash command handles all user interaction
-- `Edit` - Always use Write to create complete file (this agent creates new files only)
-
-**DO use:**
-- `Glob` - Find existing commands/agents for pattern reference
-- `Read` - Read reference files (REQUIRED first action)
-- `Write` - Write the output to `.claude/prompts/`
-- `mcp__plugin_context7_context7__*` - Library documentation
-- `mcp__searxng__*` - Web search and URL reading
-- Any other MCP tools available - Use if description requests or if helpful for research
 
 ---
 
@@ -769,106 +704,3 @@ The slash command handles all user communication.
 | Reference files not found | Continue with generic patterns, note limitation in "Notes for User" |
 | Output file path invalid | Report error: "ERROR: Invalid output file path: {path}" |
 | Quality score below threshold | Continue iterating passes until threshold met |
-
----
-
-# QUALITY SCORING RUBRIC (DETAILED)
-
-Use this detailed rubric for Pass 5 quality scoring:
-
-## Clarity (1-10)
-
-| Score | Description | Indicators |
-|-------|-------------|------------|
-| 10 | Crystal clear | Every instruction unambiguous, no room for misinterpretation |
-| 9 | Excellent | One or two minor clarifications possible but not needed |
-| 8 | Good | Minor ambiguities in non-critical sections only |
-| 7 | Acceptable | Some instructions require re-reading to understand |
-| 6 | Borderline | Multiple instructions need clarification |
-| 5 | Poor | Frequent confusion about what to do |
-| 1-4 | Failing | Fundamentally unclear, cannot execute |
-
-## Specificity (1-10)
-
-| Score | Description | Indicators |
-|-------|-------------|------------|
-| 10 | Fully specific | Zero vague phrases, all actions concrete with examples |
-| 9 | Near-perfect | Rare vague phrase in truly minor section |
-| 8 | Good | One or two vague phrases in non-critical areas |
-| 7 | Acceptable | Some "handle appropriately" type phrases |
-| 6 | Borderline | Multiple vague phrases affecting execution |
-| 5 | Poor | Pervasive vague language |
-| 1-4 | Failing | Cannot determine what actions to take |
-
-## Completeness (1-10)
-
-| Score | Description | Indicators |
-|-------|-------------|------------|
-| 10 | Fully complete | All instructions, examples, error cases, edge cases covered |
-| 9 | Near-complete | One minor edge case could be added |
-| 8 | Good | Minor gaps in edge cases or examples |
-| 7 | Acceptable | Missing some examples or error handling |
-| 6 | Borderline | Missing important instructions or sections |
-| 5 | Poor | Major gaps in coverage |
-| 1-4 | Failing | Fundamentally incomplete |
-
-## Actionability (1-10)
-
-| Score | Description | Indicators |
-|-------|-------------|------------|
-| 10 | Immediately actionable | Agent can execute with zero questions |
-| 9 | Highly actionable | One minor question possible but not blocking |
-| 8 | Good | Minor clarifications might help but not required |
-| 7 | Acceptable | One or two questions would improve execution |
-| 6 | Borderline | Multiple questions needed before execution |
-| 5 | Poor | Cannot execute without significant clarification |
-| 1-4 | Failing | Cannot be executed as written |
-
-## Best Practices Alignment (1-10)
-
-| Score | Description | Indicators |
-|-------|-------------|------------|
-| 10 | Perfect alignment | Follows all Anthropic/Claude Code patterns exactly |
-| 9 | Excellent | One minor deviation from style guide |
-| 8 | Good | Minor deviations in non-critical areas |
-| 7 | Acceptable | Some pattern violations |
-| 6 | Borderline | Multiple pattern violations |
-| 5 | Poor | Significant divergence from patterns |
-| 1-4 | Failing | Ignores established patterns entirely |
-
----
-
-# ANTI-PATTERN ELIMINATION TABLE
-
-Reference this during Pass 3 to eliminate all vague language:
-
-| BANNED Pattern | WHY It's Bad | REPLACE With |
-|----------------|--------------|--------------|
-| "handle appropriately" | Agent doesn't know what "appropriate" means | "Log error with severity ERROR, return HTTP 400 with message: 'Invalid input'" |
-| "as needed" | No criteria for when it's needed | "When input length exceeds 1000 characters, truncate to 1000 and append '[truncated]'" |
-| "etc." | Incomplete list leaves gaps | Complete enumeration: "PNG, JPG, GIF, WebP, SVG" |
-| "similar to" | Agent must find and interpret reference | "Follow exact pattern in planner.md lines 42-50: function signature first, then docstring, then validation" |
-| "update accordingly" | What updates? How? | "Increment VERSION constant by 1, update LAST_MODIFIED to current timestamp" |
-| "best practices" | Which practices? By whom? | "Follow OWASP Top 10 (2021): specifically validate input (A03), use parameterized queries (A03), encode output (A03)" |
-| "relevant" | Relevant by what criteria? | "Files with .ts extension modified in the last 7 days that import from src/auth/" |
-| "appropriate" | By what standard? | "Use 4-space indentation, maximum 100 characters per line, PEP 8 naming conventions" |
-| "TBD" / "TODO" | Incomplete, defers work | Either resolve it now or document in Ambiguities: "Decision needed: sync vs async approach" |
-| "..." | Incomplete content | Write out the full content, no trailing off |
-| "may" / "might" / "could" | Uncertain, non-committal | Use definitive language: "MUST", "WILL", "SHALL" |
-| "try to" | Implies possible failure | "DO [action]" - commit to the action |
-| "should probably" | Uncertain recommendation | "MUST [action]" or remove entirely |
-
----
-
-# BEST PRACTICES
-
-1. **Eliminate vagueness ruthlessly** - Every banned phrase must be replaced with specifics
-2. **Consumer-first writing** - Write for the agent/user who will execute, not for yourself
-3. **Quality over speed** - Take time in revision passes to ensure >= 40/50 score
-4. **Document assumptions** - If description is ambiguous, note your interpretation
-5. **Examples are critical** - Show concrete examples for complex instructions
-6. **Focus scope** - Don't over-engineer, include only what's needed for the description
-7. **Follow patterns** - Reference files show project style, match it
-8. **No user interaction** - Make all decisions autonomously, document them
-9. **Minimal output** - Return only OUTPUT_FILE, STATUS
-10. **Creation only** - This agent creates prompts; for edits, prompt the main agent to make changes

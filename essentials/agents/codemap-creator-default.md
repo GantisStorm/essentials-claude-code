@@ -343,17 +343,7 @@ For each directory, calculate:
 
 ## Step 2: Update LSP Config
 
-```json
-"lsp_config": {
-  "instructions": "Navigate the tree structure. Each directory contains 'directories' and 'files'. Each file contains 'symbols'.",
-  "total_directories": 5,
-  "total_files": 23,
-  "total_symbols": 156,
-  "max_depth": 4,
-  "files_verified": 23,
-  "references_checked": 45
-}
-```
+Update the `lsp_config` object (initialized in Phase 1, Step 3) with final counts: `total_directories`, `total_files`, `total_symbols`, `max_depth`, `files_verified`, and `references_checked`.
 
 ---
 
@@ -423,43 +413,27 @@ Write to: `.claude/maps/code-map-{root_name}-{hash5}.json`
 **Root**: <root_dir>
 **Map File**: .claude/maps/code-map-[name]-[hash5].json
 
-### Tree Structure
-
-| Level | Directories | Files | Symbols |
-|-------|-------------|-------|---------|
-| 0 (root) | - | X | X |
-| 1 | X | X | X |
-| 2 | X | X | X |
-| 3 | X | X | X |
-
 ### Totals
 
 | Metric | Count |
 |--------|-------|
 | Directories | X |
 | Files | X |
-| Classes | X |
-| Functions | X |
-| Interfaces | X |
-| Variables | X |
+| Symbols | X |
+| Max Depth | X |
 
-### Largest Directories
+### Largest Directories (Top 2)
 
 | Directory | Files | Symbols |
 |-----------|-------|---------|
-| [path] | X | X |
-
-### LSP Verification
-
-**Files Verified**: X
-**References Checked**: X
-**Max Depth**: X
+| [path1] | X | X |
+| [path2] | X | X |
 
 ### Declaration
 
-✓ Map written to: .claude/maps/code-map-[name]-[hash5].json
-✓ Hierarchical tree structure complete
-✓ All files processed with LSP
+- Map written to: .claude/maps/code-map-[name]-[hash5].json
+- Hierarchical tree structure complete
+- All files processed with LSP
 ```
 
 ---
@@ -497,58 +471,24 @@ Write to: `.claude/maps/code-map-{root_name}-{hash5}.json`
 
 # SELF-VERIFICATION CHECKLIST
 
-**Phase 1 - Tree Discovery:**
+**Discovery:**
 - [ ] Used Glob to discover all paths from root
-- [ ] Built complete directory tree structure
+- [ ] Built complete directory tree with depth levels
 - [ ] Applied ignore patterns if specified
-- [ ] Calculated depth levels for all nodes
 
-**Phase 2 - Symbol Extraction:**
+**Extraction:**
 - [ ] Used LSP documentSymbol for each file
-- [ ] Extracted all imports
-- [ ] Extracted all variables/constants
-- [ ] Extracted all classes with methods
-- [ ] Extracted all functions
-- [ ] Extracted all interfaces (if applicable)
+- [ ] Extracted imports, variables, classes, functions, interfaces
+- [ ] Used LSP findReferences to verify key symbols
+- [ ] Recorded reference counts and external consumers
 
-**Phase 3 - Reference Verification:**
-- [ ] Used LSP findReferences for key symbols
-- [ ] Recorded reference counts
-- [ ] Identified external consumers
-
-**Phase 4 - Hierarchy Assembly:**
+**Assembly:**
 - [ ] Nested files under correct directories
-- [ ] Nested directories under parent directories
-- [ ] Calculated file_count per directory
-- [ ] Calculated total_symbols per directory
+- [ ] Calculated file_count and total_symbols per directory
+- [ ] Computed totals by level and by type
+- [ ] Identified largest directories and max depth
 
-**Phase 5 - Summary:**
-- [ ] Calculated totals by level
-- [ ] Calculated totals by type
-- [ ] Identified largest directories
-- [ ] Recorded max depth
-
-**Phase 6 - Output:**
-- [ ] Created .claude/maps/ directory
-- [ ] Wrote complete JSON file
-- [ ] Verified JSON syntax is valid
-
-**Phase 7 - Report:**
-- [ ] Provided tree statistics by level
-- [ ] Listed totals
-- [ ] Included map file path
-
----
-
-## Tools Available
-
-**Do NOT use:**
-- `AskUserQuestion` - NEVER use this, slash command handles all user interaction
-
-**DO use:**
-- `LSP` - For symbol discovery, definition lookup, and reference finding
-- `Read` - For reading file contents
-- `Glob` - For finding files by pattern
-- `Grep` - For searching file contents
-- `Write` - For writing the JSON map file
-- `Bash` - For creating directories if needed
+**Output:**
+- [ ] Created .claude/maps/ directory if needed
+- [ ] Wrote valid JSON file with complete structure
+- [ ] Reported totals and map file path
