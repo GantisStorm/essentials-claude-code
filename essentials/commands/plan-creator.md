@@ -1,7 +1,7 @@
 ---
 allowed-tools: Task, TaskOutput
 argument-hint: <feature-description>
-description: Create architectural plans for new features in existing codebases (brownfield development) - detailed enough to feed directly into /implement-loop, /tasks-creator, or /beads-creator. For bugs use /bug-plan-creator, for code quality use /code-quality-plan-creator.
+description: Create architectural plans for new features in existing codebases (brownfield development) - detailed enough to feed directly into /implement-loop, /tasks-converter, or /beads-converter. For bugs use /bug-plan-creator, for code quality use /code-quality-plan-creator.
 context: fork
 model: opus
 ---
@@ -57,8 +57,8 @@ Wait with TaskOutput (block: true).
 Next Steps:
 1. Review the plan
 2. `/implement-loop <plan-path>` - Direct implementation (80% of tasks)
-3. `/tasks-creator <plan-path>` → `/tasks-loop` or RalphTUI - prd.json format
-4. `/beads-creator <plan-path>` → `/beads-loop` or RalphTUI - For large plans
+3. `/tasks-converter <plan-path>` → `/tasks-loop` or RalphTUI - prd.json format
+4. `/beads-converter <plan-path>` → `/beads-loop` or RalphTUI - For large plans
 ```
 
 ## Error Handling

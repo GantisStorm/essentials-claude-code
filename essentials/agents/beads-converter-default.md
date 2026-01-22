@@ -1,5 +1,5 @@
 ---
-name: beads-creator-default
+name: beads-converter-default
 description: |
   Convert plans into self-contained Beads issues.
   Each bead must be implementable with ONLY its description - no external lookups needed.

@@ -22,7 +22,7 @@ brew tap steveyegge/beads && brew install bd
 ## Overview
 
 ```
-/plan-creator <task>  →  /beads-creator plan.md  →  /beads-loop
+/plan-creator <task>  →  /beads-converter plan.md  →  /beads-loop
                                                      (or ralph-tui run)
 ```
 
@@ -65,7 +65,7 @@ bd doctor --fix
 
 ### 2. Convert to Beads
 ```bash
-/beads-creator .claude/plans/auth-system-3k7f2-plan.md
+/beads-converter .claude/plans/auth-system-3k7f2-plan.md
 # Creates epic + child tasks with 'ralph' label
 ```
 
@@ -164,7 +164,7 @@ bd create --title "Feature" --type epic     # → beads-abc123
 bd create --title "Task 1" --type task --parent beads-abc123 -l ralph
 ```
 
-The `/beads-creator` command handles this automatically.
+The `/beads-converter` command handles this automatically.
 
 ### Custom Prompt Templates (Disable Auto-Commit)
 

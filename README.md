@@ -79,7 +79,7 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
 ```bash
 /plan-creator Add JWT authentication
-/tasks-creator .claude/plans/jwt-auth-plan.md
+/tasks-converter .claude/plans/jwt-auth-plan.md
 /tasks-loop .claude/prd/jwt-auth.json
 # Or: ralph-tui run --prd .claude/prd/jwt-auth.json
 ```
@@ -89,7 +89,7 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 ```bash
 bd init
 /plan-creator Add JWT authentication
-/beads-creator .claude/plans/jwt-auth-plan.md
+/beads-converter .claude/plans/jwt-auth-plan.md
 /beads-loop
 # Or: ralph-tui run --tracker beads --epic <epic-id>
 ```
@@ -138,8 +138,8 @@ The loop **cannot** end until verification passes. No exceptions.
 
 | Command | Output |
 |---------|--------|
-| `/tasks-creator <plan>` | prd.json for RalphTUI |
-| `/beads-creator <plan>` | Beads issues |
+| `/tasks-converter <plan>` | prd.json for RalphTUI |
+| `/beads-converter <plan>` | Beads issues |
 
 ### Utilities
 

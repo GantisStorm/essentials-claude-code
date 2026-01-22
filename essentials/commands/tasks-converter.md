@@ -28,7 +28,7 @@ Convert plan to prd.json: <plan-path>
 
 **REQUIRED Task tool parameters:**
 ```
-subagent_type: "essentials:tasks-creator-default"
+subagent_type: "essentials:tasks-converter-default"
 run_in_background: true
 prompt: "Convert plan to prd.json: <plan-path>"
 ```
@@ -91,5 +91,5 @@ Execute (choose one):
 ## Example Usage
 
 ```bash
-/tasks-creator .claude/plans/add-auth-3k7f2-plan.md
+/tasks-converter .claude/plans/add-auth-3k7f2-plan.md
 ```

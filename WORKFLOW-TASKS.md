@@ -15,7 +15,7 @@
 ## Overview
 
 ```
-/plan-creator <task>  →  /tasks-creator plan.md  →  /tasks-loop prd.json
+/plan-creator <task>  →  /tasks-converter plan.md  →  /tasks-loop prd.json
                                                      (or ralph-tui run)
 ```
 
@@ -30,7 +30,7 @@
 
 ### 2. Convert to prd.json
 ```bash
-/tasks-creator .claude/plans/user-auth-3k7f2-plan.md
+/tasks-converter .claude/plans/user-auth-3k7f2-plan.md
 # Output: .claude/prd/user-auth-3k7f2.json
 ```
 

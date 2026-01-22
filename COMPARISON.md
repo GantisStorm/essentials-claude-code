@@ -226,7 +226,7 @@ Single session. Exit criteria in plan. Loop until pass. **This handles 80% of ta
 
 ```bash
 /plan-creator Add JWT authentication
-/tasks-creator .claude/plans/jwt-auth-abc12-plan.md
+/tasks-converter .claude/plans/jwt-auth-abc12-plan.md
 # Review prd.json, verify task descriptions have full code
 /tasks-loop ./prd.json                  # Internal execution
 # OR: ralph-tui run --prd ./prd.json   # TUI dashboard (execution only)
@@ -238,7 +238,7 @@ Creates prd.json file with self-contained tasks. **Use when you want RalphTUI's 
 
 ```bash
 /plan-creator Add complete auth system
-/beads-creator .claude/plans/auth-system-xyz99-plan.md
+/beads-converter .claude/plans/auth-system-xyz99-plan.md
 /beads-loop --label plan:auth-system              # Internal execution
 # OR: ralph-tui run --tracker beads --epic <id>  # TUI dashboard (execution only)
 ```

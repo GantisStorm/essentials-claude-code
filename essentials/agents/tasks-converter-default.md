@@ -1,5 +1,5 @@
 ---
-name: tasks-creator-default
+name: tasks-converter-default
 description: |
   Convert plans into prd.json format for RalphTUI or /tasks-loop execution.
   Each task must be implementable with ONLY its description - no external lookups needed.

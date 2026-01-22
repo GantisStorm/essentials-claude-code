@@ -1,7 +1,7 @@
 ---
 allowed-tools: Task, TaskOutput
 argument-hint: "<file1> [file2] ... [fileN]"
-description: LSP-powered architectural code quality analysis - generates comprehensive improvement plans for /implement-loop, /tasks-creator, or /beads-creator
+description: LSP-powered architectural code quality analysis - generates comprehensive improvement plans for /implement-loop, /tasks-converter, or /beads-converter
 context: fork
 model: opus
 ---
@@ -70,8 +70,8 @@ Plans: .claude/plans/code-quality-*.md
 Next Steps:
 1. Review plan files
 2. `/implement-loop <plan-path>` - Direct implementation (80% of tasks)
-3. `/tasks-creator <plan-path>` → `/tasks-loop` or RalphTUI - prd.json format
-4. `/beads-creator <plan-path>` → `/beads-loop` or RalphTUI - For large improvements
+3. `/tasks-converter <plan-path>` → `/tasks-loop` or RalphTUI - prd.json format
+4. `/beads-converter <plan-path>` → `/beads-loop` or RalphTUI - For large improvements
 ```
 
 ## Example Usage

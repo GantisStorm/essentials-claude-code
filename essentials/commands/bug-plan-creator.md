@@ -1,7 +1,7 @@
 ---
 allowed-tools: Task, TaskOutput, Bash, Read
 argument-hint: <any-input>
-description: Deep bug investigation with architectural fix plan generation - detailed enough to feed directly into /implement-loop, /tasks-creator, or /beads-creator
+description: Deep bug investigation with architectural fix plan generation - detailed enough to feed directly into /implement-loop, /tasks-converter, or /beads-converter
 context: fork
 model: opus
 ---
@@ -72,8 +72,8 @@ Root Cause: [file:line] - [brief description]
 Next Steps:
 1. Review the fix plan
 2. `/implement-loop <plan-path>` - Direct implementation (80% of tasks)
-3. `/tasks-creator <plan-path>` → `/tasks-loop` or RalphTUI - prd.json format
-4. `/beads-creator <plan-path>` → `/beads-loop` or RalphTUI - For large fixes
+3. `/tasks-converter <plan-path>` → `/tasks-loop` or RalphTUI - prd.json format
+4. `/beads-converter <plan-path>` → `/beads-loop` or RalphTUI - For large fixes
 ```
 
 ## Error Handling

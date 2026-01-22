@@ -36,7 +36,7 @@ Convert plan to beads: <plan-path>
 
 **REQUIRED Task tool parameters:**
 ```
-subagent_type: "essentials:beads-creator-default"
+subagent_type: "essentials:beads-converter-default"
 run_in_background: true
 prompt: "Convert plan to beads: <plan-path>"
 ```
@@ -106,5 +106,5 @@ bd create "Add JWT validation" -t task -p 2 \
 ## Example Usage
 
 ```bash
-/beads-creator .claude/plans/add-auth-3k7f2-plan.md
+/beads-converter .claude/plans/add-auth-3k7f2-plan.md
 ```
