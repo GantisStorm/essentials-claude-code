@@ -1,6 +1,6 @@
 {
   "name": "essentials-claude-code",
-  "version": "3.2.23",
+  "version": "3.2.24",
   "description": "Multi-agent orchestration framework for Claude Code. Three workflows: Simple (plan → implement-loop), Tasks (plan → prd.json → tasks-loop/RalphTUI), Beads (plan → beads → beads-loop/RalphTUI). Each task/bead preserves full implementation code. Implementation loops that iterate until complete.",
   "author": "GantisStorm",
   "owner": {
@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "essentials",
-      "version": "3.2.23",
+      "version": "3.2.24",
       "description": "16 commands, 10 agents. Three workflows: Simple, Tasks, Beads. Each task/bead is 100% self-contained (50-200+ lines of code). RalphTUI integration for TUI dashboard. LSP-powered code analysis via Claude Code built-in LSP.",
       "source": "./essentials"
     }

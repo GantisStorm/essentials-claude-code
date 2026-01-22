@@ -22,6 +22,8 @@ Takes a feature description:
 - `"Add user profile page with avatar upload"`
 - `"Refactor auth module to use dependency injection"`
 
+**Tip:** For complex features, use `/prompt-creator "feature: ..."` first to create a detailed feature request.
+
 ## Instructions
 
 ### Step 1: Process Input

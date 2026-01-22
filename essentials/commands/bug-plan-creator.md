@@ -26,6 +26,8 @@ Takes any input:
 - User reports: `"Login fails when user has no profile"`
 - Diagnostic instructions: `"Check docker logs for api-service"`
 
+**Tip:** Use `/prompt-creator "bug: ./logs/error.log <description>"` first to analyze logs and create a structured bug description, then pass both the description and original logs here.
+
 ## Instructions
 
 ### Step 1: Process Input

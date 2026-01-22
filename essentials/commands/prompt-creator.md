@@ -22,8 +22,8 @@ Takes any rough prompt description:
 - `"a prompt that reviews code for security"` → Slash command or subagent
 - `"help me debug stuff"` → Slash command or subagent
 - `"feature: add user authentication with OAuth"` → Feature request for /plan-creator
-- `"bug: login fails when user has no profile"` → Bug report for /bug-plan-creator
-- `"bug: ./logs/error.log API returns 500"` → Bug report with log analysis
+- `"bug: login fails when user has no profile"` → Bug description for /bug-plan-creator
+- `"bug: ./logs/error.log API timeout"` → Analyzes logs, creates clean bug description
 
 ## Instructions
 
@@ -74,9 +74,10 @@ Ready to use. For edits, ask the main agent to modify the file.
 # Create feature requests for /plan-creator
 /prompt-creator "feature: add user authentication with JWT and refresh tokens"
 /prompt-creator "feature: implement real-time notifications with WebSockets"
+# Then: /plan-creator <paste feature request>
 
-# Create bug reports for /bug-plan-creator
+# Create bug descriptions for /bug-plan-creator
 /prompt-creator "bug: API returns 500 when user profile is null"
-/prompt-creator "bug: memory leak in WebSocket connection handler"
-/prompt-creator "bug: ./logs/error.log connection timeout on database queries"
+/prompt-creator "bug: ./logs/error.log connection timeout on database"
+# Then: /bug-plan-creator "<paste bug description>" ./logs/error.log
 ```

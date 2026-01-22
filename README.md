@@ -147,7 +147,7 @@ The loop **cannot** end until verification passes. No exceptions.
 |---------|---------|
 | `/codemap-creator [dir]` | JSON code map via LSP |
 | `/document-creator <dir>` | DEVGUIDE.md generation |
-| `/prompt-creator <desc>` | Quality prompt creation |
+| `/prompt-creator <desc>` | Create prompts, feature requests, bug reports |
 | `/mr-description-creator` | PR/MR descriptions via gh/glab |
 | `/reset-prd <path>` | Reset prd.json to initial state |
 | `/reset-beads <epic-id>` | Reopen all tasks in a beads epic |

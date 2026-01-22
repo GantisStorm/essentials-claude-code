@@ -453,26 +453,23 @@ Include diagrams to clarify complex relationships:
 ```
 ## Architecture Diagram
 
-Use ASCII art or describe the diagram structure:
-
-┌─────────────────┐     ┌─────────────────┐
-│   Component A   │────▶│   Component B   │
-│   (file_a)      │     │   (file_b)      │
-└─────────────────┘     └─────────────────┘
-        │                       │
-        ▼                       ▼
-┌─────────────────┐     ┌─────────────────┐
-│   Service C     │◀────│   Service D     │
-│   (service_c)   │     │   (service_d)   │
-└─────────────────┘     └─────────────────┘
++-------------------+     +-------------------+
+|   Component A     |---->|   Component B     |
+|   (file_a.ts)     |     |   (file_b.ts)     |
++-------------------+     +-------------------+
+         |                         |
+         v                         v
++-------------------+     +-------------------+
+|   Service C       |<----|   Service D       |
+|   (service_c.ts)  |     |   (service_d.ts)  |
++-------------------+     +-------------------+
 
 Legend:
-───▶  Data flow / dependency
-◀───  Callback / event
-- - ▶ Optional / conditional
-
-NEW components highlighted with [NEW] marker
-MODIFIED components highlighted with [MOD] marker
+---->  Data flow / dependency
+<----  Callback / event
+- - >  Optional / conditional
+[NEW]  New component
+[MOD]  Modified component
 ```
 
 ## Step 12: Testing Strategy Section

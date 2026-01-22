@@ -27,6 +27,13 @@
 /code-quality-plan-creator src/auth.ts src/api.ts
 ```
 
+**Tip:** Use `/prompt-creator` to create better inputs:
+```bash
+/prompt-creator "feature: add OAuth login with Google"  # Creates detailed feature request
+/prompt-creator "bug: ./logs/error.log API timeout"     # Analyzes logs, creates bug description
+# Then use the generated prompt with /plan-creator or /bug-plan-creator
+```
+
 ### 2. Review Plan
 
 Check `.claude/plans/` before executing:

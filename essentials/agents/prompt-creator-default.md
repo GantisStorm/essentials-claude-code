@@ -315,78 +315,58 @@ Creates well-formatted feature descriptions that produce better architectural pl
 
 ### Bug Report Structure (for /bug-plan-creator)
 
-Creates well-formatted bug reports that produce better fix plans.
+Creates well-formatted bug descriptions from logs and user input. The prompt-creator analyzes logs to create a clear, structured bug description.
 
 **Input can include:**
 - Error messages or stack traces
 - Log file paths (e.g., `./logs/error.log`)
-- Diagnostic commands (e.g., `docker logs api --tail 100`)
 - User descriptions of the problem
 
-When logs or file paths are provided, READ them and extract relevant error context.
+**Workflow:**
+1. User provides logs + rough description to `/prompt-creator`
+2. Agent analyzes logs and creates a clean bug description
+3. User runs `/bug-plan-creator <bug-description> <original-logs>`
+
+When logs or file paths are provided, READ them to understand the bug, then create a clean summary.
 
 ```markdown
 # Bug: [Clear, Specific Title]
 
 ## Summary
 
-[1-2 sentences describing the bug]
+[2-3 sentences describing the bug based on log analysis]
 
-## Environment
+## Error Pattern
 
-- **Version/Branch**: [version or commit]
-- **OS/Platform**: [if relevant]
-- **Related config**: [any relevant settings]
+[Key error extracted from logs - include file:line if visible]
+```
+[The specific error message or exception]
+```
 
-## Steps to Reproduce
+## Observed Behavior
 
-1. [First step]
-2. [Second step]
-3. [Continue until bug occurs]
+- **What happens**: [Describe the failure]
+- **When it occurs**: [Trigger conditions from logs]
+- **Frequency**: [Always/Sometimes/Intermittent based on log patterns]
 
 ## Expected Behavior
 
-[What should happen]
+[What should happen instead]
 
-## Actual Behavior
+## Context
 
-[What actually happens]
-
-## Error Details
-
-```
-[Extracted from logs/stack traces - include file:line references]
-[Key error messages with timestamps if available]
-[Relevant stack frames showing code path]
-```
-
-## Log Analysis
-
-[If logs were provided, summarize key findings:]
-- **Error pattern**: [What errors appear]
-- **Frequency**: [How often in logs]
-- **First occurrence**: [Timestamp if available]
-- **Related warnings**: [Any preceding warnings]
-
-## Impact
-
+- **Affected area**: [Which component/module based on stack trace]
+- **Related files**: [Files mentioned in logs/stack trace]
 - **Severity**: [Critical/High/Medium/Low]
-- **Affected users**: [Who is impacted]
-- **Workaround**: [Any temporary fix, or "None"]
-
-## Additional Context
-
-- **First noticed**: [When did this start]
-- **Frequency**: [Always/Sometimes/Rarely]
-- **Related issues**: [Links to related bugs if any]
 ```
 
-**Usage**: Copy the generated bug report and run:
+**Usage**: Copy the generated bug description and run with original logs:
 ```bash
-/bug-plan-creator <paste bug report>
-# Or with log file:
-/bug-plan-creator ./logs/error.log "API returns 500 on login"
+/bug-plan-creator "<paste bug description>" ./logs/error.log
+/bug-plan-creator "<paste bug description>" "$(cat stacktrace.txt)"
 ```
+
+**Note**: The `/bug-plan-creator` needs both the clean description AND the original logs/errors to do deep investigation.
 
 ## Step 2: Eliminate Anti-Patterns
 
