@@ -250,6 +250,8 @@ model: opus    # opus | sonnet | haiku
 ## Credits
 
 - [Ralph Wiggum pattern](https://ghuntley.com/ralph/) by Geoffrey Huntley
+- [RalphTUI](https://github.com/subsy/ralph-tui) by subsy
+- [Beads](https://github.com/steveyegge/beads) by Steve Yegge
 - Built for [Claude Code](https://claude.ai/code)
 
 ---
