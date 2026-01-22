@@ -61,12 +61,10 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
 ## Three Workflows
 
-Pick the one that fits your needs:
-
 | Workflow | Best For | Dependencies |
 |----------|----------|--------------|
 | **Simple** | 80% of tasks | None |
-| **Tasks** | RalphTUI dashboard | Optional: [RalphTUI](https://github.com/subsy/ralph-tui) |
+| **Tasks** | prd.json + RalphTUI dashboard | Optional: [RalphTUI](https://github.com/subsy/ralph-tui) |
 | **Beads** | Multi-session persistence | Required: [Beads CLI](https://github.com/steveyegge/beads) |
 
 ### Simple (Start Here)
@@ -77,13 +75,13 @@ Pick the one that fits your needs:
 # Loop runs until exit criteria pass
 ```
 
-### Tasks (prd.json + RalphTUI)
+### Tasks (prd.json)
 
 ```bash
 /plan-creator Add JWT authentication
 /tasks-creator .claude/plans/jwt-auth-plan.md
 /tasks-loop .claude/prd/jwt-auth.json
-# Or visualize with: ralph-tui run --prd .claude/prd/jwt-auth.json
+# Or: ralph-tui run --prd .claude/prd/jwt-auth.json
 ```
 
 ### Beads (Persistent Memory)
@@ -93,7 +91,7 @@ bd init
 /plan-creator Add JWT authentication
 /beads-creator .claude/plans/jwt-auth-plan.md
 /beads-loop
-# Survives context loss, multi-day features, session crashes
+# Or: ralph-tui run --tracker beads --epic <epic-id>
 ```
 
 ---
@@ -118,108 +116,28 @@ The loop **cannot** end until verification passes. No exceptions.
 
 ---
 
-## Plan Creators: Choose the Right Tool
-
-This plugin provides three specialized plan creators. Each is optimized for a specific type of work.
-
-### `/plan-creator` — New Features (Brownfield)
-
-**Use for:** Adding new functionality to existing codebases.
-
-```bash
-/plan-creator Add OAuth2 authentication with Google login
-/plan-creator Add user profile page with avatar upload
-/plan-creator Integrate Stripe payment processing
-```
-
-**What it does:**
-- Investigates existing codebase patterns
-- Researches external APIs/libraries
-- Creates architectural plan with reference implementation
-- Specifies exact file changes with before/after code
-
-### `/bug-plan-creator` — Bug Fixes
-
-**Use for:** Investigating and fixing bugs, errors, crashes.
-
-```bash
-/bug-plan-creator "TypeError at auth.py:45" "Login fails when user has no profile"
-/bug-plan-creator ./logs/error.log "API returns 500 on POST /users"
-/bug-plan-creator "ConnectionError: timeout" "Check docker logs for db container"
-```
-
-**What it does:**
-- Parses error logs and stack traces
-- Traces code paths from entry to failure
-- Performs line-by-line analysis of suspicious code
-- Checks recent git changes for regressions
-- Creates fix plan with regression tests
-
-### `/code-quality-plan-creator` — Quality Improvements
-
-**Use for:** Refactoring, dead code removal, security hardening.
-
-```bash
-/code-quality-plan-creator src/auth.ts
-/code-quality-plan-creator src/services/api.ts src/utils/helpers.ts
-/code-quality-plan-creator src/**/*.ts
-```
-
-**What it does:**
-- Uses LSP for semantic code analysis
-- Finds dead code via reference checking
-- Evaluates SOLID principles, DRY, KISS
-- Checks for OWASP security vulnerabilities
-- Scores code quality across 11 dimensions
-
-### Running Multiple Analyses in Parallel
-
-Code quality analysis runs **one agent per file**. Analyze multiple files simultaneously:
-
-```bash
-# Analyze 3 files in parallel (launches 3 agents)
-/code-quality-plan-creator src/auth.ts src/api.ts src/utils.ts
-
-# Analyze entire directory
-/code-quality-plan-creator src/services/*
-```
-
-Each file gets its own plan in `.claude/plans/`:
-- `code-quality-auth-3k7f2-plan.md`
-- `code-quality-api-9m4n1-plan.md`
-- `code-quality-utils-2j8p5-plan.md`
-
----
-
 ## Commands
 
-### Create Plans
+### Plan Creators
 
-Three specialized plan creators for different tasks:
-
-| Command | Use For | Specialization |
-|---------|---------|----------------|
-| `/plan-creator <feature>` | New features & enhancements | Brownfield feature development |
-| `/bug-plan-creator <error> <desc>` | Bug fixes | Root cause analysis, regression prevention |
-| `/code-quality-plan-creator <files>` | Code quality improvements | LSP-powered dead code, SOLID, security |
-
-**Choose the right one:**
-- Adding a login page? → `/plan-creator`
-- TypeError at line 45? → `/bug-plan-creator`
-- Clean up unused code? → `/code-quality-plan-creator`
+| Command | Use For |
+|---------|---------|
+| `/plan-creator <feature>` | New features (brownfield development) |
+| `/bug-plan-creator <error> <desc>` | Bug fixes, root cause analysis |
+| `/code-quality-plan-creator <files>` | Refactoring, dead code, security |
 
 ### Execute Loops
 
-| Command | Stops When | Cancel With |
-|---------|------------|-------------|
+| Command | Stops When | Cancel |
+|---------|------------|--------|
 | `/implement-loop <plan>` | Exit criteria pass | `/cancel-implement` |
 | `/tasks-loop [prd.json]` | All tasks pass | `/cancel-tasks` |
 | `/beads-loop [--label]` | No ready beads | `/cancel-beads` |
 
 ### Convert Formats
 
-| Command | Converts To |
-|---------|-------------|
+| Command | Output |
+|---------|--------|
 | `/tasks-creator <plan>` | prd.json for RalphTUI |
 | `/beads-creator <plan>` | Beads issues |
 
@@ -236,7 +154,7 @@ Three specialized plan creators for different tasks:
 
 ## What's In A Plan?
 
-Plans are markdown files in `.claude/plans/`. They contain everything needed:
+Plans are markdown files in `.claude/plans/`:
 
 ```markdown
 ## Reference Implementation
@@ -248,40 +166,9 @@ Plans are markdown files in `.claude/plans/`. They contain everything needed:
 ## Exit Criteria
 npm test -- auth && npm run typecheck
 [Specific commands, not "run tests"]
-
-## Architecture
-[Current system understanding]
-
-## Testing Strategy
-[What tests to add]
 ```
 
-**The Self-Contained Rule:** Each task must be implementable with ONLY its description. No "see design.md" allowed. When context compacts, the executor only has the task.
-
----
-
-## prd.json Schema
-
-For the Tasks workflow:
-
-```json
-{
-  "name": "Feature Name",
-  "userStories": [
-    {
-      "id": "US-001",
-      "title": "Task title",
-      "description": "FULL implementation (50-200+ lines)",
-      "acceptanceCriteria": ["Criterion 1", "Criterion 2"],
-      "priority": 1,
-      "passes": false,
-      "dependsOn": []
-    }
-  ]
-}
-```
-
-**Key:** Use `userStories` not `tasks`. Use `passes` not `status`.
+**Self-Contained Rule:** Each task must be implementable with ONLY its description. No "see design.md" allowed.
 
 ---
 
@@ -299,6 +186,18 @@ your-project/
 
 ---
 
+## Requirements
+
+| Tool | Required? | Install |
+|------|-----------|---------|
+| None | — | Simple workflow works out of the box |
+| [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | `brew tap steveyegge/beads && brew install bd` |
+| [RalphTUI](https://github.com/subsy/ralph-tui) | For TUI dashboard | See [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md#ralphtui-optional) |
+
+**Note:** RalphTUI is for **execution only**. This plugin provides planning and task conversion.
+
+---
+
 ## Model Configuration
 
 Edit YAML frontmatter in `essentials/commands/*.md` or `essentials/agents/*.md`:
@@ -309,110 +208,17 @@ model: opus    # opus | sonnet | haiku
 ---
 ```
 
-| Model | Use For |
-|-------|---------|
-| `opus` | Complex reasoning (default) |
-| `sonnet` | Balanced cost/quality |
-| `haiku` | Fast, simple tasks |
-
----
-
-## Requirements
-
-| Tool | Required? | Purpose |
-|------|-----------|---------|
-| None | — | Simple workflow works out of the box |
-| [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | `brew tap steveyegge/beads && brew install bd` |
-| [RalphTUI](https://github.com/subsy/ralph-tui) | For dashboard | TUI visualization (execution only) |
-| Context7 MCP | Optional | Enhanced docs in plans |
-| SearXNG MCP | Optional | Web search in plans |
-
-**Note:** RalphTUI is for **execution only**. This plugin provides planning (`/plan-creator`) and task conversion (`/tasks-creator`, `/beads-creator`). RalphTUI runs the resulting tasks/beads with a visual dashboard.
-
-### Installing RalphTUI (Optional)
-
-RalphTUI provides a visual TUI dashboard for task execution. Skip this if using built-in `/tasks-loop` or `/beads-loop`.
-
-**Prerequisites:**
-
-```bash
-# Install Bun runtime (required for RalphTUI)
-curl -fsSL https://bun.sh/install | bash
-# Or: brew install oven-sh/bun/bun
-
-# Verify
-bun --version   # Should be 1.0.0+
-```
-
-**Install:**
-
-```bash
-# Install with Bun (recommended)
-bun install -g ralph-tui
-
-# Or with npm
-npm install -g ralph-tui
-
-# Verify
-ralph-tui --version
-```
-
-**Setup (per project):**
-
-```bash
-cd your-project
-ralph-tui setup
-```
-
-The setup wizard detects agents, creates `.ralph-tui/config.toml`, and configures trackers.
-
-**Run:**
-
-```bash
-# Tasks workflow
-ralph-tui run --prd .claude/prd/feature.json
-
-# Beads workflow
-ralph-tui run --tracker beads --epic <epic-id>
-```
-
-**Verify installation:**
-
-```bash
-ralph-tui plugins agents    # List detected agents
-ralph-tui plugins trackers  # List detected trackers
-ralph-tui config show       # View configuration
-```
-
-See [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) or [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) for full documentation including keyboard shortcuts.
-
 ---
 
 ## Troubleshooting
 
-**Loop won't stop?**
-Exit criteria must return exit code 0. Check your test command.
-
-**Wrong exit criteria?**
-Edit `.claude/plans/your-plan.md` directly, then re-run the loop.
-
-**Context filling up?**
-Plans are external files. Loop re-reads them after context compacts.
-
-**prd.json tasks not found?**
-Use `userStories` and `passes` fields. See schema above.
-
-**Beads CLI missing?**
-`brew tap steveyegge/beads && brew install bd`
-
----
-
-## Best Practices
-
-1. **Start simple** — `/plan-creator` + `/implement-loop` handles 80% of tasks
-2. **Exit criteria = exact commands** — `npm test -- auth`, not "run tests"
-3. **Review plans before looping** — Cheaper to fix a plan than debug bad code
-4. **Escalate when needed** — Tasks/Beads for multi-session or context issues
+| Problem | Solution |
+|---------|----------|
+| Loop won't stop | Exit criteria must return exit code 0 |
+| Wrong exit criteria | Edit plan directly, re-run loop |
+| Context filling up | Plans persist outside conversation |
+| prd.json not found | Use `userStories` and `passes` fields |
+| Beads CLI missing | `brew tap steveyegge/beads && brew install bd` |
 
 ---
 
