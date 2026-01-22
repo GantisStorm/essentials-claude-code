@@ -3,6 +3,7 @@ allowed-tools: Task, TaskOutput, Bash, Read, AskUserQuestion
 argument-hint: <description>
 description: Enhance rough prompt ideas into detailed, effective prompts (project)
 model: opus
+context: fork
 ---
 
 # Prompt Creator

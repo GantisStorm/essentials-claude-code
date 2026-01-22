@@ -4,6 +4,7 @@ argument-hint: "[--template 'markdown']"
 description: Generate and apply MR/PR description directly via gh or glab CLI (project)
 skills: ["github-cli", "gitlab-cli"]
 model: opus
+context: fork
 ---
 
 # MR/PR Description Creator

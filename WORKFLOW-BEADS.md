@@ -124,10 +124,24 @@ git pull --rebase && bd sync && git add -A && git commit -m "chore: session end"
 
 For installation, see [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md#ralphtui-optional).
 
+### Setup for Beads
+
+```bash
+ralph-tui setup    # Select beads-bv tracker when prompted
+```
+
+Or edit `.ralph-tui/config.toml`:
+```toml
+tracker = "beads-bv"
+agent = "claude"
+```
+
+**Switching workflows?** If you use both Tasks and Beads in the same repo, see [Managing .ralph-tui/ Folder](WORKFLOW-TASKS.md#managing-ralph-tui-folder) for how to switch trackers.
+
 ### Beads-Specific Usage
 
 ```bash
-ralph-tui run --tracker beads --epic <epic-id>
+ralph-tui run --tracker beads-bv --epic <epic-id>
 ```
 
 **Task Hierarchy:** Tasks must be children of the epic to appear:

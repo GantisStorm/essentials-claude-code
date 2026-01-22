@@ -150,6 +150,89 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 ---
 
+## Managing .ralph-tui/ Folder
+
+The `ralph-tui setup` command creates a `.ralph-tui/` folder in your project with configuration and state files.
+
+### Folder Structure
+
+```
+.ralph-tui/
+├── config.toml       # Configuration (tracker, agent, options)
+├── progress.md       # Cross-iteration context (patterns, notes)
+├── session-meta.json # Current session state (auto-managed)
+└── iterations/       # Iteration logs (created during runs)
+```
+
+### config.toml
+
+```toml
+# .ralph-tui/config.toml
+configVersion = "2.1"
+tracker = "json"              # "json" for prd.json, "beads-bv" for Beads
+agent = "claude"              # "claude", "opencode", "droid"
+maxIterations = 10            # 0 = unlimited
+autoCommit = false
+
+[trackerOptions]
+# path = "./prd.json"         # For json tracker
+
+[agentOptions]
+# model = "claude-sonnet-4-20250514"
+```
+
+### Switching Trackers
+
+When working in the same repo with both Tasks and Beads workflows, update `config.toml`:
+
+**For Tasks (prd.json):**
+```toml
+tracker = "json"
+
+[trackerOptions]
+# path is passed via CLI: ralph-tui run --prd ./path.json
+```
+
+**For Beads:**
+```toml
+tracker = "beads-bv"
+
+[trackerOptions]
+# epicId is passed via CLI: ralph-tui run --epic <epic-id>
+```
+
+Or override at runtime without editing config:
+```bash
+# Tasks workflow
+ralph-tui run --tracker json --prd .claude/prd/feature.json
+
+# Beads workflow
+ralph-tui run --tracker beads-bv --epic <epic-id>
+```
+
+### Git Recommendations
+
+**Include in repo (team settings):**
+```gitignore
+# .gitignore - track config, ignore state
+!.ralph-tui/config.toml
+.ralph-tui/session-meta.json
+.ralph-tui/iterations/
+```
+
+**Exclude entirely (personal setup):**
+```gitignore
+.ralph-tui/
+```
+
+**Re-run setup anytime:**
+```bash
+ralph-tui setup    # Interactive wizard
+ralph-tui setup --force  # Overwrite existing
+```
+
+---
+
 ## Comparison
 
 | Feature | `/tasks-loop` | `ralph-tui` |

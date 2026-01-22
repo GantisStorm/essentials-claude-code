@@ -149,6 +149,8 @@ The loop **cannot** end until verification passes. No exceptions.
 | `/document-creator <dir>` | DEVGUIDE.md generation |
 | `/prompt-creator <desc>` | Quality prompt creation |
 | `/mr-description-creator` | PR/MR descriptions via gh/glab |
+| `/reset-prd <path>` | Reset prd.json to initial state |
+| `/reset-beads <epic-id>` | Reopen all tasks in a beads epic |
 
 ---
 
@@ -181,8 +183,12 @@ your-project/
 │   ├── prd/            # prd.json files
 │   ├── maps/           # Code maps
 │   └── prompts/        # Generated prompts
+├── .ralph-tui/         # RalphTUI config (if using)
+│   └── config.toml     # Tracker, agent settings
 └── .beads/             # Beads DB (if using)
 ```
+
+**RalphTUI setup:** Run `ralph-tui setup` per project. See [Managing .ralph-tui/](WORKFLOW-TASKS.md#managing-ralph-tui-folder) for config details and switching trackers.
 
 ---
 
