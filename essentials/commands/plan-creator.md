@@ -30,27 +30,17 @@ Parse `$ARGUMENTS` as the task description. Grammar and spell check before passi
 
 ### Step 2: Launch Agent
 
-Launch `plan-creator-default` in background:
+Launch background agent with just the task:
 
 ```
-Create a comprehensive architectural plan with maximum depth and verbosity.
-
-Task: <corrected task description>
-
-Requirements:
-- Produce a VERBOSE architectural plan suitable for /implement-loop, /tasks-creator, or /beads-creator
-- Include complete implementation specifications (not just requirements)
-- Specify exact code structures, file organizations, and component relationships
-- Provide ordered implementation steps with clear dependencies
-- Include exit criteria with verification commands
-
-Write the plan to `.claude/plans/` following standard format.
+Create architectural plan: <corrected task description>
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:plan-creator-default"
 run_in_background: true
+prompt: "Create architectural plan: <corrected task description>"
 ```
 
 Wait with TaskOutput (block: true).

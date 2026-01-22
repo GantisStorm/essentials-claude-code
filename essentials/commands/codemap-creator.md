@@ -58,38 +58,18 @@ Parse `$ARGUMENTS`:
 
 ### Step 2: Launch Agent
 
-Launch `codemap-creator-default`:
+Launch background agent:
 
 ```
-Generate a hierarchical code map using built-in LSP tools.
-
-Root Directory: <root_dir>
-Ignore Patterns: <patterns or "none">
-
-The map should be a NESTED TREE STRUCTURE where:
-- Root directory is the top-level node
-- Each subdirectory is a child node
-- Each file contains its symbols
-- Parent→child relationships are explicit
-
-Phases:
-1. TREE DISCOVERY - Build directory tree from root
-2. SYMBOL EXTRACTION (LSP) - documentSymbol for each file
-3. REFERENCE VERIFICATION (LSP) - findReferences for public symbols
-4. HIERARCHY ASSEMBLY - Nest files under their parent directories
-5. GENERATE SUMMARY - Totals per directory level
-6. WRITE MAP - .claude/maps/code-map-{root}-{hash5}.json
-
-Return:
-- Map file path
-- Tree statistics (directories, files, symbols per level)
-- Verification status
+Generate code map: <root_dir>
+Ignore: <patterns or "none">
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:codemap-creator-default"
 run_in_background: true
+prompt: "Generate code map: <root_dir>\nIgnore: <patterns or none>"
 ```
 
 Wait with TaskOutput (block: true).

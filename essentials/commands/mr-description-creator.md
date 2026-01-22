@@ -73,44 +73,23 @@ git rev-list --count main..HEAD
 
 ### Step 5: Launch Agent
 
-Launch `mr-description-creator-default`:
+Launch background agent with gathered context:
 
 ```
-Generate MR/PR description and apply via CLI.
-
+Generate MR/PR description:
 Platform: <github or gitlab>
 CLI: <gh or glab>
 Action: <create or update>
 Branch: <current> -> <base>
-
-## Custom Template
-<template content or "use default">
-
-## Git Context
+Template: <custom or "default">
 Commits: <count>
-<commit list>
-<file changes>
-
-Phases:
-1. GIT CHANGE ANALYSIS
-2. TEMPLATE SELECTION
-3. REGRESSION ANALYSIS - Breaking changes
-4. COMMIT CATEGORIZATION
-5. DESCRIPTION GENERATION
-6. APPLY VIA CLI
-
-Return:
-PLATFORM: <github or gitlab>
-ACTION: <create or update>
-MR_NUMBER: <number>
-MR_URL: <url>
-STATUS: <CREATED or UPDATED>
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:mr-description-creator-default"
 run_in_background: true
+prompt: "Generate MR/PR description:\nPlatform: <platform>\nCLI: <cli>\nAction: <action>\nBranch: <branch info>\nTemplate: <template>\nCommits: <count>"
 ```
 
 Wait with TaskOutput (block: true).

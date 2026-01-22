@@ -39,45 +39,19 @@ Parse `$ARGUMENTS`:
 
 ### Step 2: Launch Agent
 
-Launch `bug-plan-creator-default` in background:
+Launch background agent with gathered context:
 
 ```
-Investigate this bug and create an architectural fix plan.
-
-## Input
+Investigate bug and create fix plan:
 
 <all gathered logs, errors, context>
-
-## Requirements
-
-- Produce a VERBOSE architectural fix plan suitable for /implement-loop, /tasks-creator, or /beads-creator
-- Include complete fix specifications (not just what to change, but HOW)
-- Specify exact code structures and integration points
-- Provide ordered fix steps with dependencies
-- Include regression test requirements
-- Include exit criteria with verification commands
-
-## Investigation Phases
-
-0. ERROR SIGNAL EXTRACTION - Parse error, stack trace, codes
-1. PROJECT CONTEXT - Read CLAUDE.md, git log/blame (view-only)
-2. CODE PATH TRACING - Entry point to failure
-3. LINE-BY-LINE ANALYSIS - Mark suspicious code
-4. REGRESSION ANALYSIS - Recent changes impact
-5. ARCHITECTURAL FIX PLAN - Exact file:line changes with integration details
-6. WRITE PLAN - To .claude/plans/bug-{id}-{hash5}-plan.md
-
-Return:
-- Root cause with confidence level
-- Severity assessment
-- Plan file path
-- TOTAL CHANGES count
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:bug-plan-creator-default"
 run_in_background: true
+prompt: "Investigate bug and create fix plan:\n\n<gathered context>"
 ```
 
 Wait with TaskOutput (block: true).

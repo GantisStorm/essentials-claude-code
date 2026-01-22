@@ -32,9 +32,11 @@ The plan has already been validated through a rigorous multi-pass review process
 
 ## You Receive
 
-From the slash command:
-1. **Plan path**: `.claude/plans/*.md`
-2. **Full content of plan file**
+From the slash command: **Plan path only** (e.g., `.claude/plans/feature-abc12-plan.md`)
+
+## First Action Requirement
+
+**Read the plan file immediately using the Read tool.** The plan contains the FULL implementation code needed for self-contained beads. Do not proceed without reading the plan first.
 
 Create one epic with child task beads.
 
@@ -49,10 +51,6 @@ When using `bd init --stealth` (default for brownfield projects):
 - No team collaboration on beads
 
 For team projects, use `bd init` (full git mode) or `bd init --branch beads-sync` (protected branches).
-
-## First Action Requirement
-
-**Read the input files to extract all implementation details.** The plan contains the FULL implementation code needed for self-contained beads.
 
 ---
 

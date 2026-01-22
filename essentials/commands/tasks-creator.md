@@ -17,51 +17,24 @@ Plan path: `.claude/plans/feature-3k7f2-plan.md`
 
 ## Instructions
 
-### Step 1: Validate
+### Step 1: Launch Agent
 
-```bash
-ls $ARGUMENTS
-```
-
-### Step 2: Read Plan
-
-```bash
-cat "$ARGUMENTS"
-```
-
-### Step 3: Launch Agent
-
-Launch `tasks-creator-default`:
+Launch background agent immediately with just the path:
 
 ```
-Convert plan to prd.json format.
-
-Plan Path: <path>
-
-## Plan Content
-
-<full plan content>
-
-## Key Principle
-
-Each task must be SELF-CONTAINED:
-- Copy requirements verbatim (never "see plan")
-- Include code examples
-- Include exact file paths
-- Include acceptance criteria
-
-Output to .claude/prd/<plan-name>.json
+Convert plan to prd.json: <plan-path>
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:tasks-creator-default"
 run_in_background: true
+prompt: "Convert plan to prd.json: <plan-path>"
 ```
 
 Wait with TaskOutput (block: true).
 
-### Step 4: Report Result
+### Step 2: Report Result
 
 ```
 ## Tasks Created

@@ -32,17 +32,15 @@ The plan has already been validated through a rigorous multi-pass review process
 
 ## You Receive
 
-From the slash command:
-1. **Plan path**: `.claude/plans/*.md`
-2. **Full content of plan file**
+From the slash command: **Plan path only** (e.g., `.claude/plans/feature-abc12-plan.md`)
+
+## First Action Requirement
+
+**Read the plan file immediately using the Read tool.** The plan contains the FULL implementation code needed for self-contained tasks. Do not proceed without reading the plan first.
 
 Create one prd.json file with all tasks as user stories.
 
 **Note:** Tasks work identically regardless of source planner (`/plan-creator`, `/bug-plan-creator`, or `/code-quality-plan-creator`).
-
-## First Action Requirement
-
-**Read the input files to extract all implementation details.** The plan contains the FULL implementation code needed for self-contained tasks.
 
 ---
 

@@ -17,63 +17,32 @@ Plan path: `.claude/plans/feature-3k7f2-plan.md`
 
 ## Instructions
 
-### Step 1: Validate
+### Step 1: Validate bd
 
 ```bash
-bd version
-bd ready &>/dev/null && echo "OK" || echo "Run: bd init"
-ls $ARGUMENTS
+bd version &>/dev/null || echo "ERROR: Install bd first"
 ```
 
-### Initialization Options
+If bd not installed, report error and stop.
 
-| Mode | Command | When to Use |
-|------|---------|-------------|
-| Stealth (default) | `bd init --stealth` | Personal/brownfield, local only |
-| Full Git | `bd init` | Team projects, sync via git |
-| Protected Branch | `bd init --branch beads-sync` | When main is protected |
+### Step 2: Launch Agent
 
-**Stealth Mode** (`--stealth`): Keeps `.beads/` local only - no git sync, no team collaboration, no backup. Use for personal or brownfield projects.
-
-### Step 2: Read Plan
-
-```bash
-cat "$ARGUMENTS"
-```
-
-### Step 3: Launch Agent
-
-Launch `beads-creator-default`:
+Launch background agent immediately with just the path:
 
 ```
-Convert plan to self-contained beads.
-
-Plan Path: <path>
-
-## Plan Content
-
-<full plan content>
-
-## Key Principle
-
-Each bead must be SELF-CONTAINED:
-- Copy requirements verbatim (never "see plan")
-- Include code examples
-- Include exact file paths
-- Include acceptance criteria
-
-Create epic first, then child tasks with --parent.
+Convert plan to beads: <plan-path>
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:beads-creator-default"
 run_in_background: true
+prompt: "Convert plan to beads: <plan-path>"
 ```
 
 Wait with TaskOutput (block: true).
 
-### Step 4: Report Result
+### Step 3: Report Result
 
 ```
 ## Beads Created

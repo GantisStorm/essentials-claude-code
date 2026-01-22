@@ -37,40 +37,17 @@ Parse `$ARGUMENTS` to extract file list. Validate each path exists.
 
 ### Step 2: Launch Agents
 
-For EACH file, launch `code-quality-plan-creator-default` in background:
+For EACH file, launch background agent:
 
 ```
-Create an architectural quality improvement plan using built-in LSP.
-
-File: <file-path>
-
-Requirements:
-- Produce a VERBOSE architectural plan suitable for /implement-loop, /tasks-creator, or /beads-creator
-- Use LSP tools for semantic code understanding
-- Include complete improvement specifications (not just what, but HOW)
-- Target quality score: ≥9.1/10
-- Include exit criteria with verification commands
-
-Phases:
-0. CONTEXT GATHERING - CLAUDE.md, README, find consumers
-1. CODE ELEMENT EXTRACTION (LSP) - documentSymbol, goToDefinition
-2. SCOPE & VISIBILITY ANALYSIS (LSP) - findReferences for each public element
-3. CALL HIERARCHY MAPPING (LSP) - Build call graph, find dead code
-4. QUALITY ISSUE IDENTIFICATION - 11 dimensions, SOLID, security patterns
-5. IMPROVEMENT PLAN GENERATION - Prioritized fixes with before/after
-6. WRITE PLAN - .claude/plans/code-quality-{filename}-{hash5}-plan.md
-
-Return:
-- Current score, projected score
-- LSP stats (symbols, references)
-- Plan file path
-- TOTAL CHANGES count
+Analyze code quality: <file-path>
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:code-quality-plan-creator-default"
 run_in_background: true
+prompt: "Analyze code quality: <file-path>"
 ```
 
 **Launch ALL agents in a single message for parallel execution.**

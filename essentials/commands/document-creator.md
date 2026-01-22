@@ -55,35 +55,19 @@ For each directory:
 
 ### Step 4: Launch Agents
 
-For EACH directory, launch `document-creator-default` in background:
+For EACH directory, launch background agent:
 
 ```
-Generate DEVGUIDE.md using built-in LSP.
-
-Target Directory: <directory-path>
-Output File: <determined path>
-
-Rules Folder Status: [exists/not found]
-Relevant Rules Files: [list or "none"]
-
-Phases:
-1. RULES DISCOVERY - Check .claude/rules for matching path patterns
-2. DIRECTORY ANALYSIS - Glob to discover structure
-3. SYMBOL EXTRACTION - documentSymbol for each file
-4. PATTERN IDENTIFICATION - findReferences for dependencies
-5. DEVGUIDE GENERATION - All sections with LSP-verified patterns
-6. WRITE OUTPUT
-
-Return:
-OUTPUT_FILE: <path>
-STATUS: CREATED
-RULES_SUGGESTION: [Yes/No - whether to suggest adding rules]
+Generate DEVGUIDE: <directory-path>
+Output: <determined path>
+Rules: <exists/not found>
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:document-creator-default"
 run_in_background: true
+prompt: "Generate DEVGUIDE: <dir>\nOutput: <path>\nRules: <status>"
 ```
 
 **Launch ALL agents in a single message for parallel execution.**
