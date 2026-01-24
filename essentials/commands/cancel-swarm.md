@@ -2,7 +2,7 @@
 allowed-tools: ["TaskList", "TaskStop", "TaskOutput"]
 argument-hint: ""
 description: Cancel any active swarm
-model: haiku
+model: opus
 ---
 
 # Cancel Swarm

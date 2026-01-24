@@ -112,7 +112,7 @@ For commands that cancel loops:
 ---
 allowed-tools: Bash
 description: Cancel active <loop-name> loop
-model: haiku
+model: opus
 ---
 
 # Cancel <Loop Name>

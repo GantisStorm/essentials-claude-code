@@ -2,7 +2,7 @@
 allowed-tools: ["Bash", "TaskList"]
 argument-hint: ""
 description: Cancel any active loop
-model: haiku
+model: opus
 context: fork
 ---
 
