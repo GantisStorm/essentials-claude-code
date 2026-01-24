@@ -241,20 +241,99 @@ ralph-tui run --tracker beads --epic <epic-id>
 ## How Loops Work
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                                                     │
-│   Plan ──→ Implement ──→ Run Exit Criteria          │
-│                              │                      │
-│                         Pass? ───→ DONE ✓           │
-│                              │                      │
-│                         Fail? ───→ Fix ──┐          │
-│                              ▲           │          │
-│                              └───────────┘          │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+                        ┌──────────────────┐
+                        │   Read Plan      │
+                        └────────┬─────────┘
+                                 │
+                                 ▼
+                        ┌──────────────────┐
+                        │  Create Tasks    │
+                        │  (with deps)     │
+                        └────────┬─────────┘
+                                 │
+                                 ▼
+┌───────────────────────────────────────────────────────────┐
+│                     LOOP                                  │
+│  ┌──────────────────┐    ┌──────────────────┐            │
+│  │  Pick Next Task  │───▶│    Implement     │            │
+│  │  (unblocked)     │    │                  │            │
+│  └──────────────────┘    └────────┬─────────┘            │
+│           ▲                       │                       │
+│           │                       ▼                       │
+│           │              ┌──────────────────┐            │
+│           │              │  Run Exit        │            │
+│           │              │  Criteria        │            │
+│           │              └────────┬─────────┘            │
+│           │                       │                       │
+│           │            ┌──────────┴──────────┐           │
+│           │            │                     │           │
+│           │          FAIL                  PASS          │
+│           │            │                     │           │
+│           └────────────┘                     ▼           │
+│                                     ┌──────────────┐     │
+│                                     │ Mark Done    │     │
+│                                     └──────┬───────┘     │
+│                                            │             │
+└────────────────────────────────────────────┼─────────────┘
+                                             │
+                              ┌──────────────┴──────────────┐
+                              │                             │
+                        More tasks?                    All done?
+                              │                             │
+                              ▼                             ▼
+                        Continue loop              "Exit criteria passed" ✓
 ```
 
-The loop **cannot** end until verification passes. No exceptions.
+**Sequential execution.** One task at a time. Verification enforced. Loop cannot end until all tests pass.
+
+---
+
+## How Swarms Work
+
+```
+                        ┌──────────────────┐
+                        │   Read Plan      │
+                        └────────┬─────────┘
+                                 │
+                                 ▼
+                        ┌──────────────────┐
+                        │  Create Tasks    │
+                        │  (with deps)     │
+                        └────────┬─────────┘
+                                 │
+                                 ▼
+                        ┌──────────────────┐
+                        │ Calculate Max    │
+                        │ Parallelism      │
+                        └────────┬─────────┘
+                                 │
+          ┌──────────────────────┼──────────────────────┐
+          │                      │                      │
+          ▼                      ▼                      ▼
+   ┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+   │  Worker 1   │        │  Worker 2   │        │  Worker N   │
+   └──────┬──────┘        └──────┬──────┘        └──────┬──────┘
+          │                      │                      │
+          ▼                      ▼                      ▼
+   ┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+   │ TaskList    │        │ TaskList    │        │ TaskList    │
+   │ ─────────── │        │ ─────────── │        │ ─────────── │
+   │ Claim task  │        │ Claim task  │        │ Claim task  │
+   │ Execute     │        │ Execute     │        │ Execute     │
+   │ Complete    │        │ Complete    │        │ Complete    │
+   │ Repeat...   │        │ Repeat...   │        │ Repeat...   │
+   └──────┬──────┘        └──────┬──────┘        └──────┬──────┘
+          │                      │                      │
+          └──────────────────────┼──────────────────────┘
+                                 │
+                                 ▼
+                        ┌──────────────────┐
+                        │  All tasks done  │
+                        │  "Swarm complete"│
+                        └──────────────────┘
+```
+
+**Parallel execution.** Workers share one TaskList. Auto-detect optimal worker count. Dependencies respected—blocked tasks wait.
 
 ---
 

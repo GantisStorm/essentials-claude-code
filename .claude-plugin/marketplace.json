@@ -1,6 +1,6 @@
 {
   "name": "essentials-claude-code",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "description": "Loops and swarms powered by Claude Code's built-in Task System. Sequential loops for verification. Parallel swarms for speed. Plans define exit criteria. Loops run until tests pass. Done means actually done.",
   "author": "GantisStorm",
   "owner": {
@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "essentials",
-      "version": "3.10.0",
+      "version": "3.11.0",
       "description": "22 commands, 9 agents. Loops and swarms powered by Claude Code's built-in Task System. Native task dependencies, ctrl+t progress, automatic persistence.",
       "source": "./essentials"
     }
