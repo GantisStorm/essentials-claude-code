@@ -138,7 +138,7 @@ Task #2 **cannot start** until #1 is done. The system enforces this - no more "o
 |--------|------|-------|
 | Execution | Sequential (1 agent) | Parallel (N workers) |
 | Verification | Exit criteria enforced | Workers autonomous |
-| Control | Stop hooks, iterations | Workers self-coordinate |
+| Control | Task status tracking | Workers self-coordinate |
 | Best for | Critical code, strict verification | Refactors, migrations, speed |
 
 **Use Loop when:**

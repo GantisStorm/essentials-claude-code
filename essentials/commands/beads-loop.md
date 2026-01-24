@@ -1,7 +1,7 @@
 ---
 description: "Execute beads iteratively until all tasks complete"
 argument-hint: "[--label <label>]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-beads-loop.sh)", "Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
+allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
@@ -18,12 +18,6 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 - `--max-iterations N` (optional): Maximum iterations before stopping (default: unlimited)
 
 ## Instructions
-
-### Setup
-
-```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/setup-beads-loop.sh" $ARGUMENTS
-```
 
 ### Step 1: Load Beads
 
@@ -72,9 +66,9 @@ For each task (in dependency order):
 
 ### Step 4: Loop Until Done
 
-The stop hook checks `bd ready` for remaining tasks:
-- If ready tasks exist → loop continues
-- If no ready tasks → loop ends
+Use TaskList and `bd ready` to check progress:
+- If ready tasks exist → continue with next unblocked task
+- If no ready tasks → proceed to finalize
 
 ### Step 5: Finalize Session
 

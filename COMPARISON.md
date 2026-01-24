@@ -108,21 +108,42 @@ The verification step is mandatory and automatic. You can't skip it. You can't o
 
 ## Still Ralph Wiggum, Now Native
 
-The [Ralph Wiggum pattern](https://ghuntley.com/ralph/) pioneered autonomous Claude Code loops. The community built it with stop hooks, external plan files, and completion promises. It worked, but required workarounds.
+The [Ralph Wiggum pattern](https://ghuntley.com/ralph/) pioneered autonomous Claude Code loops. The community built it with workarounds. Anthropic made it native.
 
-**Anthropic made it native.** Claude Code v2.1.19+ includes a Task Management System with dependencies, persistence, and parallel agent coordination. Same philosophy, better plumbing.
+### What The Community Built (Before)
 
-| What We Had | What We Have Now |
-|-------------|------------------|
-| Stop hooks checking "complete" | Status lifecycle: `pending` → `in_progress` → `completed` |
-| External plan.md for state | Built-in storage at `~/.claude/tasks/` |
-| Fresh sessions to fight context rot | Tasks persist across context compaction |
-| Flat TodoWrite lists | Dependency graph with `blockedBy` |
-| One agent at a time | Parallel workers via shared TaskList |
+- **Stop hooks**: Shell scripts (`.sh` files) configured in `hooks.json` that ran after each Claude response. They'd grep the output for keywords like "complete" or "EXIT_CRITERIA_PASSED" to decide whether to continue looping or stop.
+- **External plan files**: Since Claude had no persistent storage, we tracked task state in markdown files that survived between sessions.
+- **TodoWrite lists**: Flat task lists with no ordering - if task #3 depended on #1, you had to hope Claude did them in order.
+- **Fresh sessions**: Starting new conversations to fight context rot, then manually re-reading plan files to restore state.
+- **Single agent**: No way to coordinate multiple agents working on the same task list.
+
+### What Claude Code Provides (Now)
+
+Claude Code v2.1.19+ has a native Task Management System:
+
+| Old Workaround | Native Tool | Why It's Better |
+|----------------|-------------|-----------------|
+| Stop hooks grepping for "complete" | `TaskUpdate({ status: "completed" })` | Structured status, no string matching |
+| External plan.md tracking state | `~/.claude/tasks/` storage | Automatic persistence, survives compaction |
+| TodoWrite flat lists | `TaskUpdate({ addBlockedBy: ["1"] })` | Dependencies enforced by system |
+| Fresh sessions + re-read plan | `CLAUDE_CODE_TASK_LIST_ID` env var | Same task list across sessions |
+| Single agent execution | `TaskList` shared by parallel workers | Multiple agents coordinate without conflicts |
+
+### What Essentials Uses
+
+**None of the old workarounds.** We use the native Task System exclusively:
+
+```
+TaskCreate  → Create task with subject, description, dependencies
+TaskUpdate  → Claim task, mark complete, set blockedBy
+TaskList    → See all tasks (workers use this to find available work)
+TaskGet     → Get full task details when needed
+```
 
 **The core loop is unchanged:** Plan → Implement → Verify → Loop if fail → Done when pass.
 
-**What's new:** Dependencies prevent wrong ordering. Swarms run parallel workers. Visual progress with `ctrl+t`. Multi-session persistence with `CLAUDE_CODE_TASK_LIST_ID`.
+**What's better:** Dependencies prevent wrong ordering. Swarms run parallel workers. Visual progress with `ctrl+t`. Multi-session persistence built-in.
 
 ---
 
@@ -167,7 +188,7 @@ The old TodoWrite lists disappeared on compaction. The new Task System survives.
 **Other tools:** Start fresh. Re-establish context. Hope you remember what was done.
 
 **Essentials:**
-- Simple tier: Plan file + todo list persist
+- Simple tier: Plan file + Task System persist in `~/.claude/tasks/`
 - Beads tier: `bd ready` shows exactly what's next, each bead has everything needed to implement it
 
 ---

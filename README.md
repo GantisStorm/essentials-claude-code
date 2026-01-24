@@ -76,19 +76,30 @@ ctrl+t   # Toggle task tree view
 
 Our loop and swarm commands use Claude Code's **built-in Task Management System** (v2.1.19+).
 
-**This is still Ralph Wiggum** - same verification-driven loops, same "done means actually done" philosophy. Anthropic just made the plumbing native. What the community built with stop hooks and external files now has first-class support.
+**This is still Ralph Wiggum** - same verification-driven loops, same "done means actually done" philosophy. Anthropic just made the plumbing native.
 
 > **RalphTUI still works.** For Tasks/Beads workflows, you can use [RalphTUI](https://github.com/subsy/ralph-tui) as an alternative executor if you want a TUI dashboard.
 
-### Same Concept, Better Tooling
+### What We Used Before
 
-| Before (Workarounds) | Now (Native) |
-|----------------------|--------------|
-| External plan.md for tracking | Built-in `~/.claude/tasks/` storage |
-| Stop hooks to check completion | Status lifecycle: `pending` → `in_progress` → `completed` |
-| Fresh sessions to fight context rot | Tasks persist across context compaction |
-| Flat TodoWrite lists | Dependency graph with `blockedBy` |
-| Manual multi-session coordination | `CLAUDE_CODE_TASK_LIST_ID` env var |
+The community built Ralph Wiggum loops with workarounds:
+
+- **Stop hooks**: Shell scripts (`.sh` files) that ran after each Claude response, grepping output for keywords like "complete" or "done" to decide whether to continue the loop
+- **External plan files**: Markdown files tracking task state since Claude had no built-in persistence
+- **TodoWrite**: Flat task lists with no dependency ordering - tasks could run out of order
+- **Fresh sessions**: Starting new conversations to fight context rot, manually re-establishing state each time
+
+### What We Use Now
+
+Claude Code v2.1.19+ provides native tools that replace all of this:
+
+| Old Workaround | Native Replacement | Why It's Better |
+|----------------|-------------------|-----------------|
+| Stop hooks (shell scripts) | `TaskUpdate({ status: "completed" })` | No external scripts, status is structured data |
+| External plan.md for state | `~/.claude/tasks/` storage | Survives context compaction automatically |
+| TodoWrite flat lists | `TaskUpdate({ addBlockedBy: [...] })` | Dependencies enforced - tasks can't run out of order |
+| Manual session coordination | `CLAUDE_CODE_TASK_LIST_ID` env var | Same task list across sessions |
+| Single agent | `TaskList` + parallel workers | Multiple agents coordinate via shared state |
 
 **The core loop is unchanged:** Plan → Implement → Verify → Loop if fail → Done when pass.
 

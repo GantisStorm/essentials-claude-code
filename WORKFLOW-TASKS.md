@@ -42,7 +42,7 @@
 **Loop (sequential, updates prd.json):**
 ```bash
 /tasks-loop .claude/prd/user-auth-3k7f2.json
-/cancel-tasks                                    # Stop gracefully
+/cancel-loop                                     # Stop gracefully
 ```
 
 **Swarm (parallel, faster):**
@@ -228,7 +228,7 @@ sound = "system"
 
 **Key settings:**
 - `maxIterations = 0` — Run until all tasks complete
-- `model = "claude-opus-4-20250514"` — Best reasoning for complex tasks
+- `model = "claude-opus-4-5-20251101"` — Best reasoning for complex tasks
 - `subagentTracingDetail = "full"` — Full visibility into agent activity
 - `sound = "system"` — Desktop notifications on completion
 

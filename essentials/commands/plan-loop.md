@@ -1,7 +1,7 @@
 ---
 description: "Execute a plan file with iterative loop until completion"
 argument-hint: "<plan_path> [--max-iterations N]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh)", "Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
+allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
@@ -28,13 +28,7 @@ This command works with plans from:
 
 ## Instructions
 
-### Step 1: Setup
-
-```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh" $ARGUMENTS
-```
-
-### Step 2: Read the Plan
+### Step 1: Read the Plan
 
 Read the plan file and extract:
 1. **Files to Edit** - existing files that need modification
@@ -43,7 +37,7 @@ Read the plan file and extract:
 4. **Requirements** - acceptance criteria
 5. **Exit Criteria** - verification script and success conditions
 
-### Step 3: Create Task Graph
+### Step 2: Create Task Graph
 
 For each work item, create a task with dependencies:
 
@@ -69,7 +63,7 @@ TaskUpdate({
 - Major requirements → one task each
 - Exit criteria verification → final task, blocked by all others
 
-### Step 4: Execute Tasks Sequentially
+### Step 3: Execute Tasks Sequentially
 
 For each task (in dependency order):
 
@@ -80,7 +74,7 @@ For each task (in dependency order):
 5. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
 6. **Next**: Find next unblocked task via TaskList
 
-### Step 5: Run Exit Criteria
+### Step 4: Run Exit Criteria
 
 Before declaring completion:
 1. Find the `## Exit Criteria` section in the plan
@@ -88,14 +82,14 @@ Before declaring completion:
 3. If it passes, say "Exit criteria passed - implementation complete"
 4. If it fails, fix the issues and retry
 
-### Step 6: Loop Until Done
+### Step 5: Loop Until Done
 
-The stop hook checks:
-- If verification PASSES → loop ends
-- If verification FAILS → loop continues with error context
-- If tasks remain incomplete → loop continues
+Use TaskList to check progress:
+- If all tasks completed AND exit criteria PASS → say "Exit criteria passed" and stop
+- If exit criteria FAIL → fix issues and retry
+- If tasks remain incomplete → continue with next unblocked task
 
-Say **"Exit criteria passed"** when complete.
+**Say "Exit criteria passed" when complete.**
 
 ## Visual Progress
 

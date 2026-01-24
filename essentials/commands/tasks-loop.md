@@ -1,7 +1,7 @@
 ---
 description: "Execute prd.json tasks iteratively until all complete"
 argument-hint: "[prd-path]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-tasks-loop.sh)", "Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write"]
+allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
@@ -18,12 +18,6 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 - `--max-iterations N` (optional): Maximum iterations before stopping (default: unlimited)
 
 ## Instructions
-
-### Setup
-
-```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/setup-tasks-loop.sh" $ARGUMENTS
-```
 
 ### Step 1: Read prd.json
 
@@ -85,13 +79,11 @@ This keeps prd.json in sync for RalphTUI compatibility.
 
 ### Step 5: Loop Until Done
 
-The stop hook checks prd.json for remaining tasks:
-- If pending tasks exist → loop continues
-- If all tasks complete → loop ends
+Use TaskList to check progress:
+- If pending tasks exist → continue with next unblocked task
+- If all tasks complete → say "All tasks complete" and stop
 
-### Step 6: Finalize
-
-After all tasks complete, say **"All tasks complete"**.
+**Say "All tasks complete" when done.**
 
 ## Visual Progress
 

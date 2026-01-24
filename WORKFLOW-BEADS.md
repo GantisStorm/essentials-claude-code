@@ -78,7 +78,7 @@ bd doctor --fix
 ```bash
 /beads-loop                         # All beads with ralph label
 /beads-loop --label custom-label    # Filter by label
-/cancel-beads                       # Stop gracefully
+/cancel-loop                        # Stop gracefully
 ```
 
 **Swarm (parallel, faster):**
