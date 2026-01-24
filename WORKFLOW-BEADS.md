@@ -111,8 +111,8 @@ ralph-tui run --tracker beads --epic <epic-id>
 |--------|------|-------|
 | Execution | Sequential | Parallel |
 | Beads sync | ✅ Closes beads | ✅ Closes beads |
-| RalphTUI compatible | ✅ Yes | ❌ No |
-| Best for | Verification | Speed, independent tasks |
+| RalphTUI compatible | ✅ Yes | ✅ Yes |
+| Best for | Verification, strict order | Speed, independent tasks |
 
 ---
 

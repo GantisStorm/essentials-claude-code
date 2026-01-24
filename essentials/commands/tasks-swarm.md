@@ -79,13 +79,16 @@ Task({
   "run_in_background": true,
   "prompt": "You are Worker-1 in a parallel swarm.
 
+PRD_PATH: <prd-path>
+
 LOOP:
 1. TaskList - find all tasks
 2. Filter: pending, no owner, blockedBy all completed
 3. TaskUpdate - claim: owner: Worker-1, status: in_progress
 4. Execute task per description
 5. TaskUpdate - status: completed
-6. GOTO 1
+6. Update prd.json: jq '(.userStories[] | select(.id == \"<story-id>\")).passes = true' PRD_PATH > tmp.json && mv tmp.json PRD_PATH
+7. GOTO 1
 
 STOP WHEN: All tasks completed OR no claimable tasks remain
 CONFLICT: If already claimed by another, skip and find next"
@@ -112,7 +115,7 @@ When asked for status:
 
 Say **"Tasks swarm complete"** when all tasks finished.
 
-**Note:** Swarm does NOT update prd.json. Use `/tasks-loop` if you need prd.json sync.
+**Note:** Workers update prd.json (`passes: true`) as tasks complete. Compatible with RalphTUI.
 
 ## Visual Progress
 

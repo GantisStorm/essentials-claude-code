@@ -69,9 +69,9 @@ ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
 | Aspect | Loop | Swarm |
 |--------|------|-------|
 | Execution | Sequential | Parallel |
-| prd.json sync | ✅ Updates `passes` | ❌ No sync |
-| RalphTUI compatible | ✅ Yes | ❌ No |
-| Best for | RalphTUI, verification | Speed, independent tasks |
+| prd.json sync | ✅ Updates `passes` | ✅ Updates `passes` |
+| RalphTUI compatible | ✅ Yes | ✅ Yes |
+| Best for | Verification, strict order | Speed, independent tasks |
 
 ---
 

@@ -49,8 +49,9 @@ Review tasks:
   cat <path> | jq '.userStories | length'
 
 Execute (choose one):
-  /tasks-loop <path>           # Internal loop
-  ralph-tui run --prd <path>   # RalphTUI dashboard
+  /tasks-loop <path>           # Sequential (syncs prd.json)
+  /tasks-swarm <path>          # Parallel (syncs prd.json)
+  ralph-tui run --prd <path>   # Classic Ralph TUI executor
 ```
 
 ## Self-Contained Task Example

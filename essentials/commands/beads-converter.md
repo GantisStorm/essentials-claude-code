@@ -58,8 +58,9 @@ Review beads:
   bd show <epic-id>
 
 Execute (choose one):
-  /beads-loop                                    # Internal loop
-  ralph-tui run --tracker beads --epic <epic-id> # RalphTUI dashboard
+  /beads-loop                                    # Sequential (closes beads)
+  /beads-swarm --epic <epic-id>                  # Parallel (closes beads)
+  ralph-tui run --tracker beads --epic <epic-id> # Classic Ralph TUI executor
 ```
 
 ## Self-Contained Bead Example

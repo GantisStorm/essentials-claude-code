@@ -116,6 +116,8 @@ bd sync  # Ensure changes are persisted
 
 Say **"Beads swarm complete"** when all tasks finished.
 
+**Note:** Workers close beads as tasks complete. Compatible with RalphTUI.
+
 ## Visual Progress
 
 Press `ctrl+t` to see task progress:

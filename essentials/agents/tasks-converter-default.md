@@ -465,8 +465,9 @@ Review tasks:
   cat .claude/prd/<name>.json | jq '.userStories | length'
 
 Execute (choose one):
-  /tasks-loop .claude/prd/<name>.json           # Internal loop
-  ralph-tui run --prd .claude/prd/<name>.json   # RalphTUI dashboard
+  /tasks-loop .claude/prd/<name>.json           # Sequential (syncs prd.json)
+  /tasks-swarm .claude/prd/<name>.json          # Parallel (syncs prd.json)
+  ralph-tui run --prd .claude/prd/<name>.json   # Classic Ralph TUI executor
 ===============================================================
 ```
 
