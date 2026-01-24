@@ -114,7 +114,7 @@ ralph-tui run --tracker beads --epic <epic-id>
 | Beads sync | ✅ Closes beads | ✅ Closes beads |
 | RalphTUI compatible | ✅ Yes | ✅ Yes |
 
-**Loop and Swarm are interchangeable.** Same beads, same exit criteria, same result. Swarm is just faster.
+**Loop and swarm are interchangeable** - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
 
 ---
 

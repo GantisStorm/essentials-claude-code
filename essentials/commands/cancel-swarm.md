@@ -11,6 +11,8 @@ Stop any active swarm workers.
 
 Works with all swarm commands: `/implement-swarm`, `/plan-swarm`, `/tasks-swarm`, `/beads-swarm`.
 
+Note: Loop and swarm commands are interchangeable - use `/cancel-swarm` for swarms and `/cancel-loop` for loops.
+
 ## Instructions
 
 1. Call TaskList to see all tasks and their status

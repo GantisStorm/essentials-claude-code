@@ -1,6 +1,6 @@
 # Simple Workflow
 
-> **Loops and swarms powered by Claude Code's built-in Task System.** Sequential loops for verification. Parallel swarms for speed.
+> **Loops and swarms powered by Claude Code's built-in Task System.** Both enforce exit criteria and sync. Swarm is just faster when tasks can run in parallel.
 
 **Default workflow with zero dependencies.** Handles 80% of tasks. Plans define exit criteria. Loops run until tests pass. Done means actually done.
 

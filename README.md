@@ -10,7 +10,7 @@
 
 **Loops and swarms powered by Claude Code's built-in Task System.**
 
-Sequential loops for verification-enforced execution. Parallel swarms for speed. Both use Claude's native task dependencies, `ctrl+t` progress, and automatic persistence.
+Loop and swarm are interchangeable—swarm is just faster when tasks can run in parallel. Both enforce exit criteria, use Claude's native task dependencies, `ctrl+t` progress, and automatic persistence.
 
 Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
@@ -68,7 +68,7 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 ctrl+t   # Toggle task tree view
 ```
 
-**Zero external dependencies.** Loop runs until exit criteria pass. Swarm auto-detects workers.
+**Zero external dependencies.** Both loop and swarm enforce exit criteria. Swarm auto-detects workers for parallel execution.
 
 ---
 

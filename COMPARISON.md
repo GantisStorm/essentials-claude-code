@@ -1,6 +1,6 @@
 # How Essentials Compares
 
-> **Loops and swarms powered by Claude Code's built-in Task System.** Sequential loops for verification. Parallel swarms for speed.
+> **Loops and swarms powered by Claude Code's built-in Task System.** Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
 
 Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
@@ -384,7 +384,7 @@ Code-first lets you improvise. Essentials requires a plan. The structure is the 
 
 **Throughput vs Reliability**
 
-Loops do one thing at a time, verified. Swarm runs multiple workers in parallel with dependency awareness. Choose loops for critical code, swarm for parallelizable refactors.
+Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
 
 **Simplicity vs Power**
 
