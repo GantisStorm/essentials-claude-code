@@ -1,53 +1,68 @@
 ---
-description: "Execute plan with parallel agent swarm (dependency-aware)"
-argument-hint: "<plan_path> [--workers N] [--model MODEL]"
+description: "Implement from plan file OR conversation context with parallel swarm"
+argument-hint: "[plan_path] [--workers N] [--model MODEL]"
 allowed-tools: ["Read", "Glob", "Grep", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Bash", "Edit"]
 model: opus
 ---
 
 # Implement Swarm Command
 
-Execute a plan file using parallel worker agents. All workers complete → done.
+Execute implementation using parallel worker agents. All workers complete → done.
+
+**Works with:**
+- A plan file path (if provided)
+- OR the current conversation context (if no path provided)
 
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
-## Supported Plan Types
-
-This command works with plans from:
-- `/plan-creator` - Implementation plans
-- `/bug-plan-creator` - Bug fix plans
-- `/code-quality-plan-creator` - LSP-powered quality plans
-
 ## Arguments
 
-- `<plan_path>` (required): Path to the plan file
+- `[plan_path]` (optional): Path to plan file. If omitted, uses conversation context.
 - `--workers N` (optional): Override worker count (default: auto-detected from task graph)
 - `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: sonnet)
 
 ## Instructions
 
-### Step 1: Read the Plan
+### Step 1: Determine Source
 
-Read the plan file and extract:
-1. **Files to Edit** - existing files that need modification
-2. **Files to Create** - new files to create
-3. **Implementation Plan** - per-file implementation instructions
-4. **Requirements** - acceptance criteria
-5. **Exit Criteria** - verification script and success conditions
+**If plan path provided:**
+- Read the plan file
+- Extract tasks, requirements, exit criteria
 
-### Step 2: Create Task Graph
+**If NO plan path (context mode):**
+- Review the conversation history
+- Identify what was discussed and agreed upon
+- Extract:
+  - **Goal**: What needs to be implemented
+  - **Requirements**: Acceptance criteria from discussion
+  - **Files**: Which files to modify/create
+  - **Verification**: How to confirm success
 
-For each work item, create a task with dependencies:
+### Step 2: Confirm Understanding (Context Mode Only)
+
+If using context, briefly confirm:
+```
+Based on our discussion, I'll implement:
+- [Goal summary]
+- Files: [list]
+- Verification: [how to check]
+
+Spawning swarm...
+```
+
+### Step 3: Create Task Graph
+
+For each work item, create a task:
 
 ```json
 TaskCreate({
   "subject": "Implement auth middleware",
-  "description": "Full implementation details from plan - self-contained",
+  "description": "Full implementation details - self-contained",
   "activeForm": "Implementing auth middleware"
 })
 ```
 
-Set dependencies based on plan structure:
+Set dependencies:
 
 ```json
 TaskUpdate({
@@ -56,35 +71,21 @@ TaskUpdate({
 })
 ```
 
-**Task types:**
-- File edits/creates → one task per file
-- Major requirements → one task each
-- Exit criteria verification → final task, blocked by all others
-
-### Step 3: Calculate Optimal Workers
+### Step 4: Calculate Optimal Workers
 
 Analyze the task graph to find max parallelism:
 
 1. Build dependency graph from tasks
 2. Find the maximum width (most concurrent unblocked tasks at any point)
-3. Worker count = `min(max_width, 10)` (cap at 10 to avoid overload)
-
-**Example:**
-```
-#1 ──→ #3 ──→ #5
-#2 ──→ #4 ──┘
-
-Max width = 2 (tasks #1 and #2 can run together, then #3 and #4)
-→ Spawn 2 workers
-```
+3. Worker count = `min(max_width, 10)` (cap at 10)
 
 If `--workers N` provided, use that instead.
 
-### Step 4: Spawn Worker Pool
+### Step 5: Spawn Worker Pool
 
 **CRITICAL: Send ALL Task tool calls in a SINGLE message for true parallelism.**
 
-Spawn N workers (auto-detected or overridden). Each worker loops until no work remains:
+Spawn N workers. Each worker loops until no work remains:
 
 ```json
 Task({
@@ -107,7 +108,7 @@ CONFLICT: If already claimed by another, skip and find next"
 })
 ```
 
-### Step 5: Report Launch
+### Step 6: Report Launch
 
 ```
 Swarm launched:
@@ -118,7 +119,7 @@ Swarm launched:
 Press ctrl+t for progress
 ```
 
-### Step 6: Collect Results
+### Step 7: Collect Results
 
 When asked for status:
 1. TaskList - see all task states
@@ -137,20 +138,21 @@ Tasks (2 done, 2 in progress, 3 open)
 □ #5 Integration tests > blocked by #3, #4
 ```
 
-## Context Recovery
+## Context Mode Tips
 
-If context compacts:
-1. Call TaskList to see all tasks and their status
-2. Call TaskOutput on workers for their reports
-3. Check what remains
+When using conversation context:
+- Reference specific messages: "As we discussed, the login should..."
+- Use agreed-upon patterns from the conversation
+- If anything is unclear, ask before spawning workers
 
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
 | Plan file not found | Report error and exit |
-| Worker fails mid-task | Other workers continue; task stays in_progress |
-| All tasks blocked | Circular dependency - review task graph |
+| Context unclear | Ask for clarification |
+| Worker fails mid-task | Other workers continue |
+| All tasks blocked | Circular dependency |
 
 ## Stopping
 
@@ -160,7 +162,19 @@ If context compacts:
 ## Example Usage
 
 ```bash
-/implement-swarm .claude/plans/add-user-auth.md              # Auto-detects workers
-/implement-swarm .claude/plans/refactor.md --workers 5       # Override: force 5 workers
-/implement-swarm .claude/plans/docs.md --model haiku         # Cheaper workers, auto count
+# With plan file
+/implement-swarm .claude/plans/add-user-auth.md
+
+# From conversation context (after discussing a feature/bug)
+/implement-swarm
+
+# With options
+/implement-swarm --workers 5
+/implement-swarm .claude/plans/refactor.md --model haiku
 ```
+
+## When to Use
+
+- **With plan file**: For structured, pre-planned work
+- **From context**: After back-and-forth discussion about a bug fix or feature
+- **Swarm vs Loop**: Use swarm when tasks are parallelizable and speed matters

@@ -33,14 +33,16 @@ You: *runs tests* — still failing
 ## The Solution
 
 ```
+# Option A: Create plan first, then execute
 You: /plan-creator Add authentication
-You: /implement-loop .claude/plans/auth-plan.md    # Sequential, verification-enforced
-# OR
-You: /implement-swarm .claude/plans/auth-plan.md   # Parallel, auto-detected workers
+You: /implement-loop .claude/plans/auth-plan.md
+
+# Option B: Discuss in chat, then execute from context
+You: "I need to fix this auth bug..." [back and forth discussion]
+You: /implement-loop   # Uses conversation context, no plan file needed
 
 AI:  *implements, tests fail, fixes, tests fail, fixes...*
 AI:  "Exit criteria passed" ✓
-     [loop cannot end until tests pass]
 ```
 
 ---
@@ -53,18 +55,18 @@ AI:  "Exit criteria passed" ✓
 /plugin install essentials@essentials-claude-code
 mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
-# Create plan
+# Option A: With plan file
 /plan-creator Add user authentication with JWT
+/implement-loop .claude/plans/user-auth-3k7f2-plan.md
 
-# Execute (choose one)
-/implement-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential, exit criteria enforced
-/implement-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel, auto workers
+# Option B: From conversation (after discussing a bug/feature)
+/implement-loop   # Uses chat context, no plan needed
 
 # Visual progress
 ctrl+t   # Toggle task tree view
 ```
 
-**Zero external dependencies.** Loop runs until exit criteria pass. Swarm auto-detects optimal worker count from task graph.
+**Zero external dependencies.** Loop runs until exit criteria pass. Swarm auto-detects workers.
 
 ---
 
@@ -111,9 +113,14 @@ The four core tools: `TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`
 ### Simple (Start Here)
 
 ```bash
+# With plan file
 /plan-creator Add JWT authentication
 /implement-loop .claude/plans/jwt-auth-plan.md    # Sequential
 /implement-swarm .claude/plans/jwt-auth-plan.md   # Parallel
+
+# Or from conversation context (after discussing)
+/implement-loop    # Uses chat context
+/implement-swarm   # Uses chat context
 ```
 
 ### Tasks (prd.json)
@@ -171,17 +178,19 @@ The loop **cannot** end until verification passes. No exceptions.
 
 ### Execute Loops (Sequential)
 
-| Command | Stops When | Cancel |
-|---------|------------|--------|
-| `/implement-loop <plan>` | Exit criteria pass | `/cancel-implement` |
-| `/tasks-loop [prd.json]` | All tasks pass | `/cancel-tasks` |
-| `/beads-loop [--label]` | No ready beads | `/cancel-beads` |
+| Command | Source | Cancel |
+|---------|--------|--------|
+| `/implement-loop [plan]` | Plan file OR context | `/cancel-implement` |
+| `/plan-loop <plan>` | Plan file (required) | `/cancel-implement` |
+| `/tasks-loop [prd.json]` | prd.json | `/cancel-tasks` |
+| `/beads-loop [--label]` | Beads DB | `/cancel-beads` |
 
 ### Execute Swarms (Parallel)
 
 | Command | Source | Cancel |
 |---------|--------|--------|
-| `/implement-swarm <plan>` | Plan file | `/cancel-swarm` |
+| `/implement-swarm [plan]` | Plan file OR context | `/cancel-swarm` |
+| `/plan-swarm <plan>` | Plan file (required) | `/cancel-swarm` |
 | `/tasks-swarm [prd.json]` | prd.json | `/cancel-swarm` |
 | `/beads-swarm [--epic]` | Beads DB | `/cancel-swarm` |
 

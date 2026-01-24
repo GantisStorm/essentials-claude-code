@@ -75,9 +75,12 @@ Create plan with exact verification commands. Execute via loop (sequential) or s
 
 **Quick Start:**
 ```bash
+# With plan file
 /plan-creator Add user authentication
-/implement-loop plan.md    # Sequential, verification-enforced
-/implement-swarm plan.md   # Parallel, auto-detected workers
+/implement-loop plan.md
+
+# Or from conversation context (after discussing)
+/implement-loop   # Uses chat context, no plan needed
 ```
 
 ---
@@ -219,14 +222,18 @@ If you need these things, excellent tools exist. Essentials solves a different p
 
 Match workflow to task size:
 
-### Simple: Plan → Implement Loop (Use This First)
+### Simple: Implement Loop (Use This First)
 
 ```bash
+# With plan file
 /plan-creator Add JWT authentication
 /implement-loop .claude/plans/jwt-auth-abc12-plan.md
+
+# Or from conversation (after discussing a bug/feature)
+/implement-loop   # Uses chat context
 ```
 
-Single session. Exit criteria in plan. Loop until pass. **This handles 80% of tasks.**
+Single session. Exit criteria enforced. Loop until pass. **This handles 80% of tasks.**
 
 ### Medium: Plan → Tasks → Tasks Loop (RalphTUI Compatible)
 

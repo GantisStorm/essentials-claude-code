@@ -7,8 +7,13 @@
 ## Overview
 
 ```
+# With plan file
 /plan-creator <task>  →  /implement-loop plan.md   →  Exit criteria pass ✓
                       →  /implement-swarm plan.md  →  All tasks complete ✓
+
+# From conversation context (no plan file needed)
+[discuss bug/feature]  →  /implement-loop   →  Exit criteria pass ✓
+                       →  /implement-swarm  →  All tasks complete ✓
 ```
 
 **No external tools required.** Uses Claude Code's built-in Task system for dependency tracking and `ctrl+t` visual progress.
@@ -48,44 +53,53 @@ Fixing a plan is cheap. Debugging bad code is expensive.
 
 ### 3. Execute: Loop or Swarm
 
-#### Loop (Sequential)
+#### From Plan File
 
 ```bash
-/implement-loop .claude/plans/user-auth-3k7f2-plan.md
+/implement-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential
+/implement-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel
 ```
 
-The loop:
-1. Reads the plan
-2. Creates task graph with dependencies
-3. Implements each task sequentially
-4. Runs exit criteria
-5. **Loops until exit criteria pass (exit code 0)**
+#### From Conversation Context
 
-#### Swarm (Parallel)
+After discussing a bug or feature in chat:
 
 ```bash
-/implement-swarm .claude/plans/user-auth-3k7f2-plan.md
+/implement-loop    # Uses conversation context
+/implement-swarm   # Uses conversation context
 ```
 
-The swarm:
-1. Reads the plan
-2. Creates task graph with dependencies
-3. **Auto-detects optimal worker count** from graph parallelism
-4. Workers claim and execute unblocked tasks
-5. **Completes when all tasks done**
+The commands extract goals, requirements, and exit criteria from your discussion.
+
+#### How They Work
+
+**Loop (sequential):**
+1. Creates task graph with dependencies
+2. Implements each task sequentially
+3. Runs exit criteria
+4. **Loops until exit criteria pass**
+
+**Swarm (parallel):**
+1. Creates task graph with dependencies
+2. **Auto-detects optimal worker count**
+3. Workers claim and execute unblocked tasks
+4. **Completes when all tasks done**
 
 ### Options
 
 ```bash
 # Loop
-/implement-loop plan.md                     # Run until done
+/implement-loop                             # From context
+/implement-loop plan.md                     # From plan file
 /implement-loop plan.md --max-iterations 10 # Limit iterations
+/plan-loop plan.md                          # Plan file required
 /cancel-implement                           # Stop gracefully
 
 # Swarm
-/implement-swarm plan.md                    # Auto-detects workers from graph
-/implement-swarm plan.md --workers 5        # Override: force 5 workers
-/implement-swarm plan.md --model haiku      # Cheaper workers
+/implement-swarm                            # From context
+/implement-swarm plan.md                    # From plan file
+/implement-swarm plan.md --workers 5        # Override workers
+/plan-swarm plan.md                         # Plan file required
 /cancel-swarm                               # Stop workers
 ```
 

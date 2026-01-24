@@ -1,14 +1,16 @@
 ---
-allowed-tools: Bash
+allowed-tools: ["Bash", "TaskList"]
 argument-hint: ""
-description: Cancel active implement loop
-model: opus
+description: Cancel active implement or plan loop
+model: haiku
 context: fork
 ---
 
 # Cancel Implement
 
-Gracefully stop the active implement loop while preserving progress.
+Gracefully stop the active implement loop or plan loop while preserving progress.
+
+Works with both `/implement-loop` and `/plan-loop`.
 
 ## Instructions
 
@@ -23,13 +25,18 @@ Gracefully stop the active implement loop while preserving progress.
 
 ## After Cancellation
 
-Your todo progress is preserved:
-- Completed todos remain marked as completed
-- In-progress/pending todos remain in their current state
+Your task progress is preserved:
+- Completed tasks remain completed
+- In-progress/pending tasks remain in their current state
+
+To check task status:
+```bash
+TaskList
+```
 
 To resume later:
 ```bash
-/implement-loop <plan-path>
+/implement-loop           # From context
+/implement-loop <plan>    # From plan file
+/plan-loop <plan>         # Plan file only
 ```
-
-The loop will re-read the plan and you can continue from where you left off.

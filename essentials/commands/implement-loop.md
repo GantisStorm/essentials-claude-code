@@ -1,61 +1,67 @@
 ---
-description: "Implement a plan with iterative loop until completion"
-argument-hint: "<plan_path> [--max-iterations N]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh)", "Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
-hide-from-slash-command-tool: "true"
+description: "Implement from plan file OR conversation context with iterative loop"
+argument-hint: "[plan_path] [--max-iterations N]"
+allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Glob", "Grep"]
 model: opus
 ---
 
 # Implement Loop Command
 
-Execute a plan file iteratively until all tasks are complete AND exit criteria pass.
+Execute implementation iteratively until all tasks complete AND exit criteria pass.
+
+**Works with:**
+- A plan file path (if provided)
+- OR the current conversation context (if no path provided)
 
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
-**IMPORTANT**: The plan file is your source of truth. Exit Criteria MUST pass before the loop will end.
-
-## Supported Plan Types
-
-This command works with plans from:
-- `/plan-creator` - Implementation plans
-- `/bug-plan-creator` - Bug fix plans
-- `/code-quality-plan-creator` - LSP-powered quality plans
-
 ## Arguments
 
-- `<plan_path>` (required): Path to the plan file
+- `[plan_path]` (optional): Path to plan file. If omitted, uses conversation context.
 - `--max-iterations N` (optional): Maximum iterations before stopping (default: unlimited)
 
 ## Instructions
 
-### Step 1: Setup
+### Step 1: Determine Source
 
-```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh" $ARGUMENTS
+**If plan path provided:**
+- Read the plan file
+- Extract tasks, requirements, exit criteria
+
+**If NO plan path (context mode):**
+- Review the conversation history
+- Identify what was discussed and agreed upon
+- Extract:
+  - **Goal**: What needs to be implemented
+  - **Requirements**: Acceptance criteria from discussion
+  - **Files**: Which files to modify/create
+  - **Exit Criteria**: How to verify success (tests, commands, etc.)
+
+### Step 2: Confirm Understanding (Context Mode Only)
+
+If using context, briefly confirm:
 ```
+Based on our discussion, I'll implement:
+- [Goal summary]
+- Files: [list]
+- Exit criteria: [verification command]
 
-### Step 2: Read the Plan
-
-Read the plan file and extract:
-1. **Files to Edit** - existing files that need modification
-2. **Files to Create** - new files to create
-3. **Implementation Plan** - per-file implementation instructions
-4. **Requirements** - acceptance criteria
-5. **Exit Criteria** - verification script and success conditions
+Proceeding with implementation...
+```
 
 ### Step 3: Create Task Graph
 
-For each work item, create a task with dependencies:
+For each work item, create a task:
 
 ```json
 TaskCreate({
   "subject": "Implement auth middleware",
-  "description": "Full implementation details from plan - self-contained",
+  "description": "Full implementation details - self-contained",
   "activeForm": "Implementing auth middleware"
 })
 ```
 
-Set dependencies based on plan structure:
+Set dependencies:
 
 ```json
 TaskUpdate({
@@ -64,36 +70,28 @@ TaskUpdate({
 })
 ```
 
-**Task types:**
-- File edits/creates → one task per file
-- Major requirements → one task each
-- Exit criteria verification → final task, blocked by all others
-
 ### Step 4: Execute Tasks Sequentially
 
 For each task (in dependency order):
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Read**: Get relevant section from plan
-3. **Implement**: Make changes following plan exactly
-4. **Verify**: Run any task-specific verification
-5. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
-6. **Next**: Find next unblocked task via TaskList
+2. **Implement**: Make changes
+3. **Verify**: Run any task-specific verification
+4. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+5. **Next**: Find next unblocked task via TaskList
 
 ### Step 5: Run Exit Criteria
 
 Before declaring completion:
-1. Find the `## Exit Criteria` section in the plan
-2. Run the verification command
-3. If it passes, say "Exit criteria passed - implementation complete"
-4. If it fails, fix the issues and retry
+1. Run the verification command(s)
+2. If pass → "Exit criteria passed - implementation complete"
+3. If fail → fix issues and retry
 
 ### Step 6: Loop Until Done
 
-The stop hook checks:
-- If verification PASSES → loop ends
-- If verification FAILS → loop continues with error context
-- If tasks remain incomplete → loop continues
+Continue until:
+- All tasks completed AND
+- Exit criteria pass
 
 Say **"Exit criteria passed"** when complete.
 
@@ -105,29 +103,38 @@ Tasks (2 done, 1 in progress, 3 open)
 ✓ #1 Setup database schema
 ■ #2 Implement auth middleware
 □ #3 Add login route > blocked by #2
-□ #4 Add protected routes > blocked by #2
-□ #5 Run exit criteria > blocked by #3, #4
 ```
 
-## Context Recovery
+## Context Mode Tips
 
-If context compacts:
-1. Call TaskList to see all tasks and their status
-2. Read the plan file again
-3. Find next pending unblocked task
-4. Continue implementation
+When using conversation context:
+- Reference specific messages: "As we discussed, the login should..."
+- Use agreed-upon patterns from the conversation
+- If anything is unclear, ask before implementing
 
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
 | Plan file not found | Report error and exit |
+| Context unclear | Ask for clarification |
 | Exit criteria fail | Fix issues and retry |
-| Context compacted | TaskList → re-read plan → continue |
+| Context compacted | TaskList → continue |
 
 ## Example Usage
 
 ```bash
+# With plan file
 /implement-loop .claude/plans/add-user-auth.md
-/implement-loop .claude/plans/fix-memory-leak.md --max-iterations 10
+
+# From conversation context (after discussing a feature/bug)
+/implement-loop
+
+# With iteration limit
+/implement-loop --max-iterations 10
 ```
+
+## When to Use
+
+- **With plan file**: For structured, pre-planned work
+- **From context**: After back-and-forth discussion about a bug fix or feature
