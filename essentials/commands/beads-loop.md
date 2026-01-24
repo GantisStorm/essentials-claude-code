@@ -1,7 +1,7 @@
 ---
 description: "Execute beads iteratively until all tasks complete"
 argument-hint: "[--label <label>]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-beads-loop.sh)", "Read", "TodoWrite", "Bash", "Edit"]
+allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-beads-loop.sh)", "Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
@@ -9,6 +9,8 @@ model: opus
 # Beads Loop Command
 
 Execute beads iteratively until all ready tasks are complete.
+
+Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
 ## Arguments
 
@@ -23,52 +25,58 @@ Execute beads iteratively until all ready tasks are complete.
 "${CLAUDE_PLUGIN_ROOT}/scripts/setup-beads-loop.sh" $ARGUMENTS
 ```
 
-### Step 1: Find Ready Work
+### Step 1: Load Beads
 
 ```bash
-bd ready
+bd list --status open --json
+# Or with filters:
+bd list -l <label> --status open --json
 ```
 
-Shows tasks with no blockers, sorted by priority.
+Parse the output to get all beads.
 
-### Step 2: Pick a Task
+### Step 2: Create Task Graph
 
-Select the highest priority ready task. Note its ID.
+For each bead, create a built-in task:
 
-### Step 3: Read Task Details
-
-```bash
-bd show <id>
+```json
+TaskCreate({
+  "subject": "beads-abc123: Implement login form",
+  "description": "<full bead description - self-contained>",
+  "activeForm": "Implementing login form",
+  "metadata": { "beadId": "beads-abc123" }
+})
 ```
 
-The task description is self-contained with requirements, acceptance criteria, and files to modify.
+Set dependencies based on parent/child relationships:
 
-### Step 4: Start Working
-
-```bash
-bd update <id> --status in_progress
+```json
+TaskUpdate({
+  "taskId": "2",
+  "addBlockedBy": ["1"]
+})
 ```
 
-### Step 5: Implement the Task
+### Step 3: Execute Tasks Sequentially
 
-Follow the task description:
-1. Read the files mentioned
-2. Make the required changes
-3. Run any tests/verification in acceptance criteria
+For each task (in dependency order):
 
-### Step 6: Complete the Task
+1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
+2. **Also update bead**: `bd update <beadId> --status in_progress`
+3. **Read**: Task description contains full implementation details
+4. **Implement**: Make changes as described
+5. **Verify**: Run acceptance criteria
+6. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+7. **Close bead**: `bd close <beadId> --reason "Done: <summary>"`
+8. **Next**: Find next unblocked task via TaskList
 
-```bash
-bd close <id> --reason "Done: <brief summary>"
-```
-
-### Step 7: Loop Until Done
+### Step 4: Loop Until Done
 
 The stop hook checks `bd ready` for remaining tasks:
 - If ready tasks exist → loop continues
 - If no ready tasks → loop ends
 
-### Step 8: Finalize Session
+### Step 5: Finalize Session
 
 After all beads complete:
 
@@ -78,11 +86,25 @@ bd sync  # Force immediate sync (flushes changes to disk/git)
 
 Say **"All beads complete"** when done.
 
+## Visual Progress
+
+Press `ctrl+t` to see task progress:
+```
+Tasks (2 done, 1 in progress, 3 open)
+✓ #1 beads-abc123: Setup database
+■ #2 beads-def456: Implement auth
+□ #3 beads-ghi789: Add routes > blocked by #2
+```
+
 ## Context Recovery
 
 If you lose track:
 
 ```bash
+# Check built-in tasks
+TaskList
+
+# Or check beads directly
 bd ready                        # See what's next
 bd blocked                      # See what's waiting on dependencies
 bd list --status in_progress    # Find current work
@@ -103,7 +125,7 @@ bd stale       # Find issues not updated recently
 | Scenario | Action |
 |----------|--------|
 | No ready tasks found | Check if all complete or blocked; run `bd list` |
-| Lost track of current work | Run `bd list --status in_progress` |
+| Lost track of current work | TaskList or `bd list --status in_progress` |
 | Task has unmet dependencies | Complete blocking tasks first |
 
 ## Stopping

@@ -1,14 +1,16 @@
 ---
 description: "Implement a plan with iterative loop until completion"
 argument-hint: "<plan_path> [--max-iterations N]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh)", "Read", "TodoWrite", "Bash", "Edit"]
+allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-implement-loop.sh)", "Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
 
 # Implement Loop Command
 
-Execute a plan file iteratively until all todos are complete AND exit criteria pass.
+Execute a plan file iteratively until all tasks are complete AND exit criteria pass.
+
+Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
 **IMPORTANT**: The plan file is your source of truth. Exit Criteria MUST pass before the loop will end.
 
@@ -41,21 +43,42 @@ Read the plan file and extract:
 4. **Requirements** - acceptance criteria
 5. **Exit Criteria** - verification script and success conditions
 
-### Step 3: Create Todos
+### Step 3: Create Task Graph
 
-Use **TodoWrite** to create a todo for each:
-- File that needs to be edited or created
-- Major requirement to satisfy
-- Run exit criteria verification
+For each work item, create a task with dependencies:
 
-### Step 4: Implement Each Todo
+```json
+TaskCreate({
+  "subject": "Implement auth middleware",
+  "description": "Full implementation details from plan - self-contained",
+  "activeForm": "Implementing auth middleware"
+})
+```
 
-For each todo:
-1. Mark it as **in_progress** using TodoWrite
-2. Read the relevant section from the plan
-3. Implement the changes following the plan exactly
-4. Verify the implementation (run tests, type checks)
-5. Mark as **completed** ONLY when fully done
+Set dependencies based on plan structure:
+
+```json
+TaskUpdate({
+  "taskId": "2",
+  "addBlockedBy": ["1"]
+})
+```
+
+**Task types:**
+- File edits/creates → one task per file
+- Major requirements → one task each
+- Exit criteria verification → final task, blocked by all others
+
+### Step 4: Execute Tasks Sequentially
+
+For each task (in dependency order):
+
+1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
+2. **Read**: Get relevant section from plan
+3. **Implement**: Make changes following plan exactly
+4. **Verify**: Run any task-specific verification
+5. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+6. **Next**: Find next unblocked task via TaskList
 
 ### Step 5: Run Exit Criteria
 
@@ -70,16 +93,29 @@ Before declaring completion:
 The stop hook checks:
 - If verification PASSES → loop ends
 - If verification FAILS → loop continues with error context
-- If todos remain incomplete → loop continues
+- If tasks remain incomplete → loop continues
 
 Say **"Exit criteria passed"** when complete.
+
+## Visual Progress
+
+Press `ctrl+t` to see task progress:
+```
+Tasks (2 done, 1 in progress, 3 open)
+✓ #1 Setup database schema
+■ #2 Implement auth middleware
+□ #3 Add login route > blocked by #2
+□ #4 Add protected routes > blocked by #2
+□ #5 Run exit criteria > blocked by #3, #4
+```
 
 ## Context Recovery
 
 If context compacts:
-1. Read the plan file again
-2. Check the current todo list status
-3. Continue with the next pending todo
+1. Call TaskList to see all tasks and their status
+2. Read the plan file again
+3. Find next pending unblocked task
+4. Continue implementation
 
 ## Error Handling
 
@@ -87,7 +123,7 @@ If context compacts:
 |----------|--------|
 | Plan file not found | Report error and exit |
 | Exit criteria fail | Fix issues and retry |
-| Context compacted | Re-read plan, check todos, continue |
+| Context compacted | TaskList → re-read plan → continue |
 
 ## Example Usage
 

@@ -2,6 +2,8 @@
 
 > **Optional workflow requiring Beads CLI.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Beads when you need persistent memory across sessions or multi-day features.
 
+**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
+
 ## When to Use
 
 - Multi-day features spanning multiple sessions
@@ -22,8 +24,9 @@ brew tap steveyegge/beads && brew install bd
 ## Overview
 
 ```
-/plan-creator <task>  →  /beads-converter plan.md  →  /beads-loop
-                                                     (or ralph-tui run)
+/plan-creator <task>  →  /beads-converter plan.md  →  /beads-loop   (sequential)
+                                                   →  /beads-swarm  (parallel)
+                                                   →  ralph-tui run (dashboard)
 ```
 
 ---
@@ -69,19 +72,36 @@ bd doctor --fix
 # Creates epic + child tasks with 'ralph' label
 ```
 
-### 3. Execute
+### 3. Execute: Loop or Swarm
 
-**Built-in (requires Beads CLI):**
+**Loop (sequential, syncs beads):**
 ```bash
 /beads-loop                         # All beads with ralph label
 /beads-loop --label custom-label    # Filter by label
 /cancel-beads                       # Stop gracefully
 ```
 
+**Swarm (parallel, faster):**
+```bash
+/beads-swarm                            # Auto-detects workers
+/beads-swarm --epic <epic-id>           # Filter by epic
+/beads-swarm --label ralph --workers 5  # Override worker count
+/cancel-swarm                           # Stop workers
+```
+
 **RalphTUI (optional dashboard):**
 ```bash
 ralph-tui run --tracker beads --epic <epic-id>
 ```
+
+### Loop vs Swarm
+
+| Aspect | Loop | Swarm |
+|--------|------|-------|
+| Execution | Sequential | Parallel |
+| Beads sync | ✅ Closes beads | ✅ Closes beads |
+| RalphTUI compatible | ✅ Yes | ❌ No |
+| Best for | Verification | Speed, independent tasks |
 
 ---
 

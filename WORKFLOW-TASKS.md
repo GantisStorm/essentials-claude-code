@@ -2,21 +2,24 @@
 
 > **Optional workflow.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want prd.json format or RalphTUI dashboard.
 
+**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
+
 ## When to Use
 
 - You want JSON-based task tracking
 - You want RalphTUI's visual dashboard
 - You prefer prd.json over plain markdown plans
 
-**Note:** Built-in `/tasks-loop` works without RalphTUI. RalphTUI is optional for the visual dashboard.
+**Note:** Built-in `/tasks-loop` and `/tasks-swarm` work without RalphTUI. RalphTUI is optional for the visual dashboard.
 
 ---
 
 ## Overview
 
 ```
-/plan-creator <task>  →  /tasks-converter plan.md  →  /tasks-loop prd.json
-                                                     (or ralph-tui run)
+/plan-creator <task>  →  /tasks-converter plan.md  →  /tasks-loop prd.json   (sequential)
+                                                   →  /tasks-swarm prd.json  (parallel)
+                                                   →  ralph-tui run          (dashboard)
 ```
 
 ---
@@ -34,18 +37,33 @@
 # Output: .claude/prd/user-auth-3k7f2.json
 ```
 
-### 3. Execute
+### 3. Execute: Loop or Swarm
 
-**Built-in (no dependencies):**
+**Loop (sequential, updates prd.json):**
 ```bash
 /tasks-loop .claude/prd/user-auth-3k7f2.json
 /cancel-tasks                                    # Stop gracefully
+```
+
+**Swarm (parallel, faster):**
+```bash
+/tasks-swarm .claude/prd/user-auth-3k7f2.json    # Auto-detects workers
+/cancel-swarm                                    # Stop workers
 ```
 
 **RalphTUI (optional dashboard):**
 ```bash
 ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
 ```
+
+### Loop vs Swarm
+
+| Aspect | Loop | Swarm |
+|--------|------|-------|
+| Execution | Sequential | Parallel |
+| prd.json sync | ✅ Updates `passes` | ❌ No sync |
+| RalphTUI compatible | ✅ Yes | ❌ No |
+| Best for | RalphTUI, verification | Speed, independent tasks |
 
 ---
 

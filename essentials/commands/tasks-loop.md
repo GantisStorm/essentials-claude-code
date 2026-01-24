@@ -1,7 +1,7 @@
 ---
 description: "Execute prd.json tasks iteratively until all complete"
 argument-hint: "[prd-path]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-tasks-loop.sh)", "Read", "TodoWrite", "Bash", "Edit", "Write"]
+allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-tasks-loop.sh)", "Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
@@ -9,6 +9,8 @@ model: opus
 # Tasks Loop Command
 
 Execute prd.json tasks iteratively until all tasks are complete.
+
+Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
 ## Arguments
 
@@ -30,66 +32,89 @@ cat <prd-path>
 ```
 
 Parse the JSON and identify:
-- Pending tasks (`passes: false`)
+- All userStories
 - Dependencies (`dependsOn` array)
 - Priorities (lower number = higher priority)
+- Completion status (`passes: true/false`)
 
-### Step 2: Find Next Task
+### Step 2: Create Task Graph
 
-Select the highest priority task that:
-- Has `passes: false`
-- Has no unresolved dependencies (all `dependsOn` tasks have `passes: true`)
+For each userStory, create a built-in task:
 
-### Step 3: Read Task Details
-
-The task's `description` field is self-contained with:
-- Requirements
-- Reference implementation code
-- Migration patterns (before/after)
-- Exit criteria
-- Files to modify
-
-### Step 4: Implement the Task
-
-Follow the task description:
-1. Read the files mentioned
-2. Make the required changes
-3. Run any tests/verification in acceptance criteria
-
-### Step 5: Mark Task Complete
-
-Update prd.json to set the task's `passes: true`:
-
-```bash
-# Use jq to update the specific task
-jq '(.userStories[] | select(.id == "<task-id>")).passes = true' <prd-path> > tmp.json && mv tmp.json <prd-path>
+```json
+TaskCreate({
+  "subject": "US-001: Setup database schema",
+  "description": "<full description from userStory - self-contained>",
+  "activeForm": "Setting up database schema",
+  "metadata": { "id": "US-001", "prdPath": "<prd-path>" }
+})
 ```
 
-Or use the Edit tool to modify the JSON directly.
+Set dependencies from `dependsOn`:
 
-### Step 6: Loop Until Done
+```json
+TaskUpdate({
+  "taskId": "2",
+  "addBlockedBy": ["1"]  // Map US-xxx IDs to task IDs
+})
+```
+
+Skip stories already completed (`passes: true`) - create them as already completed.
+
+### Step 3: Execute Tasks Sequentially
+
+For each task (in dependency order):
+
+1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
+2. **Read**: Task description contains full implementation details
+3. **Implement**: Make changes as described
+4. **Verify**: Run acceptance criteria
+5. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+6. **Update prd.json**: Set `passes: true` for the userStory
+7. **Next**: Find next unblocked task via TaskList
+
+### Step 4: Update prd.json on Completion
+
+When a task completes, also update prd.json:
+
+```bash
+jq '(.userStories[] | select(.id == "<story-id>")).passes = true' <prd-path> > tmp.json && mv tmp.json <prd-path>
+```
+
+This keeps prd.json in sync for RalphTUI compatibility.
+
+### Step 5: Loop Until Done
 
 The stop hook checks prd.json for remaining tasks:
 - If pending tasks exist → loop continues
 - If all tasks complete → loop ends
 
-### Step 7: Finalize
+### Step 6: Finalize
 
 After all tasks complete, say **"All tasks complete"**.
+
+## Visual Progress
+
+Press `ctrl+t` to see task progress:
+```
+Tasks (2 done, 1 in progress, 3 open)
+✓ #1 US-001: Setup database schema
+■ #2 US-002: Implement auth service
+□ #3 US-003: Add login route > blocked by #2
+□ #4 US-004: Add protected routes > blocked by #2
+```
 
 ## Context Recovery
 
 If you lose track:
 
 ```bash
-# Read the prd.json to see all tasks
+# Check built-in tasks
+TaskList
+
+# Or check prd.json directly
 cat <prd-path>
-
-# Use jq to find pending tasks
 jq '[.userStories[] | select(.passes == false)]' <prd-path>
-
-# Find ready tasks (no blockers)
-jq '.userStories as $all | [.userStories[] | select(.passes == false) | select((.dependsOn == null) or (.dependsOn | length == 0) or ((.dependsOn // []) | all(. as $dep | ($all | map(select(.id == $dep and .passes == true)) | length > 0))))]' <prd-path>
 ```
 
 ## Error Handling

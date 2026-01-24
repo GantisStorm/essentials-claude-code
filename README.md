@@ -59,20 +59,52 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
 ---
 
-## Three Workflows
+## Requires Claude Code's Task System
 
-| Workflow | Best For | Dependencies |
-|----------|----------|--------------|
-| **Simple** | 80% of tasks | None |
-| **Tasks** | prd.json + RalphTUI dashboard | Optional: [RalphTUI](https://github.com/subsy/ralph-tui) |
-| **Beads** | Multi-session persistence | Required: [Beads CLI](https://github.com/steveyegge/beads) |
+This plugin uses Claude Code's **built-in Task Management System** for dependency tracking and parallel execution. Make sure you're on a recent version of Claude Code (v2.1.19+).
+
+**What the Task System provides:**
+
+| Feature | Benefit |
+|---------|---------|
+| **Dependency tracking** | Tasks block other tasks. `#3` won't start until `#1` and `#2` complete |
+| **Visual progress** | Press `ctrl+t` to see task tree with status |
+| **Parallel agents** | Swarm workers coordinate via shared task list |
+| **Persistence** | Tasks survive context compaction |
+
+**How it works:**
+
+```
+Plan file → TaskCreate (all tasks) → TaskUpdate (set dependencies)
+                                   → Workers claim via TaskList
+                                   → Execute → TaskUpdate (complete)
+```
+
+The four core tools: `TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`
+
+**Update Claude Code:** If you don't see task progress with `ctrl+t`, update to the latest version.
+
+---
+
+## Workflows
+
+| Workflow | Best For | Loop (Sequential) | Swarm (Parallel) |
+|----------|----------|-------------------|------------------|
+| **Simple** | 80% of tasks | `/implement-loop` | `/implement-swarm` |
+| **Tasks** | prd.json + RalphTUI | `/tasks-loop` | `/tasks-swarm` |
+| **Beads** | Multi-session | `/beads-loop` | `/beads-swarm` |
+
+**Both use Claude Code's built-in Task system** for dependency tracking and `ctrl+t` visual progress.
+
+**Choose Loop:** Sequential, verification-enforced, controlled, RalphTUI compatible.
+**Choose Swarm:** Parallel workers, speed, autonomous execution.
 
 ### Simple (Start Here)
 
 ```bash
 /plan-creator Add JWT authentication
-/implement-loop .claude/plans/jwt-auth-plan.md
-# Loop runs until exit criteria pass
+/implement-loop .claude/plans/jwt-auth-plan.md    # Sequential
+/implement-swarm .claude/plans/jwt-auth-plan.md   # Parallel
 ```
 
 ### Tasks (prd.json)
@@ -80,7 +112,8 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 ```bash
 /plan-creator Add JWT authentication
 /tasks-converter .claude/plans/jwt-auth-plan.md
-/tasks-loop .claude/prd/jwt-auth.json
+/tasks-loop .claude/prd/jwt-auth.json             # Sequential
+/tasks-swarm .claude/prd/jwt-auth.json            # Parallel
 # Or: ralph-tui run --prd .claude/prd/jwt-auth.json
 ```
 
@@ -90,7 +123,8 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 bd init
 /plan-creator Add JWT authentication
 /beads-converter .claude/plans/jwt-auth-plan.md
-/beads-loop
+/beads-loop                                        # Sequential
+/beads-swarm                                       # Parallel (auto workers)
 # Or: ralph-tui run --tracker beads --epic <epic-id>
 ```
 
@@ -126,13 +160,21 @@ The loop **cannot** end until verification passes. No exceptions.
 | `/bug-plan-creator <error> <desc>` | Bug fixes, root cause analysis |
 | `/code-quality-plan-creator <files>` | Refactoring, dead code, security |
 
-### Execute Loops
+### Execute Loops (Sequential)
 
 | Command | Stops When | Cancel |
 |---------|------------|--------|
 | `/implement-loop <plan>` | Exit criteria pass | `/cancel-implement` |
 | `/tasks-loop [prd.json]` | All tasks pass | `/cancel-tasks` |
 | `/beads-loop [--label]` | No ready beads | `/cancel-beads` |
+
+### Execute Swarms (Parallel)
+
+| Command | Source | Cancel |
+|---------|--------|--------|
+| `/implement-swarm <plan>` | Plan file | `/cancel-swarm` |
+| `/tasks-swarm [prd.json]` | prd.json | `/cancel-swarm` |
+| `/beads-swarm [--epic]` | Beads DB | `/cancel-swarm` |
 
 ### Convert Formats
 
@@ -231,9 +273,9 @@ model: opus    # opus | sonnet | haiku
 
 ## Documentation
 
-- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Zero-dependency default
-- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — prd.json + RalphTUI
-- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent multi-session
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Zero-dependency default (loop + swarm)
+- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — prd.json + RalphTUI (loop + swarm)
+- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent multi-session (loop + swarm)
 - [COMPARISON.md](COMPARISON.md) — Why verification matters
 
 ---

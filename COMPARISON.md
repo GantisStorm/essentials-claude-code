@@ -184,14 +184,13 @@ Specific, executable commands. The loop runs them automatically.
 - Trivial 2-line fixes (overhead not justified)
 - Learning/exploration (use conversation instead)
 - Team collaboration needed (essentials is solo-focused)
-- Need parallel execution (essentials is sequential)
 - Want IDE integration (essentials is terminal-based)
 
 ---
 
 ## What Essentials Doesn't Do
 
-**No parallel agents.** One task at a time, verified before moving on. Trade-off: lower throughput, higher reliability.
+**Sequential by default.** Loops run one task at a time, verified before moving on. Trade-off: lower throughput, higher reliability. For parallel execution, use `/swarm` (see below).
 
 **No team features.** No dashboards, permissions, or multi-user sync. Essentials is for individual developers.
 
@@ -245,6 +244,28 @@ Creates prd.json file with self-contained tasks. **Use when you want RalphTUI's 
 
 Full persistence. Each bead is self-contained. Survives sessions, context compaction, interruptions. **Use when Simple tier fails—AI hallucinates mid-task, loses track, or feature spans multiple days.** This is the most token-expensive workflow. RalphTUI is for execution only—this plugin creates the plans and beads.
 
+### Swarm: Parallel Execution (When Speed Matters)
+
+Each workflow has a swarm variant:
+
+```bash
+# From plan (auto-detects optimal worker count)
+/implement-swarm .claude/plans/api-refactor-plan.md
+
+# From prd.json
+/tasks-swarm .claude/prd/feature.json
+
+# From beads
+/beads-swarm --epic beads-abc123
+
+# Override worker count if needed
+/implement-swarm plan.md --workers 10
+```
+
+Uses Claude Code's built-in Task system with dependency tracking. **Auto-detects optimal worker count** from task graph parallelism (max concurrent unblocked tasks). Workers execute in parallel, automatically respecting dependencies. **Use when tasks are mostly independent and you want speed.** Workers claim tasks, execute them, and move to the next unblocked task. Visual progress via `ctrl+t`.
+
+**Trade-off:** Less verification control than loops. Workers are autonomous—if one fails, others continue. Best for refactoring, migrations, and parallelizable work.
+
 ---
 
 ## Trade-Offs
@@ -259,7 +280,7 @@ Code-first lets you improvise. Essentials requires a plan. The structure is the 
 
 **Throughput vs Reliability**
 
-Parallel agents process more files simultaneously. Essentials does one thing at a time, verified. One verified task beats five broken ones.
+Loops do one thing at a time, verified. Swarm runs multiple workers in parallel with dependency awareness. Choose loops for critical code, swarm for parallelizable refactors.
 
 **Simplicity vs Power**
 

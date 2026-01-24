@@ -2,13 +2,16 @@
 
 > **Default workflow with zero dependencies.** Handles 80% of tasks. Only escalate to Tasks or Beads when you hit specific problems.
 
+**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
+
 ## Overview
 
 ```
-/plan-creator <task>  →  /implement-loop plan.md  →  Exit criteria pass ✓
+/plan-creator <task>  →  /implement-loop plan.md   →  Exit criteria pass ✓
+                      →  /implement-swarm plan.md  →  All tasks complete ✓
 ```
 
-**No external tools required.**
+**No external tools required.** Uses Claude Code's built-in Task system for dependency tracking and `ctrl+t` visual progress.
 
 ---
 
@@ -43,7 +46,9 @@ Check `.claude/plans/` before executing:
 
 Fixing a plan is cheap. Debugging bad code is expensive.
 
-### 3. Execute Loop
+### 3. Execute: Loop or Swarm
+
+#### Loop (Sequential)
 
 ```bash
 /implement-loop .claude/plans/user-auth-3k7f2-plan.md
@@ -51,17 +56,59 @@ Fixing a plan is cheap. Debugging bad code is expensive.
 
 The loop:
 1. Reads the plan
-2. Implements each section
-3. Runs exit criteria
-4. **Loops until exit criteria pass (exit code 0)**
+2. Creates task graph with dependencies
+3. Implements each task sequentially
+4. Runs exit criteria
+5. **Loops until exit criteria pass (exit code 0)**
+
+#### Swarm (Parallel)
+
+```bash
+/implement-swarm .claude/plans/user-auth-3k7f2-plan.md
+```
+
+The swarm:
+1. Reads the plan
+2. Creates task graph with dependencies
+3. **Auto-detects optimal worker count** from graph parallelism
+4. Workers claim and execute unblocked tasks
+5. **Completes when all tasks done**
 
 ### Options
 
 ```bash
-/implement-loop plan.md                    # Run until done
+# Loop
+/implement-loop plan.md                     # Run until done
 /implement-loop plan.md --max-iterations 10 # Limit iterations
 /cancel-implement                           # Stop gracefully
+
+# Swarm
+/implement-swarm plan.md                    # Auto-detects workers from graph
+/implement-swarm plan.md --workers 5        # Override: force 5 workers
+/implement-swarm plan.md --model haiku      # Cheaper workers
+/cancel-swarm                               # Stop workers
 ```
+
+---
+
+## Loop vs Swarm
+
+| Aspect | Loop | Swarm |
+|--------|------|-------|
+| Execution | Sequential (1 agent) | Parallel (N workers) |
+| Verification | Exit criteria enforced | Workers autonomous |
+| Control | Stop hooks, iterations | Workers self-coordinate |
+| Best for | Critical code, strict verification | Refactors, migrations, speed |
+
+**Use Loop when:**
+- Exit criteria must pass before done
+- Sequential verification matters
+- You want controlled, iterative execution
+
+**Use Swarm when:**
+- Tasks are independent or parallelizable
+- Speed matters more than strict verification
+- Refactoring many files with same pattern
 
 ---
 
@@ -73,16 +120,28 @@ The loop:
 | Migration Patterns | Before/after with line numbers |
 | Exit Criteria | Exact commands (`npm test -- auth`) |
 
-The plan is the **source of truth**. When context compacts, the loop re-reads it.
+The plan is the **source of truth**. When context compacts, re-read it.
+
+---
+
+## Visual Progress
+
+Press `ctrl+t` to see task progress (both loop and swarm):
+```
+Tasks (2 done, 1 in progress, 3 open)
+✓ #1 Setup database schema
+■ #2 Implement auth middleware
+□ #3 Add login route > blocked by #2
+```
 
 ---
 
 ## Context Recovery
 
 When context compacts:
-1. Loop re-reads the plan file
-2. Checks todo status
-3. Continues with next pending item
+1. Call TaskList to see all tasks
+2. Re-read the plan file
+3. Continue with next pending task
 
 Plans persist outside the conversation.
 
@@ -93,7 +152,8 @@ Plans persist outside the conversation.
 | Problem | Solution |
 |---------|----------|
 | Works fine | Stay here |
-| Want visual dashboard | [Tasks workflow](WORKFLOW-TASKS.md) |
+| Want prd.json format | [Tasks workflow](WORKFLOW-TASKS.md) |
+| Want RalphTUI dashboard | [Tasks workflow](WORKFLOW-TASKS.md) |
 | Multi-day feature | [Beads workflow](WORKFLOW-BEADS.md) |
 | AI hallucinates | [Beads workflow](WORKFLOW-BEADS.md) |
 
