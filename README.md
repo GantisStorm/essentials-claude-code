@@ -74,19 +74,52 @@ ctrl+t   # Toggle task tree view
 
 ## Powered by Claude Code's Task System
 
-This plugin uses Claude Code's **built-in Task Management System** (v2.1.19+) - a dependency-aware orchestration layer that replaced the old flat TodoWrite lists.
+Our loop and swarm commands use Claude Code's **built-in Task Management System** (v2.1.19+).
 
-**Why Tasks > TodoWrite:**
+**This is still Ralph Wiggum** - same verification-driven loops, same "done means actually done" philosophy. Anthropic just made the plumbing native. What the community built with stop hooks and external files now has first-class support.
 
-| Old (TodoWrite) | New (Task System) |
-|-----------------|-------------------|
-| Flat checkbox list | Dependency graph |
-| No ordering enforced | `blockedBy` prevents wrong order |
-| Single agent only | Parallel workers via shared list |
-| Lost on context compaction | Persists in `~/.claude/tasks/` |
-| No visual progress | `ctrl+t` shows live task tree |
+> **RalphTUI still works.** For Tasks/Beads workflows, you can use [RalphTUI](https://github.com/subsy/ralph-tui) as an alternative executor if you want a TUI dashboard.
 
-**How dependencies work:**
+### Same Concept, Better Tooling
+
+| Before (Workarounds) | Now (Native) |
+|----------------------|--------------|
+| External plan.md for tracking | Built-in `~/.claude/tasks/` storage |
+| Stop hooks to check completion | Status lifecycle: `pending` → `in_progress` → `completed` |
+| Fresh sessions to fight context rot | Tasks persist across context compaction |
+| Flat TodoWrite lists | Dependency graph with `blockedBy` |
+| Manual multi-session coordination | `CLAUDE_CODE_TASK_LIST_ID` env var |
+
+**The core loop is unchanged:** Plan → Implement → Verify → Loop if fail → Done when pass.
+
+### What Tasks Do Well
+
+- **Dependency management**: Task #3 blocked by #1 and #2 literally cannot start until both complete
+- **Visual progress**: Press `ctrl+t` to see live task tree with status
+- **Parallel coordination**: Multiple workers share one task list, no conflicts
+- **Persistence**: Survives context compaction, stored in `~/.claude/tasks/`
+
+### What Tasks Don't Do
+
+`TaskList` shows ID, subject, status, and blockedBy - **but NOT description**. To see implementation details, you must call `TaskGet` for each task individually.
+
+**This is why we still use plan files.** Tasks track status. Plans hold implementation details.
+
+```
+Plan file (.claude/plans/)     →  Full implementation code (50-200+ lines per task)
+Task System (~/.claude/tasks/) →  Status tracking, dependencies, parallel coordination
+```
+
+### The Four Core Tools
+
+| Tool | Purpose |
+|------|---------|
+| `TaskCreate` | Create task with subject, description, activeForm |
+| `TaskUpdate` | Change status, set owner, add `blockedBy` dependencies |
+| `TaskGet` | Get full details of ONE task (including description) |
+| `TaskList` | See ALL tasks (but only subject, status, blockedBy) |
+
+### How Dependencies Work
 
 ```
 TaskCreate({ subject: "Set up database" })           // #1
@@ -94,46 +127,61 @@ TaskCreate({ subject: "Create auth middleware" })    // #2
 TaskUpdate({ taskId: "2", addBlockedBy: ["1"] })     // #2 waits for #1
 ```
 
-Task #2 **cannot start** until #1 completes. The system enforces this automatically.
+Task #2 **cannot start** until #1 completes. The system enforces this.
 
-**Visual progress (`ctrl+t`):**
+### Visual Progress (`ctrl+t`)
 
 ```
 Tasks (2 done, 1 in progress, 3 open)
 ✓ #1 Set up database schema
-■ #2 Create auth middleware
+■ #2 Create auth middleware (Worker-1)
 □ #3 Add login routes > blocked by #2
 □ #4 Write tests > blocked by #3
 ```
 
-**How parallel swarms coordinate:**
+### Parallel Swarm Coordination
+
+Workers spawn simultaneously and self-coordinate via shared task list:
 
 ```
-Worker-1: TaskList → Claim #1 → Execute → Complete
-Worker-2: TaskList → Claim #2 → Wait (blocked) → Claim #3...
-Worker-3: TaskList → Claim #4 → Wait (blocked) → ...
+Worker-1: TaskList → Claim #1 → Execute → Complete → Claim #3 (now unblocked)
+Worker-2: TaskList → Claim #2 → Execute → Complete → Claim #4 (now unblocked)
+Worker-3: TaskList → All blocked → Wait → Claim next available...
 
-All workers share the same task list. No conflicts.
+All workers read/write same TaskList. No central coordinator.
 Dependencies automatically respected.
 ```
 
-The four core tools: `TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`
+### Multi-Session Persistence
+
+Tasks persist across sessions with `CLAUDE_CODE_TASK_LIST_ID`:
+
+```bash
+# Per terminal session
+CLAUDE_CODE_TASK_LIST_ID="my-project" claude
+
+# Or in .claude/settings.json
+{ "env": { "CLAUDE_CODE_TASK_LIST_ID": "my-project" } }
+```
+
+Start a new session tomorrow - your task list is still there.
 
 ---
 
 ## Workflows
 
-| Workflow | Best For | Loop (Sequential) | Swarm (Parallel) |
-|----------|----------|-------------------|------------------|
-| **Simple (context)** | Quick tasks | `/implement-loop` | `/implement-swarm` |
-| **Simple (plan)** | 80% of tasks | `/plan-loop` | `/plan-swarm` |
-| **Tasks** | prd.json + RalphTUI | `/tasks-loop` | `/tasks-swarm` |
-| **Beads** | Multi-session | `/beads-loop` | `/beads-swarm` |
+| Workflow | Best For | Loop | Swarm | Alt Executor |
+|----------|----------|------|-------|--------------|
+| **Simple (context)** | Quick tasks | `/implement-loop` | `/implement-swarm` | — |
+| **Simple (plan)** | 80% of tasks | `/plan-loop` | `/plan-swarm` | — |
+| **Tasks** | prd.json format | `/tasks-loop` | `/tasks-swarm` | RalphTUI |
+| **Beads** | Multi-session | `/beads-loop` | `/beads-swarm` | RalphTUI |
 
-**All use Claude Code's built-in Task system** for dependency tracking and `ctrl+t` visual progress.
+**Our commands use Claude Code's Task System** for dependency tracking and `ctrl+t` progress.
+**RalphTUI is an alternative executor** for Tasks/Beads workflows if you want a TUI dashboard.
 
-**Choose Loop:** Sequential, verification-enforced, controlled.
-**Choose Swarm:** Parallel workers, speed, autonomous execution.
+**Choose Loop:** Sequential, verification-enforced, one task at a time.
+**Choose Swarm:** Parallel workers, auto-scales, faster for independent tasks.
 
 ### Simple (Start Here)
 

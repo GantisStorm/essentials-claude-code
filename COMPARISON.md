@@ -106,6 +106,42 @@ The verification step is mandatory and automatic. You can't skip it. You can't o
 
 ---
 
+## Still Ralph Wiggum, Now Native
+
+The [Ralph Wiggum pattern](https://ghuntley.com/ralph/) pioneered autonomous Claude Code loops. The community built it with stop hooks, external plan files, and completion promises. It worked, but required workarounds.
+
+**Anthropic made it native.** Claude Code v2.1.19+ includes a Task Management System with dependencies, persistence, and parallel agent coordination. Same philosophy, better plumbing.
+
+| What We Had | What We Have Now |
+|-------------|------------------|
+| Stop hooks checking "complete" | Status lifecycle: `pending` → `in_progress` → `completed` |
+| External plan.md for state | Built-in storage at `~/.claude/tasks/` |
+| Fresh sessions to fight context rot | Tasks persist across context compaction |
+| Flat TodoWrite lists | Dependency graph with `blockedBy` |
+| One agent at a time | Parallel workers via shared TaskList |
+
+**The core loop is unchanged:** Plan → Implement → Verify → Loop if fail → Done when pass.
+
+**What's new:** Dependencies prevent wrong ordering. Swarms run parallel workers. Visual progress with `ctrl+t`. Multi-session persistence with `CLAUDE_CODE_TASK_LIST_ID`.
+
+---
+
+## Why We Still Use Plan Files
+
+Tasks track **status**. Plans hold **implementation details**.
+
+`TaskList` shows ID, subject, status, blockedBy - but **not descriptions**. To see what was done, you'd call `TaskGet` for each task individually. There's no "show me all implementation notes at a glance."
+
+```
+Plan file (.claude/plans/)     →  Full code (50-200+ lines per task)
+Task System (~/.claude/tasks/) →  Status, dependencies, parallel coordination
+```
+
+**Use Tasks for:** Tracking progress, enforcing order, coordinating workers.
+**Use Plans for:** Implementation details, reference code, exit criteria.
+
+---
+
 ## How Essentials Handles Common Problems
 
 ### Context Compaction

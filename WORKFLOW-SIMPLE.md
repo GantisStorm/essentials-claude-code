@@ -2,7 +2,9 @@
 
 > **Default workflow with zero dependencies.** Handles 80% of tasks. Only escalate to Tasks or Beads when you hit specific problems.
 
-**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
+**Requires:** Claude Code v2.1.19+ (uses built-in Task System)
+
+**Still Ralph Wiggum.** Same verification-driven loops. Anthropic just made the plumbing native - dependencies, persistence, parallel agents are now built-in instead of workarounds.
 
 ## Overview
 
