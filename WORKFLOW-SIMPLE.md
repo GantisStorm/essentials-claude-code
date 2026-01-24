@@ -73,17 +73,35 @@ The commands extract goals, requirements, and exit criteria from your discussion
 
 #### How They Work
 
+Both use Claude Code's **Task System** - a dependency graph, not a flat list.
+
 **Loop (sequential):**
-1. Creates task graph with dependencies
-2. Implements each task sequentially
-3. Runs exit criteria
-4. **Loops until exit criteria pass**
+```
+TaskCreate → TaskUpdate (set blockedBy) → Execute in order → Verify → Loop if fail
+```
+1. Creates task graph with `TaskCreate`
+2. Sets dependencies with `TaskUpdate({ addBlockedBy: [...] })`
+3. Executes tasks in dependency order (blocked tasks wait)
+4. Runs exit criteria
+5. **Loops until exit criteria pass**
 
 **Swarm (parallel):**
+```
+TaskCreate → TaskUpdate (set blockedBy) → Spawn workers → Workers coordinate via TaskList
+```
 1. Creates task graph with dependencies
-2. **Auto-detects optimal worker count**
-3. Workers claim and execute unblocked tasks
-4. **Completes when all tasks done**
+2. Analyzes graph for max parallelism (how many tasks can run together)
+3. Spawns N workers (auto-detected or `--workers N`)
+4. Workers all read same `TaskList`, claim unblocked tasks, execute, mark complete
+5. **Completes when all tasks done**
+
+**Why dependencies matter:**
+```
+#1 Set up database
+#2 Create auth middleware [blocked by #1]
+#3 Add routes [blocked by #2]
+```
+Task #2 **cannot start** until #1 is done. The system enforces this - no more "oops, I forgot the prerequisite."
 
 ### Options
 

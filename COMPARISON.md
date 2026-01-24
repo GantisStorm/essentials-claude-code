@@ -114,7 +114,13 @@ The verification step is mandatory and automatic. You can't skip it. You can't o
 
 **Other tools:** Start over, re-explain everything, or accept degraded quality.
 
-**Essentials:** Plan file is external source of truth. On compaction, re-read plan → check todo status → continue. Beads are fully self-contained (50-200+ lines of implementation detail each).
+**Essentials:** Task state persists in `~/.claude/tasks/` - outside the conversation. On compaction:
+1. `TaskList` shows all tasks and their status
+2. Re-read plan file for full context
+3. Find next pending unblocked task
+4. Continue where you left off
+
+The old TodoWrite lists disappeared on compaction. The new Task System survives.
 
 ---
 
@@ -200,9 +206,34 @@ Specific, executable commands. The loop runs them automatically.
 
 ---
 
-## What Essentials Doesn't Do
+## Parallel Execution with Dependencies
 
-**Sequential by default.** Loops run one task at a time, verified before moving on. Trade-off: lower throughput, higher reliability. For parallel execution, use `/swarm` (see below).
+Swarms spawn multiple workers that coordinate via the shared Task System:
+
+```
+Task Graph:
+#1 Set up database
+#2 Create user model      [no deps - can run with #1]
+#3 Auth middleware        [blocked by #1, #2]
+#4 Login routes           [blocked by #3]
+#5 Protected routes       [blocked by #3]
+#6 Tests                  [blocked by #4, #5]
+```
+
+**How workers coordinate:**
+```
+Worker-1: TaskList → Claim #1 → Execute → Complete → Claim #4 (now unblocked)
+Worker-2: TaskList → Claim #2 → Execute → Complete → Claim #5 (now unblocked)
+Worker-3: TaskList → #3 blocked → Wait → #3 unblocked → Claim → Execute...
+```
+
+All workers read from the same `TaskList`. When a task completes, blocked tasks become available. No central coordinator needed - workers self-organize.
+
+**Auto-detection:** Swarm analyzes the graph to find max parallelism. If only 2 tasks can run together, it spawns 2 workers. Override with `--workers N`.
+
+---
+
+## What Essentials Doesn't Do
 
 **No team features.** No dashboards, permissions, or multi-user sync. Essentials is for individual developers.
 
@@ -211,8 +242,6 @@ Specific, executable commands. The loop runs them automatically.
 **No IDE integration.** Terminal-based by design. Works alongside any editor.
 
 **No auto-commit.** Exit criteria passing ≠ ready to merge. You decide when to commit.
-
-**No multi-model orchestration.** Built on Claude Code. One model, consistent behavior.
 
 If you need these things, excellent tools exist. Essentials solves a different problem.
 

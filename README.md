@@ -72,30 +72,52 @@ ctrl+t   # Toggle task tree view
 
 ---
 
-## Requires Claude Code's Task System
+## Powered by Claude Code's Task System
 
-This plugin uses Claude Code's **built-in Task Management System** for dependency tracking and parallel execution. Make sure you're on a recent version of Claude Code (v2.1.19+).
+This plugin uses Claude Code's **built-in Task Management System** (v2.1.19+) - a dependency-aware orchestration layer that replaced the old flat TodoWrite lists.
 
-**What the Task System provides:**
+**Why Tasks > TodoWrite:**
 
-| Feature | Benefit |
-|---------|---------|
-| **Dependency tracking** | Tasks block other tasks. `#3` won't start until `#1` and `#2` complete |
-| **Visual progress** | Press `ctrl+t` to see task tree with status |
-| **Parallel agents** | Swarm workers coordinate via shared task list |
-| **Persistence** | Tasks survive context compaction |
+| Old (TodoWrite) | New (Task System) |
+|-----------------|-------------------|
+| Flat checkbox list | Dependency graph |
+| No ordering enforced | `blockedBy` prevents wrong order |
+| Single agent only | Parallel workers via shared list |
+| Lost on context compaction | Persists in `~/.claude/tasks/` |
+| No visual progress | `ctrl+t` shows live task tree |
 
-**How it works:**
+**How dependencies work:**
 
 ```
-Plan file → TaskCreate (all tasks) → TaskUpdate (set dependencies)
-                                   → Workers claim via TaskList
-                                   → Execute → TaskUpdate (complete)
+TaskCreate({ subject: "Set up database" })           // #1
+TaskCreate({ subject: "Create auth middleware" })    // #2
+TaskUpdate({ taskId: "2", addBlockedBy: ["1"] })     // #2 waits for #1
+```
+
+Task #2 **cannot start** until #1 completes. The system enforces this automatically.
+
+**Visual progress (`ctrl+t`):**
+
+```
+Tasks (2 done, 1 in progress, 3 open)
+✓ #1 Set up database schema
+■ #2 Create auth middleware
+□ #3 Add login routes > blocked by #2
+□ #4 Write tests > blocked by #3
+```
+
+**How parallel swarms coordinate:**
+
+```
+Worker-1: TaskList → Claim #1 → Execute → Complete
+Worker-2: TaskList → Claim #2 → Wait (blocked) → Claim #3...
+Worker-3: TaskList → Claim #4 → Wait (blocked) → ...
+
+All workers share the same task list. No conflicts.
+Dependencies automatically respected.
 ```
 
 The four core tools: `TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`
-
-**Update Claude Code:** If you don't see task progress with `ctrl+t`, update to the latest version.
 
 ---
 
