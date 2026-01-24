@@ -56,11 +56,13 @@ AI:  "Exit criteria passed" ✓
 mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
 # Option A: From conversation (after discussing a bug/feature)
-/implement-loop fix the auth bug we discussed
+/implement-loop fix the auth bug we discussed    # Sequential
+/implement-swarm refactor the API handlers       # Parallel
 
 # Option B: With plan file
 /plan-creator Add user authentication with JWT
-/plan-loop .claude/plans/user-auth-3k7f2-plan.md
+/plan-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential
+/plan-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel
 
 # Visual progress
 ctrl+t   # Toggle task tree view
