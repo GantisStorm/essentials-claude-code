@@ -1,10 +1,10 @@
 # Beads Workflow
 
-> **Verification-driven loops with persistent task tracking.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
+> **Loops and swarms with persistent task tracking.** Powered by Claude Code's built-in Task System.
 
 **Optional workflow for multi-session work.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Beads when you need persistent memory across sessions or multi-day features.
 
-**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
+**Requires:** Claude Code v2.1.19+ (native task dependencies, `ctrl+t` progress, automatic persistence)
 
 ## When to Use
 

@@ -1,8 +1,8 @@
 # How Essentials Compares
 
-> **Verification-driven loops for brownfield development.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
+> **Loops and swarms powered by Claude Code's built-in Task System.** Sequential loops for verification. Parallel swarms for speed.
 
-Integrates with [Ralph TUI](https://github.com/subsy/ralph-tui) for dashboard visualization and [Beads](https://github.com/steveyegge/beads) for persistent task tracking.
+Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
 ---
 

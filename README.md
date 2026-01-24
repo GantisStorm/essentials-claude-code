@@ -8,11 +8,11 @@
 [![Claude Code](https://img.shields.io/badge/Built%20for-Claude%20Code-blueviolet)](https://claude.ai/code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-**Verification-driven loops for brownfield development.**
+**Loops and swarms powered by Claude Code's built-in Task System.**
 
-A Claude Code plugin for adding features to existing codebases. Plans define exit criteria. Loops run until tests pass. Done means actually done.
+Sequential loops for verification-enforced execution. Parallel swarms for speed. Both use Claude's native task dependencies, `ctrl+t` progress, and automatic persistence.
 
-Integrates with [Ralph TUI](https://github.com/subsy/ralph-tui) and [Beads](https://github.com/steveyegge/beads) for dashboard visualization and persistent task tracking.
+Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
 </div>
 

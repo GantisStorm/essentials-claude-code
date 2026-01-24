@@ -1,10 +1,10 @@
 # Simple Workflow
 
-> **Verification-driven loops for brownfield development.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
+> **Loops and swarms powered by Claude Code's built-in Task System.** Sequential loops for verification. Parallel swarms for speed.
 
-**Default workflow with zero dependencies.** Handles 80% of tasks. Only escalate to Tasks or Beads when you want dashboard visualization or persistent task tracking.
+**Default workflow with zero dependencies.** Handles 80% of tasks. Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
-**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
+**Requires:** Claude Code v2.1.19+ (native task dependencies, `ctrl+t` progress, automatic persistence)
 
 ## Overview
 

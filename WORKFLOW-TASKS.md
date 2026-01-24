@@ -1,10 +1,10 @@
 # Tasks Workflow
 
-> **Verification-driven loops with prd.json format.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
+> **Loops and swarms with prd.json format.** Powered by Claude Code's built-in Task System.
 
 **Optional workflow for dashboard visualization.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want prd.json format or Ralph TUI's visual dashboard.
 
-**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
+**Requires:** Claude Code v2.1.19+ (native task dependencies, `ctrl+t` progress, automatic persistence)
 
 ## When to Use
 
