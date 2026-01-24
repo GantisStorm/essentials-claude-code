@@ -1,7 +1,7 @@
 {
   "name": "essentials-claude-code",
   "version": "3.14.0",
-  "description": "Loops and swarms powered by Claude Code's built-in Task System. Sequential loops for verification. Parallel swarms for speed. Plans define exit criteria. Loops run until tests pass. Done means actually done.",
+  "description": "Loops and swarms powered by Claude Code's built-in Task System. Both are interchangeable—swarm is just faster when tasks can run in parallel. Plans define exit criteria. Executors run until tests pass. Done means actually done.",
   "author": "GantisStorm",
   "owner": {
     "name": "GantisStorm"
