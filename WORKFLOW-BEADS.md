@@ -1,6 +1,6 @@
 # Beads Workflow
 
-> **Loops and swarms with persistent task tracking.** Powered by Claude Code's built-in Task System.
+> **Loops and swarms with persistent memory.** Powered by Claude Code's built-in Task System.
 
 **Optional workflow for multi-session work.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Beads when you need persistent memory across sessions or multi-day features.
 
@@ -11,7 +11,16 @@
 - Multi-day features spanning multiple sessions
 - AI loses track mid-task or hallucinates
 - Context keeps compacting and losing progress
-- Need persistent task tracking that survives session boundaries
+- Need persistent memory that survives session boundaries
+
+## Execution Options
+
+| Executor | Style | How |
+|----------|-------|-----|
+| `/beads-loop`, `/beads-swarm` | Claude Code's Task System (recommended) | Native dependencies, `ctrl+t` progress |
+| Ralph TUI | Classic Ralph Wiggum loop | Community approach before native tasks |
+
+**Note:** Both executors work with the same beads created by `/beads-converter`.
 
 ---
 

@@ -194,9 +194,9 @@ Plans persist outside the conversation.
 |---------|----------|
 | Works fine | Stay here |
 | Want prd.json format | [Tasks workflow](WORKFLOW-TASKS.md) |
-| Want dashboard visualization | [Tasks workflow](WORKFLOW-TASKS.md) + Ralph TUI |
+| Want classic Ralph TUI dashboard | [Tasks workflow](WORKFLOW-TASKS.md) or [Beads workflow](WORKFLOW-BEADS.md) + Ralph TUI |
 | Multi-day feature | [Beads workflow](WORKFLOW-BEADS.md) |
-| Need persistent task tracking | [Beads workflow](WORKFLOW-BEADS.md) |
+| Need persistent memory | [Beads workflow](WORKFLOW-BEADS.md) |
 
 ---
 

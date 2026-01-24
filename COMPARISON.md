@@ -312,7 +312,7 @@ If you need these things, excellent tools exist. Essentials solves a different p
 
 ## The Three Tiers
 
-> **Start with Simple.** 80% of tasks don't need tasks or beads conversion. Escalate only when you hit problems—hallucinations, lost context, multi-day features, or want RalphTUI's dashboard.
+> **Start with Simple.** 80% of tasks don't need tasks or beads conversion. Escalate only when you hit problems—hallucinations, lost context, multi-day features, or want prd.json format.
 
 Match workflow to task size:
 
@@ -329,53 +329,46 @@ Match workflow to task size:
 
 Single session. Exit criteria enforced. Loop until pass. **This handles 80% of tasks.**
 
-### Medium: Plan → Tasks → Tasks Loop (RalphTUI Compatible)
+### Tasks: Plan → Tasks → Tasks Loop (prd.json Format)
 
 ```bash
 /plan-creator Add JWT authentication
 /tasks-converter .claude/plans/jwt-auth-abc12-plan.md
-# Review prd.json, verify task descriptions have full code
-/tasks-loop ./prd.json                  # Internal execution
-# OR: ralph-tui run --prd ./prd.json   # TUI dashboard (execution only)
+
+# Execute with Claude Code's Task System (recommended)
+/tasks-loop ./prd.json
+/tasks-swarm ./prd.json
+
+# Or execute with Ralph TUI (classic Ralph loop)
+ralph-tui run --prd ./prd.json
 ```
 
-Creates prd.json file with self-contained tasks. **Use when you want RalphTUI's TUI dashboard or prefer the prd.json format.** Each task has full implementation code—no reading the original plan. RalphTUI is for execution only—this plugin creates the plans and tasks.
+Creates prd.json file with self-contained tasks. **Use when you want prd.json format.** Each task has full implementation code—no reading the original plan.
 
-### Beads: Plan → Beads → Beads Loop (When Simple Fails)
+### Beads: Plan → Beads → Beads Loop (Persistent Memory)
 
 ```bash
 /plan-creator Add complete auth system
 /beads-converter .claude/plans/auth-system-xyz99-plan.md
-/beads-loop --label plan:auth-system              # Internal execution
-# OR: ralph-tui run --tracker beads --epic <id>  # TUI dashboard (execution only)
-```
 
-Full persistence. Each bead is self-contained. Survives sessions, context compaction, interruptions. **Use when Simple tier fails—AI hallucinates mid-task, loses track, or feature spans multiple days.** This is the most token-expensive workflow. RalphTUI is for execution only—this plugin creates the plans and beads.
-
-### Swarm: Parallel Execution (When Speed Matters)
-
-Each workflow has a swarm variant:
-
-```bash
-# From conversation (auto-detects optimal worker count)
-/implement-swarm refactor the API handlers
-
-# From plan file
-/plan-swarm .claude/plans/api-refactor-plan.md
-
-# From prd.json
-/tasks-swarm .claude/prd/feature.json
-
-# From beads
+# Execute with Claude Code's Task System (recommended)
+/beads-loop --label plan:auth-system
 /beads-swarm --epic beads-abc123
 
-# Override worker count if needed
-/implement-swarm update errors --workers 10
+# Or execute with Ralph TUI (classic Ralph loop)
+ralph-tui run --tracker beads --epic <id>
 ```
 
-Uses Claude Code's built-in Task system with dependency tracking. **Auto-detects optimal worker count** from task graph parallelism (max concurrent unblocked tasks). Workers execute in parallel, automatically respecting dependencies. **Use when tasks are mostly independent and you want speed.** Workers claim tasks, execute them, and move to the next unblocked task. Visual progress via `ctrl+t`.
+Full persistence. Each bead is self-contained. Survives sessions, context compaction, interruptions. **Use when Simple tier fails—AI hallucinates mid-task, loses track, or feature spans multiple days.**
 
-**Trade-off:** Less verification control than loops. Workers are autonomous—if one fails, others continue. Best for refactoring, migrations, and parallelizable work.
+### Execution Options
+
+| Executor | Style | Features |
+|----------|-------|----------|
+| Plugin loops/swarms | Claude Code's Task System | Native dependencies, `ctrl+t` progress, automatic persistence |
+| Ralph TUI | Classic Ralph Wiggum loop | TUI dashboard, community approach before native tasks |
+
+**Both work with the same plans, prd.json files, and beads.** This plugin creates the plans and converts them. You choose the executor.
 
 ---
 
@@ -405,7 +398,7 @@ The tasks and beads workflows (plan → tasks/beads) copy implementation code in
 
 ## The Bottom Line
 
-Verification-driven loops for brownfield development. Plans define exit criteria. Loops run until tests pass. Done means actually done.
+Loops and swarms powered by Claude Code's built-in Task System. Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
 The loop won't end until verification passes. That's the guarantee.
 
@@ -419,6 +412,6 @@ The loop won't end until verification passes. That's the guarantee.
 - You need team or cloud features
 - Exploration matters more than completion
 
-**Integrations:**
-- [Ralph TUI](https://github.com/subsy/ralph-tui) — Dashboard visualization
-- [Beads](https://github.com/steveyegge/beads) — Persistent task tracking
+**Optional integrations:**
+- [Beads](https://github.com/steveyegge/beads) — Persistent memory across sessions
+- [Ralph TUI](https://github.com/subsy/ralph-tui) — Classic Ralph loop executor with TUI dashboard

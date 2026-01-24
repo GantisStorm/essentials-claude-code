@@ -179,14 +179,15 @@ Start a new session tomorrow - your task list is still there.
 
 ## Workflows
 
-| Workflow | Best For | Loop | Swarm | Dashboard |
-|----------|----------|------|-------|-----------|
-| **Simple (context)** | Quick tasks | `/implement-loop` | `/implement-swarm` | — |
-| **Simple (plan)** | 80% of tasks | `/plan-loop` | `/plan-swarm` | — |
-| **Tasks** | Dashboard visualization | `/tasks-loop` | `/tasks-swarm` | Ralph TUI |
-| **Beads** | Persistent tracking | `/beads-loop` | `/beads-swarm` | Ralph TUI |
+| Workflow | Best For | Loop | Swarm |
+|----------|----------|------|-------|
+| **Simple** | 80% of tasks | `/implement-loop`, `/plan-loop` | `/implement-swarm`, `/plan-swarm` |
+| **Tasks** | prd.json format | `/tasks-loop` | `/tasks-swarm` |
+| **Beads** | Persistent memory | `/beads-loop` | `/beads-swarm` |
 
-**All workflows use verification-driven loops.** Plans define exit criteria. Loops run until tests pass.
+**All use Claude Code's built-in Task System** for dependencies, `ctrl+t` progress, and persistence.
+
+**Alternative executor:** [Ralph TUI](https://github.com/subsy/ralph-tui) runs Tasks/Beads with the classic Ralph Wiggum loop style (community approach before Claude Code had native tasks).
 
 **Choose Loop:** Sequential, verification-enforced, one task at a time.
 **Choose Swarm:** Parallel workers, auto-scales, faster for independent tasks.
@@ -204,14 +205,18 @@ Start a new session tomorrow - your task list is still there.
 /plan-swarm .claude/plans/jwt-auth-plan.md   # Parallel
 ```
 
-### Tasks (prd.json)
+### Tasks (prd.json Format)
 
 ```bash
 /plan-creator Add JWT authentication
 /tasks-converter .claude/plans/jwt-auth-plan.md
+
+# Execute with Claude Code's Task System (recommended)
 /tasks-loop .claude/prd/jwt-auth.json             # Sequential
 /tasks-swarm .claude/prd/jwt-auth.json            # Parallel
-# Or: ralph-tui run --prd .claude/prd/jwt-auth.json
+
+# Or execute with Ralph TUI (classic Ralph loop)
+ralph-tui run --prd .claude/prd/jwt-auth.json
 ```
 
 ### Beads (Persistent Memory)
@@ -220,9 +225,13 @@ Start a new session tomorrow - your task list is still there.
 bd init
 /plan-creator Add JWT authentication
 /beads-converter .claude/plans/jwt-auth-plan.md
+
+# Execute with Claude Code's Task System (recommended)
 /beads-loop                                        # Sequential
-/beads-swarm                                       # Parallel (auto workers)
-# Or: ralph-tui run --tracker beads --epic <epic-id>
+/beads-swarm                                       # Parallel
+
+# Or execute with Ralph TUI (classic Ralph loop)
+ralph-tui run --tracker beads --epic <epic-id>
 ```
 
 ---
@@ -343,10 +352,10 @@ your-project/
 | Tool | Required? | Purpose |
 |------|-----------|---------|
 | None | — | Simple workflow works out of the box |
-| [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | Persistent task tracking |
-| [Ralph TUI](https://github.com/subsy/ralph-tui) | Optional | Dashboard visualization |
+| [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | Persistent memory across sessions |
+| [Ralph TUI](https://github.com/subsy/ralph-tui) | Optional | Classic Ralph loop executor with TUI dashboard |
 
-**Simple workflow has zero dependencies.** Add Beads for persistent tracking. Add Ralph TUI for dashboard visualization.
+**Simple workflow has zero dependencies.** Add Beads for persistent memory. Add Ralph TUI if you prefer the classic Ralph Wiggum loop style over Claude Code's native Task System.
 
 ---
 
@@ -395,8 +404,8 @@ model: opus    # opus | sonnet | haiku
 ## Credits
 
 - [Ralph Wiggum pattern](https://ghuntley.com/ralph/) by Geoffrey Huntley
-- [Ralph TUI](https://github.com/subsy/ralph-tui) by subsy — Dashboard visualization
-- [Beads](https://github.com/steveyegge/beads) by Steve Yegge — Persistent task tracking
+- [Beads](https://github.com/steveyegge/beads) by Steve Yegge — Persistent memory
+- [Ralph TUI](https://github.com/subsy/ralph-tui) by subsy — Classic Ralph loop executor
 - Built for [Claude Code](https://claude.ai/code)
 
 ---

@@ -2,17 +2,23 @@
 
 > **Loops and swarms with prd.json format.** Powered by Claude Code's built-in Task System.
 
-**Optional workflow for dashboard visualization.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want prd.json format or Ralph TUI's visual dashboard.
+**Optional workflow for prd.json format.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want structured JSON task tracking.
 
 **Requires:** Claude Code v2.1.19+ (native task dependencies, `ctrl+t` progress, automatic persistence)
 
 ## When to Use
 
 - You want prd.json format for task tracking
-- You want Ralph TUI's visual dashboard
 - You prefer structured JSON over markdown plans
 
-**Note:** Built-in `/tasks-loop` and `/tasks-swarm` work without Ralph TUI. Ralph TUI is optional for dashboard visualization.
+## Execution Options
+
+| Executor | Style | How |
+|----------|-------|-----|
+| `/tasks-loop`, `/tasks-swarm` | Claude Code's Task System (recommended) | Native dependencies, `ctrl+t` progress |
+| Ralph TUI | Classic Ralph Wiggum loop | Community approach before native tasks |
+
+**Note:** Both executors work with the same prd.json files created by `/tasks-converter`.
 
 ---
 
