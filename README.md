@@ -34,7 +34,10 @@ You: *runs tests* — still failing
 
 ```
 You: /plan-creator Add authentication
-You: /implement-loop .claude/plans/auth-plan.md
+You: /implement-loop .claude/plans/auth-plan.md    # Sequential, verification-enforced
+# OR
+You: /implement-swarm .claude/plans/auth-plan.md   # Parallel, auto-detected workers
+
 AI:  *implements, tests fail, fixes, tests fail, fixes...*
 AI:  "Exit criteria passed" ✓
      [loop cannot end until tests pass]
@@ -50,12 +53,18 @@ AI:  "Exit criteria passed" ✓
 /plugin install essentials@essentials-claude-code
 mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
-# Create plan → Execute loop → Done when tests pass
+# Create plan
 /plan-creator Add user authentication with JWT
-/implement-loop .claude/plans/user-auth-3k7f2-plan.md
+
+# Execute (choose one)
+/implement-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential, exit criteria enforced
+/implement-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel, auto workers
+
+# Visual progress
+ctrl+t   # Toggle task tree view
 ```
 
-**Zero external dependencies.** The loop runs until your exit criteria pass.
+**Zero external dependencies.** Loop runs until exit criteria pass. Swarm auto-detects optimal worker count from task graph.
 
 ---
 

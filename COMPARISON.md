@@ -65,13 +65,20 @@ Interactive back-and-forth. Human guides every step.
 Request → Plan with Exit Criteria → Execute → Verify → Loop if Failed → Done
 ```
 
-Create plan with exact verification commands. Loop until verification passes.
+Create plan with exact verification commands. Execute via loop (sequential) or swarm (parallel).
 
-**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Multi-session persistence available.
+**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Multi-session persistence available. Parallel execution with swarm.
 
-**Weaknesses:** Overhead for trivial tasks. Sequential (no parallel execution). Solo-focused.
+**Weaknesses:** Overhead for trivial tasks. Solo-focused.
 
 **Best for:** Complex features, quality-critical code, multi-session work, when you've been burned by premature "done."
+
+**Quick Start:**
+```bash
+/plan-creator Add user authentication
+/implement-loop plan.md    # Sequential, verification-enforced
+/implement-swarm plan.md   # Parallel, auto-detected workers
+```
 
 ---
 
