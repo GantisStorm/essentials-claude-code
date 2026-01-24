@@ -40,4 +40,4 @@ Then ask which epic to reset.
 
 After resetting, tell the user they can run: `/beads-loop` or `/beads-swarm` (with optional `--label <label>`)
 
-Note: Loop and swarm are interchangeable - loop processes tasks sequentially in one conversation, swarm spawns parallel agents.
+Note: Loop and swarm are interchangeable—swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
