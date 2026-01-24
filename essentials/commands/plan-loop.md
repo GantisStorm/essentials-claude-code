@@ -10,6 +10,8 @@ model: opus
 
 Execute a plan file iteratively until all tasks are complete AND exit criteria pass. **Requires a plan file.**
 
+**Note:** Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync state.
+
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
 **IMPORTANT**: The plan file is your source of truth. Exit Criteria MUST pass before the loop will end.

@@ -1,14 +1,14 @@
 ---
 allowed-tools: Task, TaskOutput, Bash, Read, Glob, Write
 argument-hint: "<plan-path>"
-description: Convert plans to prd.json for RalphTUI or /tasks-loop
+description: Convert plans to prd.json - works with /tasks-loop, /tasks-swarm, or RalphTUI
 model: opus
 context: fork
 ---
 
 # Tasks Creator
 
-Convert architectural plans into prd.json format compatible with RalphTUI and /tasks-loop.
+Convert architectural plans into prd.json format. Works with `/tasks-loop`, `/tasks-swarm`, or RalphTUI - they're interchangeable.
 
 **Key Principle**: Each task must be implementable with ONLY its description. Never reference external files without copying the content.
 

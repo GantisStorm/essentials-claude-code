@@ -1,7 +1,7 @@
 ---
 name: tasks-converter-default
 description: |
-  Convert plans into prd.json format for RalphTUI or /tasks-loop execution.
+  Convert plans into prd.json format for RalphTUI or /tasks-loop (or /tasks-swarm) execution.
   Each task must be implementable with ONLY its description - no external lookups needed.
 model: opus
 color: blue
@@ -169,7 +169,7 @@ Before creating user stories, assess complexity:
 
 | Task Complexity | Lines of Code | Strategy |
 |-----------------|---------------|----------|
-| Trivial | 1-20 lines | Single small task OR skip tasks, use `/implement-loop` |
+| Trivial | 1-20 lines | Single small task OR skip tasks, use loop or swarm directly |
 | Small | 20-80 lines | Single task with full code |
 | Medium | 80-200 lines | Single task with full code (standard) |
 | Large | 200-400 lines | Single task with full code |

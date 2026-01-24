@@ -137,19 +137,10 @@ Task #2 **cannot start** until #1 is done. The system enforces this - no more "o
 | Aspect | Loop | Swarm |
 |--------|------|-------|
 | Execution | Sequential (1 agent) | Parallel (N workers) |
-| Verification | Exit criteria enforced | Workers autonomous |
-| Control | Task status tracking | Workers self-coordinate |
-| Best for | Critical code, strict verification | Refactors, migrations, speed |
+| Exit criteria | ✅ Enforced | ✅ Enforced |
+| Task sync | ✅ Updates status | ✅ Updates status |
 
-**Use Loop when:**
-- Exit criteria must pass before done
-- Sequential verification matters
-- You want controlled, iterative execution
-
-**Use Swarm when:**
-- Tasks are independent or parallelizable
-- Speed matters more than strict verification
-- Refactoring many files with same pattern
+**Loop and Swarm are interchangeable.** Same plan, same exit criteria, same result. Swarm is just faster when tasks can run in parallel.
 
 ---
 

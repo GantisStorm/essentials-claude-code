@@ -110,9 +110,11 @@ ralph-tui run --tracker beads --epic <epic-id>
 | Aspect | Loop | Swarm |
 |--------|------|-------|
 | Execution | Sequential | Parallel |
+| Exit criteria | ✅ Enforced | ✅ Enforced |
 | Beads sync | ✅ Closes beads | ✅ Closes beads |
 | RalphTUI compatible | ✅ Yes | ✅ Yes |
-| Best for | Verification, strict order | Speed, independent tasks |
+
+**Loop and Swarm are interchangeable.** Same beads, same exit criteria, same result. Swarm is just faster.
 
 ---
 

@@ -1,14 +1,14 @@
 ---
 allowed-tools: Task, TaskOutput, Bash, Read, Glob
 argument-hint: "<plan-path>"
-description: Convert plans to self-contained Beads (project)
+description: Convert plans to Beads - works with /beads-loop, /beads-swarm, or RalphTUI
 model: opus
 context: fork
 ---
 
 # Beads Creator
 
-Convert architectural plans into self-contained Beads issues.
+Convert architectural plans into self-contained Beads issues. Works with `/beads-loop`, `/beads-swarm`, or RalphTUI - they're interchangeable.
 
 **Key Principle**: Each bead must be implementable with ONLY its description. Never reference external files without copying the content.
 

@@ -9,6 +9,8 @@ model: opus
 
 Execute implementation from conversation context using parallel workers. All workers complete → done.
 
+**Note:** Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync state.
+
 **Source:** Conversation context + argument input + mentioned files.
 
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
@@ -160,10 +162,3 @@ Tasks (2 done, 2 in progress, 3 open)
 /implement-swarm update all the error messages --model haiku
 ```
 
-## When to Use
-
-- After back-and-forth discussion about work
-- When tasks are parallelizable and speed matters
-- For quick implementations without formal planning
-
-**For structured plans:** Use `/plan-swarm <plan-file>` instead.

@@ -191,8 +191,7 @@ Start a new session tomorrow - your task list is still there.
 
 **Alternative executor:** [Ralph TUI](https://github.com/subsy/ralph-tui) runs Tasks/Beads with the classic Ralph Wiggum loop style (community approach before Claude Code had native tasks).
 
-**Choose Loop:** Sequential, verification-enforced, one task at a time.
-**Choose Swarm:** Parallel workers, auto-scales, faster for independent tasks.
+**Loop and Swarm are interchangeable.** Same plan, same exit criteria, same result. Swarm is just faster when tasks can run in parallel.
 
 ### Simple (Start Here)
 

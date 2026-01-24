@@ -9,6 +9,8 @@ model: opus
 
 Execute implementation from conversation context and task description. Loops until exit criteria pass.
 
+**Note:** Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync state.
+
 **Source:** Conversation context + argument input + mentioned files.
 
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
@@ -127,10 +129,3 @@ Tasks (2 done, 1 in progress, 3 open)
 /implement-loop implement the caching strategy from above
 ```
 
-## When to Use
-
-- After back-and-forth discussion about a bug or feature
-- When context has all the details needed
-- For quick implementations without formal planning
-
-**For structured plans:** Use `/plan-loop <plan-file>` instead.

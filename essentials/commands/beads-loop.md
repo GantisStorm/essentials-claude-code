@@ -10,6 +10,8 @@ model: opus
 
 Execute beads iteratively until all ready tasks are complete.
 
+**Note:** Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync beads.
+
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
 ## Arguments

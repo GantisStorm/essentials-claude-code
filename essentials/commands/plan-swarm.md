@@ -9,6 +9,8 @@ model: opus
 
 Execute a plan file using parallel worker agents. **Requires a plan file.** All workers complete → done.
 
+**Note:** Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync state.
+
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
 ## Supported Plan Types

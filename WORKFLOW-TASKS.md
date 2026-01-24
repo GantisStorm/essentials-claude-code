@@ -69,9 +69,11 @@ ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
 | Aspect | Loop | Swarm |
 |--------|------|-------|
 | Execution | Sequential | Parallel |
+| Exit criteria | ✅ Enforced | ✅ Enforced |
 | prd.json sync | ✅ Updates `passes` | ✅ Updates `passes` |
 | RalphTUI compatible | ✅ Yes | ✅ Yes |
-| Best for | Verification, strict order | Speed, independent tasks |
+
+**Loop and Swarm are interchangeable.** Same prd.json, same exit criteria, same result. Swarm is just faster.
 
 ---
 

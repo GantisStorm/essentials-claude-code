@@ -131,7 +131,7 @@ Before creating beads, assess complexity:
 
 | Task Complexity | Lines of Code | Bead Strategy |
 |-----------------|---------------|---------------|
-| Trivial | 1-20 lines | Single micro-bead OR skip beads, use `/implement-loop` |
+| Trivial | 1-20 lines | Single micro-bead OR skip beads, use `/implement-loop` or `/implement-swarm` |
 | Small | 20-80 lines | Single bead with full code |
 | Medium | 80-200 lines | Single bead with full code (standard) |
 | Large | 200+ lines | Single bead with full code |
