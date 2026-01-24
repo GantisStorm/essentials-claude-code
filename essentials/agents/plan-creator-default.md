@@ -1028,7 +1028,7 @@ const newImplementation = doSomethingBetter()
 
 ## Exit Criteria
 
-Exit criteria for loop or swarm executors - these commands MUST pass before implementation is complete. Loop and swarm are interchangeable; swarm is just faster. Both enforce exit criteria, both sync.
+Exit criteria for loop or swarm executors - these commands MUST pass before implementation is complete. Loop and swarm are interchangeable—swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
 
 ### Test Commands
 ```bash

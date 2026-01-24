@@ -640,7 +640,7 @@ Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 ## Exit Criteria
 
-Commands that MUST pass before fix is complete:
+Exit criteria for loop or swarm executors - these commands MUST pass before fix is complete. Loop and swarm are interchangeable—swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
 
 ```bash
 [test-command] && [lint-command] && [typecheck-command]
