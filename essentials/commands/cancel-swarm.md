@@ -1,13 +1,15 @@
 ---
 allowed-tools: ["TaskList", "TaskStop", "TaskOutput"]
 argument-hint: ""
-description: Cancel active swarm workers
+description: Cancel any active swarm
 model: haiku
 ---
 
 # Cancel Swarm
 
-Stop all running swarm workers and report final status.
+Stop any active swarm workers.
+
+Works with all swarm commands: `/implement-swarm`, `/plan-swarm`, `/tasks-swarm`, `/beads-swarm`.
 
 ## Instructions
 
@@ -21,19 +23,20 @@ Stop all running swarm workers and report final status.
    - In-progress (interrupted): N
    - Pending (not started): N
 
+If no in-progress tasks found:
+- Say "No active swarm found."
+
 ## After Cancellation
 
-Task state is preserved in `~/.claude/tasks/<session-id>/`:
-- Completed tasks remain `completed`
-- In-progress tasks stay `in_progress` (manual cleanup needed)
-- Pending tasks remain `pending`
+Task progress is preserved:
+- Completed tasks remain completed
+- In-progress tasks may complete if worker finishes
+- Pending tasks remain pending
 
-To check status:
-```
+To check task status:
+```bash
 TaskList
 ```
-
-To resume: Re-run `/swarm` with same plan - it will create fresh tasks.
 
 ## Note
 

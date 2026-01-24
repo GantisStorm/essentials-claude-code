@@ -7,13 +7,13 @@
 ## Overview
 
 ```
-# With plan file
-/plan-creator <task>  →  /implement-loop plan.md   →  Exit criteria pass ✓
-                      →  /implement-swarm plan.md  →  All tasks complete ✓
-
 # From conversation context (no plan file needed)
-[discuss bug/feature]  →  /implement-loop   →  Exit criteria pass ✓
-                       →  /implement-swarm  →  All tasks complete ✓
+[discuss bug/feature]  →  /implement-loop <task>   →  Exit criteria pass ✓
+                       →  /implement-swarm <task>  →  All tasks complete ✓
+
+# With plan file
+/plan-creator <task>  →  /plan-loop plan.md   →  Exit criteria pass ✓
+                      →  /plan-swarm plan.md  →  All tasks complete ✓
 ```
 
 **No external tools required.** Uses Claude Code's built-in Task system for dependency tracking and `ctrl+t` visual progress.
@@ -53,23 +53,23 @@ Fixing a plan is cheap. Debugging bad code is expensive.
 
 ### 3. Execute: Loop or Swarm
 
-#### From Plan File
-
-```bash
-/implement-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential
-/implement-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel
-```
-
 #### From Conversation Context
 
 After discussing a bug or feature in chat:
 
 ```bash
-/implement-loop    # Uses conversation context
-/implement-swarm   # Uses conversation context
+/implement-loop fix the auth bug we discussed    # Sequential
+/implement-swarm refactor the API handlers       # Parallel
 ```
 
 The commands extract goals, requirements, and exit criteria from your discussion.
+
+#### From Plan File
+
+```bash
+/plan-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential
+/plan-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel
+```
 
 #### How They Work
 
@@ -88,19 +88,26 @@ The commands extract goals, requirements, and exit criteria from your discussion
 ### Options
 
 ```bash
-# Loop
-/implement-loop                             # From context
-/implement-loop plan.md                     # From plan file
-/implement-loop plan.md --max-iterations 10 # Limit iterations
-/plan-loop plan.md                          # Plan file required
-/cancel-implement                           # Stop gracefully
+# Loop (from context)
+/implement-loop fix the bug we discussed    # From conversation context
 
-# Swarm
-/implement-swarm                            # From context
-/implement-swarm plan.md                    # From plan file
-/implement-swarm plan.md --workers 5        # Override workers
+# Loop (from plan file)
+/plan-loop plan.md                          # Plan file required
+
+# Cancel any loop
+/cancel-loop
+
+# Swarm (from context)
+/implement-swarm refactor these handlers    # From conversation context
+/implement-swarm update errors --workers 5  # Override workers
+/implement-swarm simple task --model haiku  # Use cheaper model
+
+# Swarm (from plan file)
 /plan-swarm plan.md                         # Plan file required
-/cancel-swarm                               # Stop workers
+/plan-swarm plan.md --workers 5             # Override workers
+
+# Cancel any swarm
+/cancel-swarm
 ```
 
 ---

@@ -33,15 +33,15 @@ You: *runs tests* — still failing
 ## The Solution
 
 ```
-# Option A: Create plan first, then execute
-You: /plan-creator Add authentication
-You: /implement-loop .claude/plans/auth-plan.md
-
-# Option B: Discuss in chat, then execute from context
+# Option A: Discuss in chat, then execute from context
 You: "I need to fix this auth bug..." [back and forth discussion]
-You: /implement-loop   # Uses conversation context, no plan file needed
-
+You: /implement-loop fix the auth bug we discussed
 AI:  *implements, tests fail, fixes, tests fail, fixes...*
+AI:  "Exit criteria passed" ✓
+
+# Option B: Create plan first, then execute
+You: /plan-creator Add authentication
+You: /plan-loop .claude/plans/auth-plan.md
 AI:  "Exit criteria passed" ✓
 ```
 
@@ -55,12 +55,12 @@ AI:  "Exit criteria passed" ✓
 /plugin install essentials@essentials-claude-code
 mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
-# Option A: With plan file
-/plan-creator Add user authentication with JWT
-/implement-loop .claude/plans/user-auth-3k7f2-plan.md
+# Option A: From conversation (after discussing a bug/feature)
+/implement-loop fix the auth bug we discussed
 
-# Option B: From conversation (after discussing a bug/feature)
-/implement-loop   # Uses chat context, no plan needed
+# Option B: With plan file
+/plan-creator Add user authentication with JWT
+/plan-loop .claude/plans/user-auth-3k7f2-plan.md
 
 # Visual progress
 ctrl+t   # Toggle task tree view
@@ -113,14 +113,14 @@ The four core tools: `TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`
 ### Simple (Start Here)
 
 ```bash
-# With plan file
-/plan-creator Add JWT authentication
-/implement-loop .claude/plans/jwt-auth-plan.md    # Sequential
-/implement-swarm .claude/plans/jwt-auth-plan.md   # Parallel
+# From conversation context (after discussing)
+/implement-loop fix the auth bug       # Sequential
+/implement-swarm refactor API handlers  # Parallel
 
-# Or from conversation context (after discussing)
-/implement-loop    # Uses chat context
-/implement-swarm   # Uses chat context
+# Or with plan file
+/plan-creator Add JWT authentication
+/plan-loop .claude/plans/jwt-auth-plan.md    # Sequential
+/plan-swarm .claude/plans/jwt-auth-plan.md   # Parallel
 ```
 
 ### Tasks (prd.json)
@@ -178,21 +178,25 @@ The loop **cannot** end until verification passes. No exceptions.
 
 ### Execute Loops (Sequential)
 
-| Command | Source | Cancel |
-|---------|--------|--------|
-| `/implement-loop [plan]` | Plan file OR context | `/cancel-implement` |
-| `/plan-loop <plan>` | Plan file (required) | `/cancel-implement` |
-| `/tasks-loop [prd.json]` | prd.json | `/cancel-tasks` |
-| `/beads-loop [--label]` | Beads DB | `/cancel-beads` |
+| Command | Source |
+|---------|--------|
+| `/implement-loop <task>` | Conversation context |
+| `/plan-loop <plan>` | Plan file (required) |
+| `/tasks-loop [prd.json]` | prd.json |
+| `/beads-loop [--label]` | Beads DB |
+
+Cancel any loop: `/cancel-loop`
 
 ### Execute Swarms (Parallel)
 
-| Command | Source | Cancel |
-|---------|--------|--------|
-| `/implement-swarm [plan]` | Plan file OR context | `/cancel-swarm` |
-| `/plan-swarm <plan>` | Plan file (required) | `/cancel-swarm` |
-| `/tasks-swarm [prd.json]` | prd.json | `/cancel-swarm` |
-| `/beads-swarm [--epic]` | Beads DB | `/cancel-swarm` |
+| Command | Source |
+|---------|--------|
+| `/implement-swarm <task>` | Conversation context |
+| `/plan-swarm <plan>` | Plan file (required) |
+| `/tasks-swarm [prd.json]` | prd.json |
+| `/beads-swarm [--epic]` | Beads DB |
+
+Cancel any swarm: `/cancel-swarm`
 
 ### Convert Formats
 

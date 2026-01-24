@@ -129,7 +129,7 @@ jq '[.userStories[] | select(.passes == false)]' <prd-path>
 ## Stopping
 
 - Say "All tasks complete" when done
-- Run `/cancel-tasks` to stop early
+- Run `/cancel-loop` to stop early
 
 ## Example Usage
 

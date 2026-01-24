@@ -75,12 +75,12 @@ Create plan with exact verification commands. Execute via loop (sequential) or s
 
 **Quick Start:**
 ```bash
-# With plan file
-/plan-creator Add user authentication
-/implement-loop plan.md
+# From conversation context (after discussing)
+/implement-loop fix the auth bug we discussed
 
-# Or from conversation context (after discussing)
-/implement-loop   # Uses chat context, no plan needed
+# Or with plan file
+/plan-creator Add user authentication
+/plan-loop plan.md
 ```
 
 ---
@@ -225,12 +225,12 @@ Match workflow to task size:
 ### Simple: Implement Loop (Use This First)
 
 ```bash
-# With plan file
-/plan-creator Add JWT authentication
-/implement-loop .claude/plans/jwt-auth-abc12-plan.md
+# From conversation (after discussing a bug/feature)
+/implement-loop fix the auth bug we discussed
 
-# Or from conversation (after discussing a bug/feature)
-/implement-loop   # Uses chat context
+# Or with plan file
+/plan-creator Add JWT authentication
+/plan-loop .claude/plans/jwt-auth-abc12-plan.md
 ```
 
 Single session. Exit criteria enforced. Loop until pass. **This handles 80% of tasks.**
@@ -263,8 +263,11 @@ Full persistence. Each bead is self-contained. Survives sessions, context compac
 Each workflow has a swarm variant:
 
 ```bash
-# From plan (auto-detects optimal worker count)
-/implement-swarm .claude/plans/api-refactor-plan.md
+# From conversation (auto-detects optimal worker count)
+/implement-swarm refactor the API handlers
+
+# From plan file
+/plan-swarm .claude/plans/api-refactor-plan.md
 
 # From prd.json
 /tasks-swarm .claude/prd/feature.json
@@ -273,7 +276,7 @@ Each workflow has a swarm variant:
 /beads-swarm --epic beads-abc123
 
 # Override worker count if needed
-/implement-swarm plan.md --workers 10
+/implement-swarm update errors --workers 10
 ```
 
 Uses Claude Code's built-in Task system with dependency tracking. **Auto-detects optimal worker count** from task graph parallelism (max concurrent unblocked tasks). Workers execute in parallel, automatically respecting dependencies. **Use when tasks are mostly independent and you want speed.** Workers claim tasks, execute them, and move to the next unblocked task. Visual progress via `ctrl+t`.

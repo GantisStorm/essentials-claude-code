@@ -131,7 +131,7 @@ bd stale       # Find issues not updated recently
 ## Stopping
 
 - Say "All beads complete" when done
-- Run `/cancel-beads` to stop early
+- Run `/cancel-loop` to stop early
 
 ## Example Usage
 

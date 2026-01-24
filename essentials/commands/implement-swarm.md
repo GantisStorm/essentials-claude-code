@@ -1,51 +1,47 @@
 ---
-description: "Implement from plan file OR conversation context with parallel swarm"
-argument-hint: "[plan_path] [--workers N] [--model MODEL]"
+description: "Implement from conversation context with parallel swarm"
+argument-hint: "<task description> [--workers N] [--model MODEL]"
 allowed-tools: ["Read", "Glob", "Grep", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Bash", "Edit"]
 model: opus
 ---
 
 # Implement Swarm Command
 
-Execute implementation using parallel worker agents. All workers complete → done.
+Execute implementation from conversation context using parallel workers. All workers complete → done.
 
-**Works with:**
-- A plan file path (if provided)
-- OR the current conversation context (if no path provided)
+**Source:** Conversation context + argument input + mentioned files.
 
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
 ## Arguments
 
-- `[plan_path]` (optional): Path to plan file. If omitted, uses conversation context.
-- `--workers N` (optional): Override worker count (default: auto-detected from task graph)
+- `<task description>` (required): What to implement
+- `--workers N` (optional): Override worker count (default: auto-detected)
 - `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: sonnet)
 
 ## Instructions
 
-### Step 1: Determine Source
+### Step 1: Analyze Context
 
-**If plan path provided:**
-- Read the plan file
-- Extract tasks, requirements, exit criteria
+Review everything available:
 
-**If NO plan path (context mode):**
-- Review the conversation history
-- Identify what was discussed and agreed upon
-- Extract:
-  - **Goal**: What needs to be implemented
-  - **Requirements**: Acceptance criteria from discussion
-  - **Files**: Which files to modify/create
-  - **Verification**: How to confirm success
+1. **Argument input**: What the user is asking to implement
+2. **Conversation history**: What was discussed, agreed upon, debugged
+3. **Files mentioned**: Any files referenced in the conversation
+4. **Requirements**: Acceptance criteria from discussion
 
-### Step 2: Confirm Understanding (Context Mode Only)
+Extract:
+- **Goal**: What needs to be done
+- **Files**: Which files to modify/create
+- **Verification**: How to confirm success
 
-If using context, briefly confirm:
+### Step 2: Confirm Understanding
+
+Briefly confirm before spawning:
 ```
-Based on our discussion, I'll implement:
-- [Goal summary]
-- Files: [list]
-- Verification: [how to check]
+Implementing: [goal from argument + context]
+Files: [list from discussion]
+Verification: [approach]
 
 Spawning swarm...
 ```
@@ -56,9 +52,9 @@ For each work item, create a task:
 
 ```json
 TaskCreate({
-  "subject": "Implement auth middleware",
-  "description": "Full implementation details - self-contained",
-  "activeForm": "Implementing auth middleware"
+  "subject": "Fix auth token validation",
+  "description": "Full implementation details from context",
+  "activeForm": "Fixing auth token validation"
 })
 ```
 
@@ -76,8 +72,8 @@ TaskUpdate({
 Analyze the task graph to find max parallelism:
 
 1. Build dependency graph from tasks
-2. Find the maximum width (most concurrent unblocked tasks at any point)
-3. Worker count = `min(max_width, 10)` (cap at 10)
+2. Find the maximum width (most concurrent unblocked tasks)
+3. Worker count = `min(max_width, 10)`
 
 If `--workers N` provided, use that instead.
 
@@ -112,44 +108,36 @@ CONFLICT: If already claimed by another, skip and find next"
 
 ```
 Swarm launched:
-- Tasks: N (with M dependency edges)
-- Max parallelism: 3 (auto-detected)
-- Workers: 3 (background)
+- Tasks: N
+- Workers: 3 (auto-detected)
 
 Press ctrl+t for progress
 ```
 
 ### Step 7: Collect Results
 
-When asked for status:
-1. TaskList - see all task states
-2. TaskOutput - get worker reports
-3. Summarize completed/in-progress/blocked/failed
-
-Say **"Swarm complete"** when all tasks finished.
+When all complete, say **"Swarm complete"**.
 
 ## Visual Progress
 
 Press `ctrl+t` to see task progress:
 ```
 Tasks (2 done, 2 in progress, 3 open)
-■ #3 Implement auth (Worker-1)
-■ #4 Add routes (Worker-2)
-□ #5 Integration tests > blocked by #3, #4
+■ #3 Fix validation (Worker-1)
+■ #4 Update tests (Worker-2)
+□ #5 Integration > blocked by #3, #4
 ```
 
-## Context Mode Tips
+## Context Tips
 
-When using conversation context:
-- Reference specific messages: "As we discussed, the login should..."
-- Use agreed-upon patterns from the conversation
-- If anything is unclear, ask before spawning workers
+- Reference specific messages from conversation
+- Use patterns agreed upon in discussion
+- If anything is unclear, ask before spawning
 
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
-| Plan file not found | Report error and exit |
 | Context unclear | Ask for clarification |
 | Worker fails mid-task | Other workers continue |
 | All tasks blocked | Circular dependency |
@@ -162,19 +150,20 @@ When using conversation context:
 ## Example Usage
 
 ```bash
-# With plan file
-/implement-swarm .claude/plans/add-user-auth.md
+# After discussing a bug
+/implement-swarm fix the auth bug we discussed
 
-# From conversation context (after discussing a feature/bug)
-/implement-swarm
+# With worker override
+/implement-swarm refactor the API handlers --workers 5
 
-# With options
-/implement-swarm --workers 5
-/implement-swarm .claude/plans/refactor.md --model haiku
+# Cheaper workers for simple tasks
+/implement-swarm update all the error messages --model haiku
 ```
 
 ## When to Use
 
-- **With plan file**: For structured, pre-planned work
-- **From context**: After back-and-forth discussion about a bug fix or feature
-- **Swarm vs Loop**: Use swarm when tasks are parallelizable and speed matters
+- After back-and-forth discussion about work
+- When tasks are parallelizable and speed matters
+- For quick implementations without formal planning
+
+**For structured plans:** Use `/plan-swarm <plan-file>` instead.
