@@ -1,10 +1,10 @@
 # Simple Workflow
 
-> **Default workflow with zero dependencies.** Handles 80% of tasks. Only escalate to Tasks or Beads when you hit specific problems.
+> **Verification-driven loops for brownfield development.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
-**Requires:** Claude Code v2.1.19+ (uses built-in Task System)
+**Default workflow with zero dependencies.** Handles 80% of tasks. Only escalate to Tasks or Beads when you want dashboard visualization or persistent task tracking.
 
-**Still Ralph Wiggum.** Same verification-driven loops. Anthropic just made the plumbing native - dependencies, persistence, parallel agents are now built-in instead of workarounds.
+**Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
 
 ## Overview
 
@@ -194,14 +194,14 @@ Plans persist outside the conversation.
 |---------|----------|
 | Works fine | Stay here |
 | Want prd.json format | [Tasks workflow](WORKFLOW-TASKS.md) |
-| Want RalphTUI dashboard | [Tasks workflow](WORKFLOW-TASKS.md) |
+| Want dashboard visualization | [Tasks workflow](WORKFLOW-TASKS.md) + Ralph TUI |
 | Multi-day feature | [Beads workflow](WORKFLOW-BEADS.md) |
-| AI hallucinates | [Beads workflow](WORKFLOW-BEADS.md) |
+| Need persistent task tracking | [Beads workflow](WORKFLOW-BEADS.md) |
 
 ---
 
 ## Related
 
 - [README.md](README.md) — All commands and plan creators
-- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — prd.json + RalphTUI
-- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent memory
+- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — Dashboard visualization with Ralph TUI
+- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent task tracking with Beads

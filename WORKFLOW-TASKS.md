@@ -1,16 +1,18 @@
 # Tasks Workflow
 
-> **Optional workflow.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want prd.json format or RalphTUI dashboard.
+> **Verification-driven loops with prd.json format.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
+
+**Optional workflow for dashboard visualization.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want prd.json format or Ralph TUI's visual dashboard.
 
 **Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
 
 ## When to Use
 
-- You want JSON-based task tracking
-- You want RalphTUI's visual dashboard
-- You prefer prd.json over plain markdown plans
+- You want prd.json format for task tracking
+- You want Ralph TUI's visual dashboard
+- You prefer structured JSON over markdown plans
 
-**Note:** Built-in `/tasks-loop` and `/tasks-swarm` work without RalphTUI. RalphTUI is optional for the visual dashboard.
+**Note:** Built-in `/tasks-loop` and `/tasks-swarm` work without Ralph TUI. Ralph TUI is optional for dashboard visualization.
 
 ---
 
@@ -367,6 +369,6 @@ ralph-tui template show
 
 ## Related
 
-- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default, zero dependencies
-- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent memory
-- [README.md](README.md) — Main guide
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default workflow, zero dependencies
+- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent task tracking with Beads
+- [README.md](README.md) — All commands and plan creators

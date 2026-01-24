@@ -1,7 +1,7 @@
 {
   "name": "essentials-claude-code",
-  "version": "3.6.0",
-  "description": "Multi-agent orchestration framework for Claude Code. Three workflows: Simple (plan → implement-loop/swarm), Tasks (plan → prd.json → tasks-loop/swarm), Beads (plan → beads → beads-loop/swarm). Uses Claude Code's built-in Task System for dependency tracking and parallel execution.",
+  "version": "3.7.0",
+  "description": "Verification-driven loops for brownfield development. Plans define exit criteria. Loops run until tests pass. Done means actually done. Integrates with Ralph TUI and Beads for dashboard visualization and persistent task tracking.",
   "author": "GantisStorm",
   "owner": {
     "name": "GantisStorm"
@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "essentials",
-      "version": "3.6.0",
-      "description": "16 commands, 10 agents. Three workflows: Simple, Tasks, Beads. Each task/bead is 100% self-contained (50-200+ lines of code). RalphTUI integration for TUI dashboard. LSP-powered code analysis via Claude Code built-in LSP.",
+      "version": "3.7.0",
+      "description": "22 commands, 9 agents. Verification-driven loops for brownfield development. Plans define exit criteria. Loops run until tests pass. Integrates with Ralph TUI for dashboard visualization and Beads for persistent task tracking.",
       "source": "./essentials"
     }
   ]

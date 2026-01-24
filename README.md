@@ -76,9 +76,7 @@ ctrl+t   # Toggle task tree view
 
 Our loop and swarm commands use Claude Code's **built-in Task Management System** (v2.1.19+).
 
-**This is still Ralph Wiggum** - same verification-driven loops, same "done means actually done" philosophy. Anthropic just made the plumbing native.
-
-> **RalphTUI still works.** For Tasks/Beads workflows, you can use [RalphTUI](https://github.com/subsy/ralph-tui) as an alternative executor if you want a TUI dashboard.
+> **Ralph TUI and Beads integrate seamlessly.** Use [Ralph TUI](https://github.com/subsy/ralph-tui) for dashboard visualization. Use [Beads](https://github.com/steveyegge/beads) for persistent task tracking across sessions.
 
 ### What We Used Before
 
@@ -181,15 +179,14 @@ Start a new session tomorrow - your task list is still there.
 
 ## Workflows
 
-| Workflow | Best For | Loop | Swarm | Alt Executor |
-|----------|----------|------|-------|--------------|
+| Workflow | Best For | Loop | Swarm | Dashboard |
+|----------|----------|------|-------|-----------|
 | **Simple (context)** | Quick tasks | `/implement-loop` | `/implement-swarm` | — |
 | **Simple (plan)** | 80% of tasks | `/plan-loop` | `/plan-swarm` | — |
-| **Tasks** | prd.json format | `/tasks-loop` | `/tasks-swarm` | RalphTUI |
-| **Beads** | Multi-session | `/beads-loop` | `/beads-swarm` | RalphTUI |
+| **Tasks** | Dashboard visualization | `/tasks-loop` | `/tasks-swarm` | Ralph TUI |
+| **Beads** | Persistent tracking | `/beads-loop` | `/beads-swarm` | Ralph TUI |
 
-**Our commands use Claude Code's Task System** for dependency tracking and `ctrl+t` progress.
-**RalphTUI is an alternative executor** for Tasks/Beads workflows if you want a TUI dashboard.
+**All workflows use verification-driven loops.** Plans define exit criteria. Loops run until tests pass.
 
 **Choose Loop:** Sequential, verification-enforced, one task at a time.
 **Choose Swarm:** Parallel workers, auto-scales, faster for independent tasks.
@@ -343,13 +340,13 @@ your-project/
 
 ## Requirements
 
-| Tool | Required? | Install |
+| Tool | Required? | Purpose |
 |------|-----------|---------|
 | None | — | Simple workflow works out of the box |
-| [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | `brew tap steveyegge/beads && brew install bd` |
-| [RalphTUI](https://github.com/subsy/ralph-tui) | For TUI dashboard | See [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md#ralphtui-optional) |
+| [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | Persistent task tracking |
+| [Ralph TUI](https://github.com/subsy/ralph-tui) | Optional | Dashboard visualization |
 
-**Note:** RalphTUI is for **execution only**. This plugin provides planning and task conversion.
+**Simple workflow has zero dependencies.** Add Beads for persistent tracking. Add Ralph TUI for dashboard visualization.
 
 ---
 
@@ -379,10 +376,10 @@ model: opus    # opus | sonnet | haiku
 
 ## Documentation
 
-- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Zero-dependency default (loop + swarm)
-- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — prd.json + RalphTUI (loop + swarm)
-- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent multi-session (loop + swarm)
-- [COMPARISON.md](COMPARISON.md) — Why verification matters
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default workflow, zero dependencies
+- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — Dashboard visualization with Ralph TUI
+- [WORKFLOW-BEADS.md](WORKFLOW-BEADS.md) — Persistent task tracking with Beads
+- [COMPARISON.md](COMPARISON.md) — Why verification-driven loops matter
 
 ---
 
@@ -398,14 +395,14 @@ model: opus    # opus | sonnet | haiku
 ## Credits
 
 - [Ralph Wiggum pattern](https://ghuntley.com/ralph/) by Geoffrey Huntley
-- [RalphTUI](https://github.com/subsy/ralph-tui) by subsy
-- [Beads](https://github.com/steveyegge/beads) by Steve Yegge
+- [Ralph TUI](https://github.com/subsy/ralph-tui) by subsy — Dashboard visualization
+- [Beads](https://github.com/steveyegge/beads) by Steve Yegge — Persistent task tracking
 - Built for [Claude Code](https://claude.ai/code)
 
 ---
 
 <div align="center">
 
-*"Done" means tests pass. No exceptions.*
+*Plans define exit criteria. Loops run until tests pass. Done means actually done.*
 
 </div>

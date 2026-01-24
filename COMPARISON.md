@@ -1,5 +1,11 @@
 # How Essentials Compares
 
+> **Verification-driven loops for brownfield development.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
+
+Integrates with [Ralph TUI](https://github.com/subsy/ralph-tui) for dashboard visualization and [Beads](https://github.com/steveyegge/beads) for persistent task tracking.
+
+---
+
 ## The Problem
 
 ```
@@ -65,13 +71,13 @@ Interactive back-and-forth. Human guides every step.
 Request → Plan with Exit Criteria → Execute → Verify → Loop if Failed → Done
 ```
 
-Create plan with exact verification commands. Execute via loop (sequential) or swarm (parallel).
+Verification-driven loops for brownfield development. Plans define exit criteria. Loops run until tests pass. Execute via loop (sequential) or swarm (parallel).
 
-**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Multi-session persistence available. Parallel execution with swarm.
+**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Integrates with Ralph TUI for dashboard visualization and Beads for persistent task tracking.
 
 **Weaknesses:** Overhead for trivial tasks. Solo-focused.
 
-**Best for:** Complex features, quality-critical code, multi-session work, when you've been burned by premature "done."
+**Best for:** Adding features to existing codebases, quality-critical code, multi-session work, when you've been burned by premature "done."
 
 **Quick Start:**
 ```bash
@@ -399,16 +405,12 @@ The tasks and beads workflows (plan → tasks/beads) copy implementation code in
 
 ## The Bottom Line
 
-Essentials does one thing exceptionally well: **ensures "done" means done.**
-
-Not "probably done." Not "looks done." Not "the AI said done."
-
-Actually done, with passing tests and verified exit criteria.
+Verification-driven loops for brownfield development. Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
 The loop won't end until verification passes. That's the guarantee.
 
 **Choose Essentials when:**
-- You want verification, not hope
+- Adding features to existing codebases
 - Completion reliability matters
 - You're tired of debugging AI's "done" code
 
@@ -416,3 +418,7 @@ The loop won't end until verification passes. That's the guarantee.
 - Task is trivial
 - You need team or cloud features
 - Exploration matters more than completion
+
+**Integrations:**
+- [Ralph TUI](https://github.com/subsy/ralph-tui) — Dashboard visualization
+- [Beads](https://github.com/steveyegge/beads) — Persistent task tracking

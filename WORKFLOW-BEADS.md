@@ -1,6 +1,8 @@
 # Beads Workflow
 
-> **Optional workflow requiring Beads CLI.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Beads when you need persistent memory across sessions or multi-day features.
+> **Verification-driven loops with persistent task tracking.** Plans define exit criteria. Loops run until tests pass. Done means actually done.
+
+**Optional workflow for multi-session work.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Beads when you need persistent memory across sessions or multi-day features.
 
 **Requires:** Claude Code v2.1.19+ (uses built-in Task System for dependency tracking and `ctrl+t` progress)
 
@@ -9,7 +11,7 @@
 - Multi-day features spanning multiple sessions
 - AI loses track mid-task or hallucinates
 - Context keeps compacting and losing progress
-- Need memory that survives session boundaries
+- Need persistent task tracking that survives session boundaries
 
 ---
 
@@ -282,6 +284,6 @@ ralph-tui template show
 
 ## Related
 
-- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default, zero dependencies
-- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — prd.json format
-- [README.md](README.md) — Main guide
+- [WORKFLOW-SIMPLE.md](WORKFLOW-SIMPLE.md) — Default workflow, zero dependencies
+- [WORKFLOW-TASKS.md](WORKFLOW-TASKS.md) — Dashboard visualization with Ralph TUI
+- [README.md](README.md) — All commands and plan creators
