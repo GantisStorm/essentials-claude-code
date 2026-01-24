@@ -179,11 +179,13 @@ Start a new session tomorrow - your task list is still there.
 
 ## Workflows
 
-| Workflow | Best For | Loop | Swarm |
-|----------|----------|------|-------|
-| **Simple** | 80% of tasks | `/implement-loop`, `/plan-loop` | `/implement-swarm`, `/plan-swarm` |
-| **Tasks** | prd.json format | `/tasks-loop` | `/tasks-swarm` |
-| **Beads** | Persistent memory | `/beads-loop` | `/beads-swarm` |
+| Workflow | Best For | Converter | Loop | Swarm |
+|----------|----------|-----------|------|-------|
+| **Simple** | 80% of tasks | — | `/implement-loop`, `/plan-loop` | `/implement-swarm`, `/plan-swarm` |
+| **Tasks** | prd.json format | `/tasks-converter` | `/tasks-loop` | `/tasks-swarm` |
+| **Beads** | Persistent memory | `/beads-converter` | `/beads-loop` | `/beads-swarm` |
+
+**Converters** transform plans into executable formats. `/tasks-converter` creates prd.json files. `/beads-converter` creates beads with epic→task hierarchy. Simple workflow doesn't need conversion—it executes plans directly.
 
 **All use Claude Code's built-in Task System** for dependencies, `ctrl+t` progress, and persistence.
 
