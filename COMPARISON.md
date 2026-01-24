@@ -316,5 +316,5 @@ The loop won't end until verification passes. That's the guarantee.
 
 **Choose something else when:**
 - Task is trivial
-- You need team/parallel/cloud features
+- You need team or cloud features
 - Exploration matters more than completion
