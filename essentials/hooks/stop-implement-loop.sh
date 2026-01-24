@@ -71,11 +71,11 @@ Plan: $PLAN_PATH
 Iteration: $NEXT_ITERATION
 
 Instructions:
-1. Check your todo list
-2. Find next pending todo
+1. Call TaskList to see all tasks
+2. Find next pending unblocked task
 3. Implement the change
-4. Mark todo completed
-5. Run exit criteria when all todos done
+4. Mark task completed with TaskUpdate
+5. Run exit criteria when all tasks done
 
 When exit criteria pass, say: \"Exit criteria passed\""
 

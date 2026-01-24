@@ -101,10 +101,11 @@ Max Iterations: $(if [[ $MAX_ITERATIONS -gt 0 ]]; then echo $MAX_ITERATIONS; els
 
 ### Instructions
 
-1. Read plan, create todos with TodoWrite
-2. Implement each todo following the plan
-3. Run exit criteria verification
-4. Loop until exit criteria pass
+1. Read plan, create tasks with TaskCreate
+2. Set dependencies with TaskUpdate
+3. Implement each task following the plan
+4. Run exit criteria verification
+5. Loop until exit criteria pass
 EOF
 
 # Output setup info
