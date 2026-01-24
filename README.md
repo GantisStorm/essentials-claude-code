@@ -103,13 +103,14 @@ The four core tools: `TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`
 
 | Workflow | Best For | Loop (Sequential) | Swarm (Parallel) |
 |----------|----------|-------------------|------------------|
-| **Simple** | 80% of tasks | `/implement-loop` | `/implement-swarm` |
+| **Simple (context)** | Quick tasks | `/implement-loop` | `/implement-swarm` |
+| **Simple (plan)** | 80% of tasks | `/plan-loop` | `/plan-swarm` |
 | **Tasks** | prd.json + RalphTUI | `/tasks-loop` | `/tasks-swarm` |
 | **Beads** | Multi-session | `/beads-loop` | `/beads-swarm` |
 
-**Both use Claude Code's built-in Task system** for dependency tracking and `ctrl+t` visual progress.
+**All use Claude Code's built-in Task system** for dependency tracking and `ctrl+t` visual progress.
 
-**Choose Loop:** Sequential, verification-enforced, controlled, RalphTUI compatible.
+**Choose Loop:** Sequential, verification-enforced, controlled.
 **Choose Swarm:** Parallel workers, speed, autonomous execution.
 
 ### Simple (Start Here)

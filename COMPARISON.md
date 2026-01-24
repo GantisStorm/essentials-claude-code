@@ -76,11 +76,13 @@ Create plan with exact verification commands. Execute via loop (sequential) or s
 **Quick Start:**
 ```bash
 # From conversation context (after discussing)
-/implement-loop fix the auth bug we discussed
+/implement-loop fix the auth bug       # Sequential
+/implement-swarm refactor handlers     # Parallel
 
 # Or with plan file
 /plan-creator Add user authentication
-/plan-loop plan.md
+/plan-loop plan.md    # Sequential
+/plan-swarm plan.md   # Parallel
 ```
 
 ---
