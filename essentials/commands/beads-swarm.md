@@ -92,34 +92,31 @@ Steps:
 // + Task for beads-def456, beads-ghi789... up to N workers
 ```
 
-After spawning, call **TaskList()** once to confirm workers started. Then **STOP: output a short status message with ZERO tool calls.** Example: "3 workers running, 4 queued. Waiting for completions." Your turn ends and the system resumes you when a worker finishes.
+**After all Task() calls return, immediately output a status message like:**
+"3 workers launched. Waiting for completions."
+**Do NOT call TaskList or any other tool.** Your turn is done.
 
-### Step 4: Wait for Background Agent Notifications
+### Step 4: Handle Worker Completions
 
-Background agents automatically notify the main agent when they finish (v2.0.64+). The main agent gets woken up with zero effort.
-
-**When woken by a background agent completing:**
+Background agents automatically notify you when they finish. You get woken up — then:
 
 1. Call **TaskList()** — see which tasks completed
 2. **Fallback:** If the completed worker's task still shows pending/in_progress, mark it completed via TaskUpdate (workers may not always self-update)
-3. Check for ready tasks (pending AND not blocked)
-4. If slots available (N - in_progress_count > 0) AND ready tasks exist:
-   → Spawn new workers in a SINGLE message to fill slots
-   → Call **TaskList()** once to confirm
-5. If all tasks completed → run `bd sync` then say **"Beads swarm complete"**
-6. Otherwise → **STOP: output a short status message with ZERO tool calls** — system resumes you on next completion
+3. Spawn new workers for any ready tasks (pending AND not blocked) if slots available
+4. If all tasks completed → run `bd sync` then say **"Beads swarm complete"**
+5. Otherwise → output a short status message. **Do NOT call any more tools.** Your turn is done — you will be woken on the next completion.
 
-**CRITICAL — what STOP means:**
-- **STOP = respond with text and ZERO tool calls.** This ends your turn. The system resumes you when a worker finishes. Do NOT call TaskList again after stopping — you will be woken automatically.
-- NEVER call TaskOutput — it returns full agent transcripts (70k+ tokens) that flood context
-- NEVER poll TaskList in a loop — call it ONCE when woken, then STOP
+**CRITICAL:**
+- After spawning or after processing a completion: **output text, then make ZERO more tool calls.** This is how you wait. You WILL be woken when the next worker finishes.
+- NEVER call TaskList in a loop — call it exactly ONCE per wake-up
+- NEVER call TaskOutput — full transcripts (70k+ tokens) flood context
+- NEVER use sleep — just output text and stop
 - Workers are granted TaskUpdate via allowed_tools and SHOULD self-update status — but always verify via TaskList and fix any missed updates
-- TaskList returns only metadata (IDs, subjects, statuses) — zero context bloat
 - Refill ALL empty slots each cycle, not just one
 
 **Recovery commands:**
 - "check swarm status" → TaskList (shows all task statuses)
-- "resume swarm" → TaskList, then spawn workers for any ready tasks, then STOP (text only, zero tool calls)
+- "resume swarm" → TaskList, spawn workers for ready tasks, then output text and stop
 - `/cancel-swarm` → Stop all agents
 
 **Note:** Agents close beads as tasks complete. Compatible with RalphTUI.
@@ -141,7 +138,7 @@ If context compacts:
 2. Count in_progress tasks to determine active worker count
 3. Check beads: `bd ready`
 4. Spawn workers for any ready tasks if slots available
-5. STOP (text only, zero tool calls) — system resumes you on next completion
+5. Output text and stop — do NOT call any more tools. You will be woken on next completion.
 
 ## Error Handling
 
