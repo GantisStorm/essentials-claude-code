@@ -89,13 +89,13 @@ TaskCreate → TaskUpdate (set blockedBy) → Execute in order → Verify → Lo
 
 **Swarm (parallel, queue-based):**
 ```
-TaskCreate → TaskUpdate (set blockedBy) → Spawn up to N agents → Wait for notifications → Refill queue
+TaskCreate → TaskUpdate (set blockedBy) → Mark in_progress → Spawn up to N agents → Wait → Refill
 ```
 1. Creates task graph with dependencies
-2. Spawns up to N background agents (default: 3, or `--workers N`)
+2. Marks tasks in_progress, spawns up to N background agents (default: 3, or `--workers N`)
 3. Each agent does ONE task then exits
 4. Main agent stops and waits — background agents notify on completion
-5. When notified → check TaskList → spawn next agent for newly unblocked task
+5. When notified → mark task completed → check TaskList → mark in_progress → spawn next agent
 6. **Completes when all tasks done**
 
 **Why dependencies matter:**

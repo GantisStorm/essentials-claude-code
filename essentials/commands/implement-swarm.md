@@ -59,7 +59,7 @@ TaskUpdate({
 
 **Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
-Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
+Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
 
 ```json
 Task({
@@ -78,9 +78,9 @@ After all Task() calls return, output a status message like "3 workers launched.
 
 When a worker finishes, you are automatically woken. Then:
 
-1. **TaskUpdate** — mark the finished worker's task as completed
+1. **TaskUpdate** — mark the finished worker's task as `completed`
 2. **TaskList()** — see overall progress and find ready tasks
-3. Spawn new workers for any ready tasks (pending + unblocked) if slots available
+3. Mark ready tasks `in_progress` and spawn new workers if slots available
 4. Output status and **end your turn** — you will be woken on the next completion
 
 Repeat until all tasks completed → say **"Swarm complete"**

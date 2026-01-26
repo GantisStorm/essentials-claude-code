@@ -68,7 +68,7 @@ mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 ctrl+t   # Toggle task tree view
 ```
 
-**Zero external dependencies.** Both loop and swarm enforce exit criteria. Swarm auto-detects workers for parallel execution.
+**Zero external dependencies.** Both loop and swarm enforce exit criteria. Swarm defaults to 3 concurrent workers.
 
 ---
 
@@ -153,20 +153,20 @@ Tasks (2 done, 1 in progress, 3 open)
 Main agent controls a queue of background agents:
 
 ```
-Main:    Spawn Agent-1 (Task #1), Agent-2 (Task #2), Agent-3 (Task #3)
+Main:    Mark #1-3 in_progress → Spawn Agent-1, Agent-2, Agent-3
          ↓
 Main:    Stop and wait — background agents notify on completion
          ↓
 Agent-1: Completes Task #1 → notifies main → exits
          ↓
-Main:    Woken → TaskList → Task #4 now unblocked → Spawn Agent-4 (Task #4)
+Main:    Woken → Mark #1 completed → TaskList → #4 unblocked → Mark #4 in_progress → Spawn Agent-4
          ↓
 Main:    Stop and wait — next notification
          ... repeat until all tasks complete ...
 ```
 
 Each agent does ONE task then exits. No racing. No stuck loops.
-Main agent tracks everything via TaskList and refills queue as slots open.
+Main agent marks tasks in_progress on spawn, completed on return, and refills queue as slots open.
 
 ### Multi-Session Persistence
 
@@ -355,9 +355,7 @@ ralph-tui run --tracker beads --epic <epic-id>
   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
   │  Agent 1    │     │  Agent 2    │     │  Agent N    │
   │─────────────│     │─────────────│     │─────────────│
-  │ in_progress │     │ in_progress │     │ in_progress │
   │ implement   │     │ implement   │     │ implement   │
-  │ completed   │     │ completed   │     │ completed   │
   │ EXIT        │     │ EXIT        │     │ EXIT        │
   └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
          │                   │                   │
@@ -374,13 +372,14 @@ ralph-tui run --tracker beads --epic <epic-id>
         │            ▼                │           │
         │   ┌─────────────────┐       │           │
         │   │  Agent done     │       │           │
-        │   │  Check TaskList │       │           │
+        │   │  Mark completed │       │           │
         │   └────────┬────────┘       │           │
         │            │                │           │
         │            ▼                │           │
         │   ┌─────────────────┐       │           │
-        │   │ Fill ALL empty  │       │           │
-        │   │ slots (spawn)   │       │           │
+        │   │  Check TaskList │       │           │
+        │   │  Mark in_progress│      │           │
+        │   │  Spawn workers  │       │           │
         │   └────────┬────────┘       │           │
         │            │                │           │
         │      ┌─────┴─────┐          │           │
@@ -397,7 +396,7 @@ ralph-tui run --tracker beads --epic <epic-id>
                     └─────────────────┘
 ```
 
-**Queue-based parallel execution.** Main agent spawns up to N background agents. Each agent does ONE task then exits. Background agents notify the main agent on completion; main agent checks TaskList and fills all empty slots. Dependencies enforced—blocked tasks wait until unblocked.
+**Queue-based parallel execution (default: 3 workers).** Main agent marks tasks in_progress and spawns up to N background agents. Each agent does ONE task then exits. On completion notification, main agent marks the task completed, checks TaskList, marks new tasks in_progress, and spawns workers. Dependencies enforced—blocked tasks wait until unblocked.
 
 ---
 

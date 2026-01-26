@@ -94,7 +94,7 @@ bd doctor --fix
 
 **Swarm (parallel, faster):**
 ```bash
-/beads-swarm                            # Auto-detects workers
+/beads-swarm                            # Default: 3 workers
 /beads-swarm --epic <epic-id>           # Filter by epic
 /beads-swarm --label ralph --workers 5  # Override worker count
 /cancel-swarm                           # Stop workers

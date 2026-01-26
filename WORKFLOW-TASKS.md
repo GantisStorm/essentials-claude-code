@@ -55,7 +55,7 @@
 
 **Swarm (parallel, faster):**
 ```bash
-/tasks-swarm .claude/prd/user-auth-3k7f2.json    # Auto-detects workers
+/tasks-swarm .claude/prd/user-auth-3k7f2.json    # Default: 3 workers
 /cancel-swarm                                    # Stop workers
 ```
 
