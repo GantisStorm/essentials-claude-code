@@ -65,6 +65,8 @@ TaskUpdate({
 
 ### Step 3: Spawn Workers
 
+**Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
+
 Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
 
 ```json
@@ -119,7 +121,7 @@ Tasks (2 done, 2 in progress, 3 open)
 ## Example Usage
 
 ```bash
-/plan-swarm .claude/plans/add-user-auth.md              # Auto-detects workers
+/plan-swarm .claude/plans/add-user-auth.md              # Default: 3 workers
 /plan-swarm .claude/plans/refactor.md --workers 5       # Override: force 5 workers
-/plan-swarm .claude/plans/docs.md --model haiku         # Cheaper workers, auto count
+/plan-swarm .claude/plans/docs.md --model haiku         # Cheaper workers
 ```

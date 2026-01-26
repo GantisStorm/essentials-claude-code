@@ -57,6 +57,8 @@ TaskUpdate({
 
 ### Step 2: Spawn Workers
 
+**Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
+
 Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
 
 ```json

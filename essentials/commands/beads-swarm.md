@@ -59,6 +59,8 @@ TaskUpdate({
 
 ### Step 3: Spawn Workers
 
+**Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
+
 Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
 
 ```json
@@ -116,7 +118,7 @@ Tasks (2 done, 2 in progress, 3 open)
 ## Example Usage
 
 ```bash
-/beads-swarm                                    # Auto-detects workers
+/beads-swarm                                    # Default: 3 workers
 /beads-swarm --epic beads-abc123 --workers 5    # Override: force 5 workers
-/beads-swarm --label my-feature --model haiku   # Cheaper workers, auto count
+/beads-swarm --label my-feature --model haiku   # Cheaper workers
 ```
