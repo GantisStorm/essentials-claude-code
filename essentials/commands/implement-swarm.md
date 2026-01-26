@@ -55,56 +55,50 @@ TaskUpdate({
 })
 ```
 
-### Step 2: Calculate Optimal Workers
+### Step 2: Queue-Based Execution
 
-Analyze the task graph to find max parallelism:
+Use `--workers N` to limit concurrent agents (default: 3). This is a **queue**, not a pool:
 
-1. Build dependency graph from tasks
-2. Find the maximum width (most concurrent unblocked tasks)
-3. Worker count = `min(max_width, 10)`
+1. Get all ready tasks (pending, unblocked)
+2. Spawn up to N agents for the first N ready tasks (1 task per agent)
+3. Each agent executes ONE task then exits
+4. As agents complete, spawn new agents for next ready tasks
+5. Continue until all tasks done
 
-If `--workers N` provided, use that instead.
-
-### Step 3: Spawn Worker Pool
-
-**CRITICAL: Send ALL Task tool calls in a SINGLE message for true parallelism.**
-
-Spawn N workers. Each worker loops until no work remains:
+**Spawn agents in a single message for parallelism:**
 
 ```json
 Task({
-  "description": "Worker-1 executor",
+  "description": "Task-1 executor",
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
-  "prompt": "You are Worker-1 in a parallel swarm.
+  "prompt": "Execute this ONE task then exit:
 
-LOOP:
-1. TaskList - find all tasks
-2. Filter: pending, no owner, blockedBy all completed
-3. TaskUpdate - claim: owner: Worker-1, status: in_progress
-4. Execute task per description
-5. TaskUpdate - status: completed
-6. GOTO 1
+Task ID: 1
+Subject: Fix auth token validation
+Description: <full details>
 
-STOP WHEN: All tasks completed OR no claimable tasks remain
-CONFLICT: If already claimed by another, skip and find next"
+Steps:
+1. TaskUpdate - claim: status: in_progress
+2. Execute the task
+3. TaskUpdate - status: completed
+4. Exit immediately"
 })
 ```
 
-### Step 4: Report Launch
+### Step 3: Monitor and Refill Queue
 
-```
-Swarm launched:
-- Tasks: N
-- Workers: 3 (auto-detected)
+Loop until all tasks complete:
 
-Press ctrl+t for progress
-```
+1. Wait for any agent to finish (TaskOutput with block: false to poll)
+2. Check TaskList for newly unblocked ready tasks
+3. Spawn new agents up to the worker limit
+4. Repeat
 
-### Step 5: Collect Results
+### Step 4: Report Completion
 
-When all complete, say **"Swarm complete"**.
+When all tasks complete, say **"Swarm complete"**.
 
 ## Visual Progress
 

@@ -63,69 +63,48 @@ TaskUpdate({
 - Major requirements → one task each
 - Exit criteria verification → final task, blocked by all others
 
-### Step 3: Calculate Optimal Workers
+### Step 3: Queue-Based Execution
 
-Analyze the task graph to find max parallelism:
+Use `--workers N` to limit concurrent agents (default: 3). This is a **queue**, not a pool:
 
-1. Build dependency graph from tasks
-2. Find the maximum width (most concurrent unblocked tasks at any point)
-3. Worker count = `min(max_width, 10)` (cap at 10 to avoid overload)
+1. Get all ready tasks (pending, unblocked)
+2. Spawn up to N agents for the first N ready tasks (1 task per agent)
+3. Each agent executes ONE task then exits
+4. As agents complete, spawn new agents for next ready tasks
+5. Continue until all tasks done
 
-**Example:**
-```
-#1 ──→ #3 ──→ #5
-#2 ──→ #4 ──┘
-
-Max width = 2 (tasks #1 and #2 can run together, then #3 and #4)
-→ Spawn 2 workers
-```
-
-If `--workers N` provided, use that instead.
-
-### Step 4: Spawn Worker Pool
-
-**CRITICAL: Send ALL Task tool calls in a SINGLE message for true parallelism.**
-
-Spawn N workers (auto-detected or overridden). Each worker loops until no work remains:
+**Spawn agents in a single message for parallelism:**
 
 ```json
 Task({
-  "description": "Worker-1 executor",
+  "description": "Task-1 executor",
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
-  "prompt": "You are Worker-1 in a parallel swarm.
+  "prompt": "Execute this ONE task then exit:
 
-LOOP:
-1. TaskList - find all tasks
-2. Filter: pending, no owner, blockedBy all completed
-3. TaskUpdate - claim: owner: Worker-1, status: in_progress
-4. Execute task per description
-5. TaskUpdate - status: completed
-6. GOTO 1
+Task ID: 1
+Subject: Implement auth middleware
+Description: <full details from plan>
 
-STOP WHEN: All tasks completed OR no claimable tasks remain
-CONFLICT: If already claimed by another, skip and find next"
+Steps:
+1. TaskUpdate - claim: status: in_progress
+2. Execute the task
+3. TaskUpdate - status: completed
+4. Exit immediately"
 })
 ```
 
-### Step 5: Report Launch
+### Step 4: Monitor and Refill Queue
 
-```
-Swarm launched:
-- Tasks: N (with M dependency edges)
-- Max parallelism: 3 (auto-detected)
-- Workers: 3 (background)
+Loop until all tasks complete:
 
-Press ctrl+t for progress
-```
+1. Wait for any agent to finish (TaskOutput with block: false to poll)
+2. Check TaskList for newly unblocked ready tasks
+3. Spawn new agents up to the worker limit
+4. Repeat
 
-### Step 6: Collect Results
-
-When asked for status:
-1. TaskList - see all task states
-2. TaskOutput - get worker reports
-3. Summarize completed/in-progress/blocked/failed
+### Step 5: Report Completion
 
 Say **"Swarm complete"** when all tasks finished.
 
