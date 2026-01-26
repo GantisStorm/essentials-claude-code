@@ -155,18 +155,18 @@ Main agent controls a queue of background agents:
 ```
 Main:    Spawn Agent-1 (Task #1), Agent-2 (Task #2), Agent-3 (Task #3)
          ↓
-Main:    TaskOutput(block: true) — wait for any agent
+Main:    Stop and wait — background agents notify on completion
          ↓
-Agent-1: Completes Task #1 → exits
+Agent-1: Completes Task #1 → notifies main → exits
          ↓
-Main:    Agent-1 done → Task #4 now unblocked → Spawn Agent-4 (Task #4)
+Main:    Woken → TaskList → Task #4 now unblocked → Spawn Agent-4 (Task #4)
          ↓
-Main:    TaskOutput(block: true) — wait for next agent
+Main:    Stop and wait — next notification
          ... repeat until all tasks complete ...
 ```
 
 Each agent does ONE task then exits. No racing. No stuck loops.
-Main agent tracks everything and refills queue as slots open.
+Main agent tracks everything via TaskList and refills queue as slots open.
 
 ### Multi-Session Persistence
 
@@ -205,7 +205,7 @@ Start a new session tomorrow - your task list is still there.
 | **Executor** | Main agent (foreground) | Background agents |
 | **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
 | **Context** | Full conversation history | Each agent gets task description only |
-| **Visibility** | See work live | Check with `ctrl+t` or TaskOutput |
+| **Visibility** | See work live | Check with `ctrl+t` or TaskList |
 | **Task system** | ✅ Same | ✅ Same |
 | **Dependencies** | ✅ Same | ✅ Same |
 
@@ -367,8 +367,8 @@ ralph-tui run --tracker beads --epic <epic-id>
         │              MAIN AGENT                 │
         │                                         │
         │   ┌─────────────────┐                   │
-        │   │  TaskOutput     │◄──────┐           │
-        │   │  (block: true)  │       │           │
+        │   │  Stop & wait    │◄──────┐           │
+        │   │  (notification) │       │           │
         │   └────────┬────────┘       │           │
         │            │                │           │
         │            ▼                │           │
@@ -397,7 +397,7 @@ ralph-tui run --tracker beads --epic <epic-id>
                     └─────────────────┘
 ```
 
-**Queue-based parallel execution.** Main agent spawns up to N background agents. Each agent does ONE task then exits. Main agent blocks on TaskOutput, fills all empty slots when agents complete. Dependencies enforced—blocked tasks wait until unblocked.
+**Queue-based parallel execution.** Main agent spawns up to N background agents. Each agent does ONE task then exits. Background agents notify the main agent on completion; main agent checks TaskList and fills all empty slots. Dependencies enforced—blocked tasks wait until unblocked.
 
 ---
 

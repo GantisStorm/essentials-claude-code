@@ -89,13 +89,13 @@ TaskCreate → TaskUpdate (set blockedBy) → Execute in order → Verify → Lo
 
 **Swarm (parallel, queue-based):**
 ```
-TaskCreate → TaskUpdate (set blockedBy) → Spawn up to N agents → Block & refill queue
+TaskCreate → TaskUpdate (set blockedBy) → Spawn up to N agents → Wait for notifications → Refill queue
 ```
 1. Creates task graph with dependencies
 2. Spawns up to N background agents (default: 3, or `--workers N`)
 3. Each agent does ONE task then exits
-4. Main agent waits with `TaskOutput(block: true)`
-5. When agent completes → spawn next agent for newly unblocked task
+4. Main agent stops and waits — background agents notify on completion
+5. When notified → check TaskList → spawn next agent for newly unblocked task
 6. **Completes when all tasks done**
 
 **Why dependencies matter:**
@@ -140,7 +140,7 @@ Task #2 **cannot start** until #1 is done. The system enforces this - no more "o
 | **Executor** | Main agent (foreground) | Background agents |
 | **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
 | **Context** | Full conversation history | Each agent gets task description only |
-| **Visibility** | See work live | Check with `ctrl+t` or TaskOutput |
+| **Visibility** | See work live | Check with `ctrl+t` or TaskList |
 | **Task system** | ✅ Same | ✅ Same |
 | **Dependencies** | ✅ Same | ✅ Same |
 | **Exit criteria** | ✅ Enforced | ✅ Enforced |

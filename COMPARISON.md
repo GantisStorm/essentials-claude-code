@@ -286,17 +286,17 @@ Task Graph:
 **How the queue works:**
 ```
 Main:     Spawn Agent-1 (#1), Agent-2 (#2)     [2 agents, --workers 2]
-Main:     TaskOutput(block: true)              [wait for any agent]
-Agent-1:  Complete #1 → exit
-Main:     #3 still blocked, no new agent yet
-Agent-2:  Complete #2 → exit
-Main:     #3 now unblocked → Spawn Agent-3 (#3)
-Agent-3:  Complete #3 → exit
-Main:     #4, #5 unblocked → Spawn Agent-4 (#4), Agent-5 (#5)
+Main:     Stop and wait                        [agents notify on completion]
+Agent-1:  Complete #1 → notify main → exit
+Main:     Woken → TaskList → #3 still blocked, no new agent yet
+Agent-2:  Complete #2 → notify main → exit
+Main:     Woken → TaskList → #3 now unblocked → Spawn Agent-3 (#3)
+Agent-3:  Complete #3 → notify main → exit
+Main:     Woken → TaskList → #4, #5 unblocked → Spawn Agent-4 (#4), Agent-5 (#5)
 ...
 ```
 
-Each agent does ONE task then exits. Main agent controls the queue, waits with `TaskOutput(block: true)`, and spawns new agents as tasks unblock. No racing, no stuck loops.
+Each agent does ONE task then exits. Main agent controls the queue, gets notified when agents complete, checks TaskList, and spawns new agents as tasks unblock. No racing, no stuck loops.
 
 **Workers limit:** Use `--workers N` to control max concurrent agents (default: 3).
 
