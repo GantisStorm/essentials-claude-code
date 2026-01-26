@@ -1,7 +1,7 @@
 ---
 description: "Implement from conversation context with parallel swarm"
 argument-hint: "<task description> [--workers N] [--model MODEL]"
-allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Bash"]
+allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "Bash"]
 model: opus
 ---
 
@@ -88,52 +88,40 @@ Steps:
 
 **Track agent IDs** returned from each Task call for monitoring.
 
-### Step 3: Monitor ALL Agents and Refill Queue
+### Step 3: Monitor via TaskList and Refill Queue
 
-**Poll ALL active agents each cycle — never monitor just one:**
+**NEVER use TaskOutput** — it dumps full agent transcripts (70k+ tokens) into context, causing compaction and stuck agents. Workers already update TaskList via `TaskUpdate({ status: 'completed' })`.
+
+**Poll TaskList to detect completions:**
 
 ```
 WHILE tasks remain incomplete:
-  1. POLL ALL active agents in a SINGLE message (parallel tool calls):
-     → TaskOutput({ task_id: <agent_1>, block: false })
-     → TaskOutput({ task_id: <agent_2>, block: false })
-     → TaskOutput({ task_id: <agent_3>, block: false })
-     → One call per active agent, ALL in the same message
+  1. WAIT: Bash("sleep 10")
+     → Pause to avoid burning tokens while agents work
 
-  2. If ANY agent completed → go to step 4
+  2. CHECK: TaskList()
+     → Returns only IDs, subjects, statuses — zero context bloat
+     → Detect newly completed tasks by comparing with previous state
 
-  3. If NONE completed → wait for one to finish:
-     → Pick ONE active agent
-     → TaskOutput({ task_id: <agent_id>, block: true })
-     → When it returns → immediately poll ALL remaining with block: false
-       to catch any that finished concurrently
-
-  4. Process ALL completed agents:
-     → Remove each from active list
-
-  5. FILL ALL EMPTY SLOTS:
-     → Check TaskList for ready tasks (pending, unblocked)
-     → slots_available = N - active_agents
+  3. FILL EMPTY SLOTS:
+     → in_progress_count = tasks with status 'in_progress'
+     → slots_available = N - in_progress_count
      → ready_tasks = tasks that are pending AND not blocked
      → Spawn min(slots_available, ready_tasks) agents in SINGLE message
-     → Track all new agent IDs in active list
 
-  6. Repeat until all tasks complete
+  4. Repeat until all tasks show status 'completed'
 ```
 
 **CRITICAL:**
-- Step 1 MUST poll ALL active agents every cycle, not just one
-- Step 3 blocks on one agent only as a "sleep until something happens"
-- After the blocking call returns, ALWAYS re-poll ALL remaining agents (block: false)
-  to catch concurrent completions before refilling slots
-- Step 5 refills ALL empty slots, not just one
-- When TaskOutput returns, DISCARD the verbose output — do NOT echo, summarize, or process it
-  Only check: did the agent complete? Then move on. Full transcripts clog context.
+- NEVER call TaskOutput — it returns full agent transcripts (70k+ tokens) that flood context
+- Workers update TaskList automatically via TaskUpdate({ status: 'completed' })
+- TaskList returns only metadata (IDs, subjects, statuses) — zero context bloat
+- Sleep between polls to avoid wasting tokens on rapid-fire empty checks
+- Refill ALL empty slots each cycle, not just one
 
 **If user interrupts polling:**
 - Active agents continue running in background
 - User can say "check swarm status" or "resume polling"
-- Poll all agents: TaskOutput({ block: false }) for EACH active agent in one message
 - Use TaskList to see task completion status
 
 ### Step 4: Report Completion
@@ -141,8 +129,8 @@ WHILE tasks remain incomplete:
 When all tasks complete, say **"Swarm complete"**.
 
 **Recovery commands:**
-- "check swarm status" → TaskList + TaskOutput(block: false) for ALL active agents in one message
-- "resume polling" → Resume poll-all-agents loop from Step 3
+- "check swarm status" → TaskList (shows all task statuses)
+- "resume polling" → Resume TaskList poll loop from Step 3
 - `/cancel-swarm` → Stop all agents
 
 ## Visual Progress
