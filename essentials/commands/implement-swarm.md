@@ -1,7 +1,7 @@
 ---
 description: "Implement from conversation context with parallel swarm"
 argument-hint: "<task description> [--workers N] [--model MODEL]"
-allowed-tools: ["Read", "Glob", "Grep", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Bash", "Edit"]
+allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Bash"]
 model: opus
 ---
 
@@ -23,32 +23,18 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ## Instructions
 
-### Step 1: Analyze Context
+### Step 1: Create Task Graph Immediately
 
-Review everything available:
+**ONLY use what's already available:**
+- The user's argument input
+- Conversation history (already in context)
 
-1. **Argument input**: What the user is asking to implement
-2. **Conversation history**: What was discussed, agreed upon, debugged
-3. **Files mentioned**: Any files referenced in the conversation
-4. **Requirements**: Acceptance criteria from discussion
+**DO NOT:**
+- Read files unless the user explicitly asks you to
+- Grep or explore the codebase
+- Use Glob to find files
 
-Extract:
-- **Goal**: What needs to be done
-- **Files**: Which files to modify/create
-- **Verification**: How to confirm success
-
-### Step 2: Confirm Understanding
-
-Briefly confirm before spawning:
-```
-Implementing: [goal from argument + context]
-Files: [list from discussion]
-Verification: [approach]
-
-Spawning swarm...
-```
-
-### Step 3: Create Task Graph
+Create tasks immediately from context. Include file paths in task descriptions so workers can read them during execution.
 
 For each work item, create a task:
 
@@ -69,7 +55,7 @@ TaskUpdate({
 })
 ```
 
-### Step 4: Calculate Optimal Workers
+### Step 2: Calculate Optimal Workers
 
 Analyze the task graph to find max parallelism:
 
@@ -79,7 +65,7 @@ Analyze the task graph to find max parallelism:
 
 If `--workers N` provided, use that instead.
 
-### Step 5: Spawn Worker Pool
+### Step 3: Spawn Worker Pool
 
 **CRITICAL: Send ALL Task tool calls in a SINGLE message for true parallelism.**
 
@@ -106,7 +92,7 @@ CONFLICT: If already claimed by another, skip and find next"
 })
 ```
 
-### Step 6: Report Launch
+### Step 4: Report Launch
 
 ```
 Swarm launched:
@@ -116,7 +102,7 @@ Swarm launched:
 Press ctrl+t for progress
 ```
 
-### Step 7: Collect Results
+### Step 5: Collect Results
 
 When all complete, say **"Swarm complete"**.
 

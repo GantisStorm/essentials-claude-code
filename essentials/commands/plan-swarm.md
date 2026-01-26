@@ -1,7 +1,7 @@
 ---
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
 argument-hint: "<plan_path> [--workers N] [--model MODEL]"
-allowed-tools: ["Read", "Glob", "Grep", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Bash", "Edit"]
+allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Bash"]
 model: opus
 ---
 
@@ -28,9 +28,9 @@ This command works with plans from:
 
 ## Instructions
 
-### Step 1: Read the Plan
+### Step 1: Read the Plan (Only)
 
-Read the plan file and extract:
+Read the plan file and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions

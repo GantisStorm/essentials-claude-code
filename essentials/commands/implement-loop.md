@@ -1,7 +1,7 @@
 ---
 description: "Implement from conversation context with iterative loop"
 argument-hint: "<task description>"
-allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Glob", "Grep"]
+allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Read", "Glob", "Grep", "Write"]
 model: opus
 ---
 
@@ -21,32 +21,18 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ## Instructions
 
-### Step 1: Analyze Context
+### Step 1: Create Task Graph Immediately
 
-Review everything available:
+**ONLY use what's already available:**
+- The user's argument input
+- Conversation history (already in context)
 
-1. **Argument input**: What the user is asking to implement
-2. **Conversation history**: What was discussed, agreed upon, debugged
-3. **Files mentioned**: Any files referenced in the conversation
-4. **Requirements**: Acceptance criteria from discussion
+**DO NOT:**
+- Read files unless the user explicitly asks you to
+- Grep or explore the codebase
+- Use Glob to find files
 
-Extract:
-- **Goal**: What needs to be done
-- **Files**: Which files to modify/create
-- **Exit Criteria**: How to verify success (tests, commands, behavior)
-
-### Step 2: Confirm Understanding
-
-Briefly confirm before starting:
-```
-Implementing: [goal from argument + context]
-Files: [list from discussion]
-Exit criteria: [verification approach]
-
-Proceeding...
-```
-
-### Step 3: Create Task Graph
+Create tasks immediately from context. Include file paths in task descriptions so they can be read during execution.
 
 For each work item, create a task:
 
@@ -67,24 +53,25 @@ TaskUpdate({
 })
 ```
 
-### Step 4: Execute Tasks Sequentially
+### Step 2: Execute Tasks Sequentially
 
 For each task (in dependency order):
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Implement**: Make changes based on context
-3. **Verify**: Run any task-specific verification
-4. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
-5. **Next**: Find next unblocked task via TaskList
+2. **Read files as needed**: Use Read tool on file paths from task description
+3. **Implement**: Make changes based on context
+4. **Verify**: Run any task-specific verification
+5. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+6. **Next**: Find next unblocked task via TaskList
 
-### Step 5: Run Exit Criteria
+### Step 3: Run Exit Criteria
 
 Before declaring completion:
 1. Run the verification (tests, commands, etc.)
 2. If pass → "Exit criteria passed"
 3. If fail → fix issues and retry
 
-### Step 6: Loop Until Done
+### Step 4: Loop Until Done
 
 Continue until:
 - All tasks completed AND

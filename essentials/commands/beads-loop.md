@@ -1,7 +1,7 @@
 ---
 description: "Execute beads iteratively until all tasks complete"
 argument-hint: "[--label <label>]"
-allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit"]
+allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write", "Glob", "Grep"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
@@ -21,7 +21,9 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ## Instructions
 
-### Step 1: Load Beads
+### Step 1: Load Beads (Only)
+
+**DO NOT read files, grep, or explore the codebase** - just get beads from CLI:
 
 ```bash
 bd list --status open --json

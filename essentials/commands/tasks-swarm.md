@@ -1,7 +1,7 @@
 ---
 description: "Execute prd.json with parallel agent swarm (dependency-aware)"
 argument-hint: "[prd_path] [--workers N] [--model MODEL]"
-allowed-tools: ["Read", "Bash", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Edit", "Write"]
+allowed-tools: ["Read", "Bash", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput"]
 model: opus
 ---
 
@@ -21,7 +21,9 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ## Instructions
 
-### Step 1: Read prd.json
+### Step 1: Read prd.json (Only)
+
+**DO NOT read other files, grep, or explore the codebase** - just parse the prd.json:
 
 ```bash
 cat <prd-path>

@@ -1,7 +1,7 @@
 ---
 description: "Execute beads with parallel agent swarm (dependency-aware)"
 argument-hint: "[--epic <epic-id>] [--label <label>] [--workers N] [--model MODEL]"
-allowed-tools: ["Bash", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput", "Read", "Edit"]
+allowed-tools: ["Bash", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "TaskOutput"]
 model: opus
 ---
 
@@ -22,7 +22,9 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ## Instructions
 
-### Step 1: Load Beads
+### Step 1: Load Beads (Only)
+
+**DO NOT read files, grep, or explore the codebase** - just get beads from CLI:
 
 ```bash
 bd list --status open --json

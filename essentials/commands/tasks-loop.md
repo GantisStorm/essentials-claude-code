@@ -1,7 +1,7 @@
 ---
 description: "Execute prd.json tasks iteratively until all complete"
 argument-hint: "[prd-path]"
-allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write"]
+allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write", "Glob", "Grep"]
 hide-from-slash-command-tool: "true"
 model: opus
 ---
@@ -21,7 +21,9 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ## Instructions
 
-### Step 1: Read prd.json
+### Step 1: Read prd.json (Only)
+
+**DO NOT read other files, grep, or explore the codebase** - just parse the prd.json:
 
 ```bash
 cat <prd-path>
