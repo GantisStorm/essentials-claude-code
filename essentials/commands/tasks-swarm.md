@@ -85,7 +85,8 @@ Steps:
 2. Execute the task (read files, make changes, verify)
 3. TaskUpdate({ taskId: '1', status: 'completed' })
 4. Update prd.json: jq '(.userStories[] | select(.id == \"US-001\")).passes = true' PRD_PATH > tmp.json && mv tmp.json PRD_PATH
-5. Exit immediately - do NOT loop"
+5. Output ONLY a one-line summary (e.g. 'Done: US-001 database schema created')
+6. Exit immediately - do NOT loop or produce detailed reports"
 })
 // + Task for US-002, US-003... up to N workers
 ```
@@ -131,6 +132,8 @@ WHILE tasks remain incomplete:
 - After the blocking call returns, ALWAYS re-poll ALL remaining agents (block: false)
   to catch concurrent completions before refilling slots
 - Step 5 refills ALL empty slots, not just one
+- When TaskOutput returns, DISCARD the verbose output — do NOT echo, summarize, or process it
+  Only check: did the agent complete? Then move on. Full transcripts clog context.
 
 **If user interrupts polling:**
 - Active agents continue running in background
