@@ -259,59 +259,73 @@ ralph-tui run --tracker beads --epic <epic-id>
 
 ```
                     ┌─────────────────┐
-                    │   Read Plan     │
+                    │  Read Source    │
+                    │ (plan/context)  │
                     └────────┬────────┘
                              │
                              ▼
                     ┌─────────────────┐
                     │  Create Tasks   │
-                    │   (with deps)   │
+                    │  + Dependencies │
                     └────────┬────────┘
                              │
         ┌────────────────────┴────────────────────┐
-        │                  LOOP                   │
+        │              MAIN AGENT                 │
         │                                         │
         │   ┌─────────────────┐                   │
-        │   │ Pick Next Task  │                   │
-        │   │   (unblocked)   │                   │
-        │   └────────┬────────┘                   │
-        │            │                            │
-        │            ▼                            │
-        │   ┌─────────────────┐                   │
-        │   │   Implement     │                   │
-        │   └────────┬────────┘                   │
-        │            │                            │
-        │            ▼                            │
-        │   ┌─────────────────┐                   │
-        │   │  Run Exit       │                   │
-        │   │  Criteria       │                   │
-        │   └────────┬────────┘                   │
-        │            │                            │
-        │      ┌─────┴─────┐                      │
-        │      │           │                      │
-        │    FAIL        PASS                     │
-        │      │           │                      │
-        │      │           ▼                      │
-        │      │   ┌─────────────────┐            │
-        │      │   │   Mark Done     │            │
-        │      │   └────────┬────────┘            │
-        │      │            │                     │
-        │      │      ┌─────┴─────┐               │
-        │      │      │           │               │
-        │      │  More tasks   All done           │
-        │      │      │           │               │
-        │      └──────┘           │               │
-        │                         │               │
-        └─────────────────────────┼───────────────┘
-                                  │
-                                  ▼
+        │   │    TaskList     │◄──────┐           │
+        │   │ (find unblocked)│       │           │
+        │   └────────┬────────┘       │           │
+        │            │                │           │
+        │            ▼                │           │
+        │   ┌─────────────────┐       │           │
+        │   │  Mark task      │       │           │
+        │   │  in_progress    │       │           │
+        │   └────────┬────────┘       │           │
+        │            │                │           │
+        │            ▼                │           │
+        │   ┌─────────────────┐       │           │
+        │   │   Implement     │       │           │
+        │   │   (read, edit)  │       │           │
+        │   └────────┬────────┘       │           │
+        │            │                │           │
+        │            ▼                │           │
+        │   ┌─────────────────┐       │           │
+        │   │  Mark task      │       │           │
+        │   │   completed     │       │           │
+        │   └────────┬────────┘       │           │
+        │            │                │           │
+        │      ┌─────┴─────┐          │           │
+        │      │           │          │           │
+        │  More tasks   All done      │           │
+        │      │           │          │           │
+        │      └───────────┼──────────┘           │
+        │                  │                      │
+        └──────────────────┼──────────────────────┘
+                           │
+                           ▼
                     ┌─────────────────┐
-                    │ Exit criteria   │
-                    │    passed ✓     │
-                    └─────────────────┘
+                    │  Run Exit       │
+                    │  Criteria       │
+                    └────────┬────────┘
+                             │
+                       ┌─────┴─────┐
+                       │           │
+                     FAIL        PASS
+                       │           │
+                       │           ▼
+                       │    ┌─────────────────┐
+                       │    │ Loop complete ✓ │
+                       │    └─────────────────┘
+                       │
+                       ▼
+                ┌─────────────────┐
+                │   Fix issues    │
+                │   (loop back)   │
+                └─────────────────┘
 ```
 
-**Sequential execution.** One task at a time. Verification enforced. Loop cannot end until all tests pass.
+**Sequential execution.** Main agent works through tasks one at a time in dependency order. Exit criteria verified at end. Loops until all tests pass.
 
 ---
 
@@ -319,19 +333,20 @@ ralph-tui run --tracker beads --epic <epic-id>
 
 ```
                     ┌─────────────────┐
-                    │   Read Plan     │
+                    │  Read Source    │
+                    │ (plan/context)  │
                     └────────┬────────┘
                              │
                              ▼
                     ┌─────────────────┐
                     │  Create Tasks   │
-                    │   (with deps)   │
+                    │  + Dependencies │
                     └────────┬────────┘
                              │
                              ▼
                     ┌─────────────────┐
                     │  Spawn up to N  │
-                    │  agents (queue) │
+                    │ background agents│
                     └────────┬────────┘
                              │
          ┌───────────────────┼───────────────────┐
@@ -339,29 +354,50 @@ ralph-tui run --tracker beads --epic <epic-id>
          ▼                   ▼                   ▼
   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
   │  Agent 1    │     │  Agent 2    │     │  Agent N    │
-  ├─────────────┤     ├─────────────┤     ├─────────────┤
-  │  1 task     │     │  1 task     │     │  1 task     │
-  │  then exit  │     │  then exit  │     │  then exit  │
+  │─────────────│     │─────────────│     │─────────────│
+  │ in_progress │     │ in_progress │     │ in_progress │
+  │ implement   │     │ implement   │     │ implement   │
+  │ completed   │     │ completed   │     │ completed   │
+  │ EXIT        │     │ EXIT        │     │ EXIT        │
   └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
          │                   │                   │
          └───────────────────┼───────────────────┘
                              │
-                             ▼
+        ┌────────────────────┴────────────────────┐
+        │              MAIN AGENT                 │
+        │                                         │
+        │   ┌─────────────────┐                   │
+        │   │  TaskOutput     │◄──────┐           │
+        │   │  (block: true)  │       │           │
+        │   └────────┬────────┘       │           │
+        │            │                │           │
+        │            ▼                │           │
+        │   ┌─────────────────┐       │           │
+        │   │  Agent done     │       │           │
+        │   │  Check TaskList │       │           │
+        │   └────────┬────────┘       │           │
+        │            │                │           │
+        │            ▼                │           │
+        │   ┌─────────────────┐       │           │
+        │   │ Fill ALL empty  │       │           │
+        │   │ slots (spawn)   │       │           │
+        │   └────────┬────────┘       │           │
+        │            │                │           │
+        │      ┌─────┴─────┐          │           │
+        │      │           │          │           │
+        │  More tasks   All done      │           │
+        │      │           │          │           │
+        │      └───────────┼──────────┘           │
+        │                  │                      │
+        └──────────────────┼──────────────────────┘
+                           │
+                           ▼
                     ┌─────────────────┐
-                    │  Main agent     │
-                    │  waits (block)  │
-                    │  then refills   │
-                    │  queue          │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │  All tasks done │
                     │ Swarm complete ✓│
                     └─────────────────┘
 ```
 
-**Queue-based parallel execution.** Main agent spawns up to N background agents. Each agent does ONE task then exits. Main agent blocks with TaskOutput, refills queue as agents complete. Dependencies respected—blocked tasks wait.
+**Queue-based parallel execution.** Main agent spawns up to N background agents. Each agent does ONE task then exits. Main agent blocks on TaskOutput, fills all empty slots when agents complete. Dependencies enforced—blocked tasks wait until unblocked.
 
 ---
 
