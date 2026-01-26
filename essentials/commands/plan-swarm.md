@@ -75,9 +75,8 @@ Task({
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
-  "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep",
-                     "TaskUpdate", "TaskList", "TaskGet"],
-  "prompt": "Execute this ONE task then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nSteps:\n1. TaskUpdate({ taskId: '1', status: 'in_progress' })\n2. Execute the task (read files, make changes, verify)\n3. TaskUpdate({ taskId: '1', status: 'completed' })\n4. Output ONLY a one-line summary\n5. Exit immediately"
+  "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
+  "prompt": "Execute this ONE task then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nSteps:\n1. Execute the task (read files, make changes, verify)\n2. Output ONLY a one-line summary\n3. Exit immediately"
 })
 ```
 
@@ -87,8 +86,8 @@ After all Task() calls return, output a status message like "3 workers launched.
 
 When a worker finishes, you are automatically woken. Then:
 
-1. **TaskList()** — see which tasks completed
-2. If the finished worker's task still shows pending/in_progress, mark it completed via TaskUpdate
+1. **TaskUpdate** — mark the finished worker's task as completed
+2. **TaskList()** — see overall progress and find ready tasks
 3. Spawn new workers for any ready tasks (pending + unblocked) if slots available
 4. Output status and **end your turn** — you will be woken on the next completion
 
