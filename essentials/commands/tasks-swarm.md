@@ -95,11 +95,11 @@ Steps:
 // + Task for US-002, US-003... up to N workers
 ```
 
-After spawning, call **TaskList()** once to confirm workers started. Then **stop and wait** — do NOT loop or sleep.
+After spawning, call **TaskList()** once to confirm workers started. Then **STOP: output a short status message with ZERO tool calls.** Example: "3 workers running, 4 queued. Waiting for completions." Your turn ends and the system resumes you when a worker finishes.
 
 ### Step 4: Wait for Background Agent Notifications
 
-**Do NOT poll or sleep.** Background agents automatically notify the main agent when they finish (v2.0.64+). The main agent gets woken up with zero effort.
+Background agents automatically notify the main agent when they finish (v2.0.64+). The main agent gets woken up with zero effort.
 
 **When woken by a background agent completing:**
 
@@ -110,18 +110,19 @@ After spawning, call **TaskList()** once to confirm workers started. Then **stop
    → Spawn new workers in a SINGLE message to fill slots
    → Call **TaskList()** once to confirm
 5. If all tasks completed → say **"Tasks swarm complete"**
-6. Otherwise → **stop and wait** for next notification
+6. Otherwise → **STOP: output a short status message with ZERO tool calls** — system resumes you on next completion
 
-**CRITICAL:**
+**CRITICAL — what STOP means:**
+- **STOP = respond with text and ZERO tool calls.** This ends your turn. The system resumes you when a worker finishes. Do NOT call TaskList again after stopping — you will be woken automatically.
 - NEVER call TaskOutput — it returns full agent transcripts (70k+ tokens) that flood context
-- NEVER use sleep loops — background agents wake the main agent automatically
+- NEVER poll TaskList in a loop — call it ONCE when woken, then STOP
 - Workers are granted TaskUpdate via allowed_tools and SHOULD self-update status — but always verify via TaskList and fix any missed updates
 - TaskList returns only metadata (IDs, subjects, statuses) — zero context bloat
 - Refill ALL empty slots each cycle, not just one
 
 **Recovery commands:**
 - "check swarm status" → TaskList (shows all task statuses)
-- "resume swarm" → TaskList, then spawn workers for any ready tasks, then stop and wait
+- "resume swarm" → TaskList, then spawn workers for any ready tasks, then STOP (text only, zero tool calls)
 - `/cancel-swarm` → Stop all agents
 
 **Note:** Agents update prd.json (`passes: true`) as tasks complete. Compatible with RalphTUI.
@@ -142,7 +143,7 @@ If context compacts:
 1. Call TaskList to see all tasks and their status
 2. Count in_progress tasks to determine active worker count
 3. Spawn workers for any ready tasks if slots available
-4. Stop and wait for next notification
+4. STOP (text only, zero tool calls) — system resumes you on next completion
 
 ## Error Handling
 
