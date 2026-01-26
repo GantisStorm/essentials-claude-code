@@ -61,9 +61,11 @@ Skip stories already completed (`passes: true`).
 
 ### Step 3: Queue-Based Execution
 
-Use `--workers N` to limit concurrent agents (default: 3). This is a **queue**, not a pool.
+**Worker limit N** = `--workers` value or **3** if not specified. NEVER exceed N concurrent agents.
 
-**Initial spawn - up to N agents in a SINGLE message:**
+This is a **queue**, not a pool — spawn up to N, then wait for completions before spawning more.
+
+**Initial spawn — exactly min(N, ready_tasks) agents in a SINGLE message:**
 
 ```json
 // Spawn all initial agents in ONE message for true parallelism
