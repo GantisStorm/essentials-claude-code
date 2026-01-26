@@ -93,29 +93,44 @@ Steps:
 
 **Track agent IDs** returned from each Task call for monitoring.
 
-### Step 4: Block and Refill Queue
+### Step 4: Poll All Agents and Refill Queue
 
-**Use TaskOutput with block: true** to wait for agents:
+**Monitor ALL active agents — never block on just one:**
 
 ```
 WHILE tasks remain incomplete:
-  1. TaskOutput({ task_id: <agent_id>, block: true })  # Blocks until agent done
-  2. Remove completed agent from active list
-  3. Check TaskList for ready tasks (pending, unblocked)
+  1. POLL ALL active agents in a SINGLE message (parallel calls):
+     → TaskOutput({ task_id: <agent_1>, block: false })
+     → TaskOutput({ task_id: <agent_2>, block: false })
+     → TaskOutput({ task_id: <agent_3>, block: false })
+     → ... one call per active agent, ALL in the same message
+
+  2. CHECK results:
+     → If ANY agent completed → go to step 3
+     → If NONE completed → pick ONE active agent, call:
+       TaskOutput({ task_id: <agent_id>, block: true })
+       Then immediately re-poll ALL remaining agents with block: false
+       to catch concurrent completions
+
+  3. Process ALL completed agents:
+     → Remove each from active list
+
   4. FILL ALL EMPTY SLOTS:
+     → Check TaskList for ready tasks (pending, unblocked)
      → slots_available = N - active_agents
      → ready_tasks = tasks that are pending AND not blocked
-     → spawn min(slots_available, ready_tasks) agents in SINGLE message
-     → Track all new agent IDs
+     → Spawn min(slots_available, ready_tasks) agents in SINGLE message
+     → Track all new agent IDs in active list
+
   5. Repeat until all tasks complete
 ```
 
-**Always keep slots full.** After each agent completes, spawn as many new agents as possible (up to N total).
+**CRITICAL:** Always poll ALL active agents each iteration. Never block on one agent while others may have finished.
 
 **If user interrupts polling:**
 - Active agents continue running in background
 - User can say "check swarm status" or "resume polling"
-- Use TaskOutput({ block: false }) to check without blocking
+- Poll all agents: TaskOutput({ block: false }) for EACH active agent in one message
 - Use TaskList to see task completion status
 
 ### Step 5: Report Completion
@@ -123,8 +138,8 @@ WHILE tasks remain incomplete:
 Say **"Swarm complete"** when all tasks finished.
 
 **Recovery commands:**
-- "check swarm status" → TaskList + TaskOutput(block: false) on active agents
-- "resume polling" → Continue blocking TaskOutput loop
+- "check swarm status" → TaskList + TaskOutput(block: false) for ALL active agents in one message
+- "resume polling" → Resume poll-all-agents loop from Step 4
 - `/cancel-swarm` → Stop all agents
 
 ## Visual Progress
@@ -141,7 +156,7 @@ Tasks (2 done, 2 in progress, 3 open)
 
 If context compacts:
 1. Call TaskList to see all tasks and their status
-2. Call TaskOutput on workers for their reports
+2. Call TaskOutput(block: false) for ALL active agents in one message to get their reports
 3. Check what remains
 
 ## Error Handling
