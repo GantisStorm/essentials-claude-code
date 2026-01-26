@@ -444,7 +444,8 @@ Cancel any swarm: `/cancel-swarm`
 
 | Command | Purpose |
 |---------|---------|
-| `/codemap-creator [dir]` | JSON code map via LSP |
+| `/codemap-creator <dir>` | Create JSON code map via LSP |
+| `/codemap-creator --update <map> [--diff\|--mr\|--pr]` | Update existing codemap with changed files |
 | `/document-creator <dir>` | DEVGUIDE.md generation |
 | `/prompt-creator <desc>` | Create prompts, feature requests, bug reports |
 | `/mr-description-creator` | PR/MR descriptions via gh/glab |
@@ -474,6 +475,24 @@ npm test -- auth && npm run typecheck
 
 ---
 
+## Code Maps (Optional)
+
+Code maps give plan creators a head start by providing file→symbol mappings, signatures, dependencies, and export status via LSP.
+
+```bash
+# Create a codemap
+/codemap-creator src/
+
+# Update after changes (instead of recreating)
+/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --diff      # git diff
+/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --mr 123   # GitLab MR
+/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456   # GitHub PR
+```
+
+**All plan creators check for codemaps automatically.** When `.claude/maps/code-map-*.json` exists, plan-creator, bug-plan-creator, and code-quality-plan-creator use it for faster codebase orientation instead of exploring from scratch.
+
+---
+
 ## Project Structure
 
 ```
@@ -481,7 +500,7 @@ your-project/
 ├── .claude/
 │   ├── plans/          # Source of truth
 │   ├── prd/            # prd.json files
-│   ├── maps/           # Code maps
+│   ├── maps/           # Code maps (consumed by plan creators)
 │   └── prompts/        # Generated prompts
 ├── .ralph-tui/         # RalphTUI config (if using)
 │   └── config.toml     # Tracker, agent settings
