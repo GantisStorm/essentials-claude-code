@@ -16,7 +16,7 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 ## Arguments
 
 - `[prd_path]` (optional): Path to prd.json (default: `./prd.json`)
-- `--workers N` (optional): Override worker count (default: auto-detected from task graph)
+- `--workers N` (optional): Max concurrent workers (default: 3)
 - `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: sonnet)
 
 ## Instructions
@@ -59,16 +59,11 @@ TaskUpdate({
 
 Skip stories already completed (`passes: true`).
 
-### Step 3: Queue-Based Execution
+### Step 3: Spawn Workers
 
-**Worker limit N** = `--workers` value or **3** if not specified. NEVER exceed N concurrent agents.
-
-This is a **queue**, not a pool — spawn up to N, then wait for completions before spawning more.
-
-**Initial spawn — exactly min(N, ready_tasks) agents in a SINGLE message:**
+Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
 
 ```json
-// Spawn all initial agents in ONE message for true parallelism
 Task({
   "description": "US-001: Setup database schema",
   "subagent_type": "general-purpose",
@@ -76,51 +71,22 @@ Task({
   "run_in_background": true,
   "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep",
                      "TaskUpdate", "TaskList", "TaskGet"],
-  "prompt": "Execute this ONE task then exit:
-
-Task ID: 1
-Story ID: US-001
-Subject: Setup database schema
-Description: <full details from userStory>
-PRD_PATH: <prd-path>
-
-Steps:
-1. TaskUpdate({ taskId: '1', status: 'in_progress' })
-2. Execute the task (read files, make changes, verify)
-3. TaskUpdate({ taskId: '1', status: 'completed' })
-4. Update prd.json: jq '(.userStories[] | select(.id == \"US-001\")).passes = true' PRD_PATH > tmp.json && mv tmp.json PRD_PATH
-5. Output ONLY a one-line summary (e.g. 'Done: US-001 database schema created')
-6. Exit immediately - do NOT loop or produce detailed reports"
+  "prompt": "Execute this ONE task then exit:\n\nTask ID: 1\nStory ID: US-001\nSubject: Setup database schema\nDescription: <full details from userStory>\nPRD_PATH: <prd-path>\n\nSteps:\n1. TaskUpdate({ taskId: '1', status: 'in_progress' })\n2. Execute the task (read files, make changes, verify)\n3. TaskUpdate({ taskId: '1', status: 'completed' })\n4. Update prd.json: jq '(.userStories[] | select(.id == \"US-001\")).passes = true' PRD_PATH > tmp.json && mv tmp.json PRD_PATH\n5. Output ONLY a one-line summary\n6. Exit immediately"
 })
-// + Task for US-002, US-003... up to N workers
 ```
 
-**After all Task() calls return, immediately output a status message like:**
-"3 workers launched. Waiting for completions."
-**Do NOT call TaskList or any other tool.** Your turn is done.
+After all Task() calls return, output a status message like "3 workers launched. Waiting for completions." and **end your turn**. The system wakes you when a worker finishes.
 
-### Step 4: Handle Worker Completions
+### Step 4: Process Completions
 
-Background agents automatically notify you when they finish. You get woken up — then:
+When a worker finishes, you are automatically woken. Then:
 
-1. Call **TaskList()** — see which tasks completed
-2. **Fallback:** If the completed worker's task still shows pending/in_progress, mark it completed via TaskUpdate (workers may not always self-update)
-3. Spawn new workers for any ready tasks (pending AND not blocked) if slots available
-4. If all tasks completed → say **"Tasks swarm complete"**
-5. Otherwise → output a short status message. **Do NOT call any more tools.** Your turn is done — you will be woken on the next completion.
+1. **TaskList()** — see which tasks completed
+2. If the finished worker's task still shows pending/in_progress, mark it completed via TaskUpdate
+3. Spawn new workers for any ready tasks (pending + unblocked) if slots available
+4. Output status and **end your turn** — you will be woken on the next completion
 
-**CRITICAL:**
-- After spawning or after processing a completion: **output text, then make ZERO more tool calls.** This is how you wait. You WILL be woken when the next worker finishes.
-- NEVER call TaskList in a loop — call it exactly ONCE per wake-up
-- NEVER call TaskOutput — full transcripts (70k+ tokens) flood context
-- NEVER use sleep — just output text and stop
-- Workers are granted TaskUpdate via allowed_tools and SHOULD self-update status — but always verify via TaskList and fix any missed updates
-- Refill ALL empty slots each cycle, not just one
-
-**Recovery commands:**
-- "check swarm status" → TaskList (shows all task statuses)
-- "resume swarm" → TaskList, spawn workers for ready tasks, then output text and stop
-- `/cancel-swarm` → Stop all agents
+Repeat until all tasks completed → say **"Tasks swarm complete"**
 
 **Note:** Agents update prd.json (`passes: true`) as tasks complete. Compatible with RalphTUI.
 
@@ -134,14 +100,6 @@ Tasks (2 done, 2 in progress, 3 open)
 □ #4 US-004: Protected routes > blocked by #2
 ```
 
-## Context Recovery
-
-If context compacts:
-1. Call TaskList to see all tasks and their status
-2. Count in_progress tasks to determine active worker count
-3. Spawn workers for any ready tasks if slots available
-4. Output text and stop — do NOT call any more tools. You will be woken on next completion.
-
 ## Error Handling
 
 | Scenario | Action |
@@ -149,6 +107,7 @@ If context compacts:
 | prd.json not found | Check path |
 | Worker fails mid-task | Other workers continue; task stays in_progress |
 | All tasks blocked | Circular dependency in dependsOn |
+| Context compacted | TaskList → spawn ready tasks → end turn |
 
 ## Stopping
 
