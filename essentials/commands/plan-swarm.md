@@ -78,6 +78,8 @@ Task({
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
+  "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep",
+                     "TaskUpdate", "TaskList", "TaskGet"],
   "prompt": "Execute this ONE task then exit:
 
 Task ID: 1
@@ -103,17 +105,18 @@ After spawning, call **TaskList()** once to confirm workers started. Then **stop
 **When woken by a background agent completing:**
 
 1. Call **TaskList()** — see which tasks completed
-2. Check for ready tasks (pending AND not blocked)
-3. If slots available (N - in_progress_count > 0) AND ready tasks exist:
+2. **Fallback:** If the completed worker's task still shows pending/in_progress, mark it completed via TaskUpdate (workers may not always self-update)
+3. Check for ready tasks (pending AND not blocked)
+4. If slots available (N - in_progress_count > 0) AND ready tasks exist:
    → Spawn new workers in a SINGLE message to fill slots
    → Call **TaskList()** once to confirm
-4. If all tasks completed → say **"Swarm complete"**
-5. Otherwise → **stop and wait** for next notification
+5. If all tasks completed → say **"Swarm complete"**
+6. Otherwise → **stop and wait** for next notification
 
 **CRITICAL:**
 - NEVER call TaskOutput — it returns full agent transcripts (70k+ tokens) that flood context
 - NEVER use sleep loops — background agents wake the main agent automatically
-- Workers update TaskList via TaskUpdate({ status: 'completed' }) — this is the sole source of truth
+- Workers are granted TaskUpdate via allowed_tools and SHOULD self-update status — but always verify via TaskList and fix any missed updates
 - TaskList returns only metadata (IDs, subjects, statuses) — zero context bloat
 - Refill ALL empty slots each cycle, not just one
 
