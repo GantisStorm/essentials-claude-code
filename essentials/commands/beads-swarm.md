@@ -89,39 +89,47 @@ Steps:
 
 **Track agent IDs** returned from each Task call for monitoring.
 
-### Step 4: Poll All Agents and Refill Queue
+### Step 4: Monitor ALL Agents and Refill Queue
 
-**Monitor ALL active agents — never block on just one:**
+**Always monitor ALL active agents — never just one:**
 
 ```
 WHILE tasks remain incomplete:
-  1. POLL ALL active agents in a SINGLE message (parallel calls):
+  1. POLL ALL active agents in a SINGLE message (parallel tool calls):
      → TaskOutput({ task_id: <agent_1>, block: false })
      → TaskOutput({ task_id: <agent_2>, block: false })
      → TaskOutput({ task_id: <agent_3>, block: false })
-     → ... one call per active agent, ALL in the same message
+     → One call per active agent, ALL in the same message
 
-  2. CHECK results:
-     → If ANY agent completed → go to step 3
-     → If NONE completed → pick ONE active agent, call:
-       TaskOutput({ task_id: <agent_id>, block: true })
-       Then immediately re-poll ALL remaining agents with block: false
-       to catch concurrent completions
+  2. If ANY agent completed → go to step 4
+     If NONE completed → go to step 3
 
-  3. Process ALL completed agents:
+  3. BLOCK on ALL active agents in a SINGLE message (parallel tool calls):
+     → TaskOutput({ task_id: <agent_1>, block: true })
+     → TaskOutput({ task_id: <agent_2>, block: true })
+     → TaskOutput({ task_id: <agent_3>, block: true })
+     → ALL calls in the same message, ALL with block: true
+     → Each call blocks independently until its agent finishes
+     → The message returns when ALL agents have completed
+
+  4. Process ALL completed agents:
      → Remove each from active list
 
-  4. FILL ALL EMPTY SLOTS:
+  5. FILL ALL EMPTY SLOTS:
      → Check TaskList for ready tasks (pending, unblocked)
      → slots_available = N - active_agents
      → ready_tasks = tasks that are pending AND not blocked
      → Spawn min(slots_available, ready_tasks) agents in SINGLE message
      → Track all new agent IDs in active list
 
-  5. Repeat until all tasks complete
+  6. Repeat until all tasks complete
 ```
 
-**CRITICAL:** Always poll ALL active agents each iteration. Never block on one agent while others may have finished.
+**CRITICAL:**
+- ALWAYS include ALL active agents in every TaskOutput call — never monitor just one
+- The non-blocking poll (step 1) catches fast completions without waiting
+- The blocking call (step 3) monitors ALL remaining agents simultaneously
+- After blocking returns, ALL agents have finished — refill ALL slots at once
 
 **If user interrupts polling:**
 - Active agents continue running in background
