@@ -94,51 +94,32 @@ Steps:
 // + Task for #2, #3... up to N workers
 ```
 
-**Track agent IDs** returned from each Task call for monitoring.
+After spawning, call **TaskList()** once to confirm workers started. Then **stop and wait** — do NOT loop or sleep.
 
-### Step 4: Monitor via TaskList and Refill Queue
+### Step 4: Wait for Background Agent Notifications
 
-**NEVER use TaskOutput** — it dumps full agent transcripts (70k+ tokens) into context, causing compaction and stuck agents. Workers already update TaskList via `TaskUpdate({ status: 'completed' })`.
+**Do NOT poll or sleep.** Background agents automatically notify the main agent when they finish (v2.0.64+). The main agent gets woken up with zero effort.
 
-**Poll TaskList to detect completions:**
+**When woken by a background agent completing:**
 
-```
-WHILE tasks remain incomplete:
-  1. WAIT: Bash("sleep 10")
-     → Pause to avoid burning tokens while agents work
-
-  2. CHECK: TaskList()
-     → Returns only IDs, subjects, statuses — zero context bloat
-     → Detect newly completed tasks by comparing with previous state
-
-  3. FILL EMPTY SLOTS:
-     → in_progress_count = tasks with status 'in_progress'
-     → slots_available = N - in_progress_count
-     → ready_tasks = tasks that are pending AND not blocked
-     → Spawn min(slots_available, ready_tasks) agents in SINGLE message
-
-  4. Repeat until all tasks show status 'completed'
-```
+1. Call **TaskList()** — see which tasks completed
+2. Check for ready tasks (pending AND not blocked)
+3. If slots available (N - in_progress_count > 0) AND ready tasks exist:
+   → Spawn new workers in a SINGLE message to fill slots
+   → Call **TaskList()** once to confirm
+4. If all tasks completed → say **"Swarm complete"**
+5. Otherwise → **stop and wait** for next notification
 
 **CRITICAL:**
 - NEVER call TaskOutput — it returns full agent transcripts (70k+ tokens) that flood context
-- Workers update TaskList automatically via TaskUpdate({ status: 'completed' })
+- NEVER use sleep loops — background agents wake the main agent automatically
+- Workers update TaskList via TaskUpdate({ status: 'completed' }) — this is the sole source of truth
 - TaskList returns only metadata (IDs, subjects, statuses) — zero context bloat
-- Sleep between polls to avoid wasting tokens on rapid-fire empty checks
 - Refill ALL empty slots each cycle, not just one
-
-**If user interrupts polling:**
-- Active agents continue running in background
-- User can say "check swarm status" or "resume polling"
-- Use TaskList to see task completion status
-
-### Step 5: Report Completion
-
-Say **"Swarm complete"** when all tasks finished.
 
 **Recovery commands:**
 - "check swarm status" → TaskList (shows all task statuses)
-- "resume polling" → Resume TaskList poll loop from Step 4
+- "resume swarm" → TaskList, then spawn workers for any ready tasks, then stop and wait
 - `/cancel-swarm` → Stop all agents
 
 ## Visual Progress
@@ -156,7 +137,8 @@ Tasks (2 done, 2 in progress, 3 open)
 If context compacts:
 1. Call TaskList to see all tasks and their status
 2. Count in_progress tasks to determine active worker count
-3. Resume polling loop
+3. Spawn workers for any ready tasks if slots available
+4. Stop and wait for next notification
 
 ## Error Handling
 
