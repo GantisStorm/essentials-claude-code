@@ -87,15 +87,16 @@ TaskCreate → TaskUpdate (set blockedBy) → Execute in order → Verify → Lo
 4. Runs exit criteria
 5. **Loops until exit criteria pass**
 
-**Swarm (parallel):**
+**Swarm (parallel, queue-based):**
 ```
-TaskCreate → TaskUpdate (set blockedBy) → Spawn workers → Workers coordinate via TaskList
+TaskCreate → TaskUpdate (set blockedBy) → Spawn up to N agents → Block & refill queue
 ```
 1. Creates task graph with dependencies
-2. Analyzes graph for max parallelism (how many tasks can run together)
-3. Spawns N workers (auto-detected or `--workers N`)
-4. Workers all read same `TaskList`, claim unblocked tasks, execute, mark complete
-5. **Completes when all tasks done**
+2. Spawns up to N background agents (default: 3, or `--workers N`)
+3. Each agent does ONE task then exits
+4. Main agent waits with `TaskOutput(block: true)`
+5. When agent completes → spawn next agent for newly unblocked task
+6. **Completes when all tasks done**
 
 **Why dependencies matter:**
 ```
@@ -136,11 +137,15 @@ Task #2 **cannot start** until #1 is done. The system enforces this - no more "o
 
 | Aspect | Loop | Swarm |
 |--------|------|-------|
-| Execution | Sequential (1 agent) | Parallel (N workers) |
-| Exit criteria | ✅ Enforced | ✅ Enforced |
-| Task sync | ✅ Updates status | ✅ Updates status |
+| **Executor** | Main agent (foreground) | Background agents |
+| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
+| **Context** | Full conversation history | Each agent gets task description only |
+| **Visibility** | See work live | Check with `ctrl+t` or TaskOutput |
+| **Task system** | ✅ Same | ✅ Same |
+| **Dependencies** | ✅ Same | ✅ Same |
+| **Exit criteria** | ✅ Enforced | ✅ Enforced |
 
-**Loop and Swarm are interchangeable.** Same plan, same exit criteria, same result. Swarm is just faster when tasks can run in parallel.
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
 
 ---
 

@@ -68,12 +68,13 @@ ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
 
 | Aspect | Loop | Swarm |
 |--------|------|-------|
-| Execution | Sequential | Parallel |
-| Exit criteria | ✅ Enforced | ✅ Enforced |
-| prd.json sync | ✅ Updates `passes` | ✅ Updates `passes` |
-| RalphTUI compatible | ✅ Yes | ✅ Yes |
+| **Executor** | Main agent (foreground) | Background agents |
+| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
+| **Context** | Full conversation history | Each agent gets task description only |
+| **prd.json sync** | ✅ Updates `passes` | ✅ Updates `passes` |
+| **RalphTUI compatible** | ✅ Yes | ✅ Yes |
 
-**Loop and Swarm are interchangeable.** Same prd.json, same exit criteria, same result. Swarm is just faster when tasks can run in parallel.
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
 
 ---
 

@@ -65,19 +65,14 @@ TaskUpdate({
 
 ### Step 3: Queue-Based Execution
 
-Use `--workers N` to limit concurrent agents (default: 3). This is a **queue**, not a pool:
+Use `--workers N` to limit concurrent agents (default: 3). This is a **queue**, not a pool.
 
-1. Get all ready tasks (pending, unblocked)
-2. Spawn up to N agents for the first N ready tasks (1 task per agent)
-3. Each agent executes ONE task then exits
-4. As agents complete, spawn new agents for next ready tasks
-5. Continue until all tasks done
-
-**Spawn agents in a single message for parallelism:**
+**Initial spawn - up to N agents in a SINGLE message:**
 
 ```json
+// Spawn all initial agents in ONE message for true parallelism
 Task({
-  "description": "Task-1 executor",
+  "description": "Task-1: Implement auth middleware",
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
@@ -88,25 +83,49 @@ Subject: Implement auth middleware
 Description: <full details from plan>
 
 Steps:
-1. TaskUpdate - claim: status: in_progress
-2. Execute the task
-3. TaskUpdate - status: completed
-4. Exit immediately"
+1. TaskUpdate({ taskId: '1', status: 'in_progress' })
+2. Execute the task (read files, make changes, verify)
+3. TaskUpdate({ taskId: '1', status: 'completed' })
+4. Exit immediately - do NOT loop"
 })
+// + Task for #2, #3... up to N workers
 ```
 
-### Step 4: Monitor and Refill Queue
+**Track agent IDs** returned from each Task call for monitoring.
 
-Loop until all tasks complete:
+### Step 4: Block and Refill Queue
 
-1. Wait for any agent to finish (TaskOutput with block: false to poll)
-2. Check TaskList for newly unblocked ready tasks
-3. Spawn new agents up to the worker limit
-4. Repeat
+**Use TaskOutput with block: true** to wait for agents:
+
+```
+WHILE tasks remain incomplete:
+  1. TaskOutput({ task_id: <agent_id>, block: true })  # Blocks until agent done
+  2. Remove completed agent from active list
+  3. Check TaskList for ready tasks (pending, unblocked)
+  4. FILL ALL EMPTY SLOTS:
+     → slots_available = N - active_agents
+     → ready_tasks = tasks that are pending AND not blocked
+     → spawn min(slots_available, ready_tasks) agents in SINGLE message
+     → Track all new agent IDs
+  5. Repeat until all tasks complete
+```
+
+**Always keep slots full.** After each agent completes, spawn as many new agents as possible (up to N total).
+
+**If user interrupts polling:**
+- Active agents continue running in background
+- User can say "check swarm status" or "resume polling"
+- Use TaskOutput({ block: false }) to check without blocking
+- Use TaskList to see task completion status
 
 ### Step 5: Report Completion
 
 Say **"Swarm complete"** when all tasks finished.
+
+**Recovery commands:**
+- "check swarm status" → TaskList + TaskOutput(block: false) on active agents
+- "resume polling" → Continue blocking TaskOutput loop
+- `/cancel-swarm` → Stop all agents
 
 ## Visual Progress
 

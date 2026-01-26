@@ -271,7 +271,7 @@ Specific, executable commands. The loop runs them automatically.
 
 ## Parallel Execution with Dependencies
 
-Swarms spawn multiple workers that coordinate via the shared Task System:
+Swarms use a queue-based approach with background agents:
 
 ```
 Task Graph:
@@ -283,16 +283,22 @@ Task Graph:
 #6 Tests                  [blocked by #4, #5]
 ```
 
-**How workers coordinate:**
+**How the queue works:**
 ```
-Worker-1: TaskList → Claim #1 → Execute → Complete → Claim #4 (now unblocked)
-Worker-2: TaskList → Claim #2 → Execute → Complete → Claim #5 (now unblocked)
-Worker-3: TaskList → #3 blocked → Wait → #3 unblocked → Claim → Execute...
+Main:     Spawn Agent-1 (#1), Agent-2 (#2)     [2 agents, --workers 2]
+Main:     TaskOutput(block: true)              [wait for any agent]
+Agent-1:  Complete #1 → exit
+Main:     #3 still blocked, no new agent yet
+Agent-2:  Complete #2 → exit
+Main:     #3 now unblocked → Spawn Agent-3 (#3)
+Agent-3:  Complete #3 → exit
+Main:     #4, #5 unblocked → Spawn Agent-4 (#4), Agent-5 (#5)
+...
 ```
 
-All workers read from the same `TaskList`. When a task completes, blocked tasks become available. No central coordinator needed - workers self-organize.
+Each agent does ONE task then exits. Main agent controls the queue, waits with `TaskOutput(block: true)`, and spawns new agents as tasks unblock. No racing, no stuck loops.
 
-**Auto-detection:** Swarm analyzes the graph to find max parallelism. If only 2 tasks can run together, it spawns 2 workers. Override with `--workers N`.
+**Workers limit:** Use `--workers N` to control max concurrent agents (default: 3).
 
 ---
 

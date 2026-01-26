@@ -148,18 +148,25 @@ Tasks (2 done, 1 in progress, 3 open)
 □ #4 Write tests > blocked by #3
 ```
 
-### Parallel Swarm Coordination
+### Queue-Based Swarm Coordination
 
-Workers spawn simultaneously and self-coordinate via shared task list:
+Main agent controls a queue of background agents:
 
 ```
-Worker-1: TaskList → Claim #1 → Execute → Complete → Claim #3 (now unblocked)
-Worker-2: TaskList → Claim #2 → Execute → Complete → Claim #4 (now unblocked)
-Worker-3: TaskList → All blocked → Wait → Claim next available...
-
-All workers read/write same TaskList. No central coordinator.
-Dependencies automatically respected.
+Main:    Spawn Agent-1 (Task #1), Agent-2 (Task #2), Agent-3 (Task #3)
+         ↓
+Main:    TaskOutput(block: true) — wait for any agent
+         ↓
+Agent-1: Completes Task #1 → exits
+         ↓
+Main:    Agent-1 done → Task #4 now unblocked → Spawn Agent-4 (Task #4)
+         ↓
+Main:    TaskOutput(block: true) — wait for next agent
+         ... repeat until all tasks complete ...
 ```
+
+Each agent does ONE task then exits. No racing. No stuck loops.
+Main agent tracks everything and refills queue as slots open.
 
 ### Multi-Session Persistence
 
@@ -191,7 +198,18 @@ Start a new session tomorrow - your task list is still there.
 
 **Alternative executor:** [Ralph TUI](https://github.com/subsy/ralph-tui) runs Tasks/Beads with the classic Ralph Wiggum loop style (community approach before Claude Code had native tasks).
 
-**Loop and Swarm are interchangeable.** Same plan, same exit criteria, same result. Swarm is just faster when tasks can run in parallel.
+### Loop vs Swarm
+
+| Aspect | Loop | Swarm |
+|--------|------|-------|
+| **Executor** | Main agent (foreground) | Background agents |
+| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
+| **Context** | Full conversation history | Each agent gets task description only |
+| **Visibility** | See work live | Check with `ctrl+t` or TaskOutput |
+| **Task system** | ✅ Same | ✅ Same |
+| **Dependencies** | ✅ Same | ✅ Same |
+
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
 
 ### Simple (Start Here)
 
@@ -312,24 +330,29 @@ ralph-tui run --tracker beads --epic <epic-id>
                              │
                              ▼
                     ┌─────────────────┐
-                    │  Calculate Max  │
-                    │  Parallelism    │
+                    │  Spawn up to N  │
+                    │  agents (queue) │
                     └────────┬────────┘
                              │
          ┌───────────────────┼───────────────────┐
          │                   │                   │
          ▼                   ▼                   ▼
   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-  │  Worker 1   │     │  Worker 2   │     │  Worker N   │
+  │  Agent 1    │     │  Agent 2    │     │  Agent N    │
   ├─────────────┤     ├─────────────┤     ├─────────────┤
-  │  TaskList   │     │  TaskList   │     │  TaskList   │
-  │  Claim      │     │  Claim      │     │  Claim      │
-  │  Execute    │     │  Execute    │     │  Execute    │
-  │  Complete   │     │  Complete   │     │  Complete   │
-  │  Repeat     │     │  Repeat     │     │  Repeat     │
+  │  1 task     │     │  1 task     │     │  1 task     │
+  │  then exit  │     │  then exit  │     │  then exit  │
   └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
          │                   │                   │
          └───────────────────┼───────────────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │  Main agent     │
+                    │  waits (block)  │
+                    │  then refills   │
+                    │  queue          │
+                    └────────┬────────┘
                              │
                              ▼
                     ┌─────────────────┐
@@ -338,7 +361,7 @@ ralph-tui run --tracker beads --epic <epic-id>
                     └─────────────────┘
 ```
 
-**Parallel execution.** Workers share one TaskList. Auto-detect optimal worker count. Dependencies respected—blocked tasks wait.
+**Queue-based parallel execution.** Main agent spawns up to N background agents. Each agent does ONE task then exits. Main agent blocks with TaskOutput, refills queue as agents complete. Dependencies respected—blocked tasks wait.
 
 ---
 

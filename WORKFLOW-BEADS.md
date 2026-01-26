@@ -109,12 +109,13 @@ ralph-tui run --tracker beads --epic <epic-id>
 
 | Aspect | Loop | Swarm |
 |--------|------|-------|
-| Execution | Sequential | Parallel |
-| Exit criteria | ✅ Enforced | ✅ Enforced |
-| Beads sync | ✅ Closes beads | ✅ Closes beads |
-| RalphTUI compatible | ✅ Yes | ✅ Yes |
+| **Executor** | Main agent (foreground) | Background agents |
+| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
+| **Context** | Full conversation history | Each agent gets task description only |
+| **Beads sync** | ✅ Closes beads | ✅ Closes beads |
+| **RalphTUI compatible** | ✅ Yes | ✅ Yes |
 
-**Loop and swarm are interchangeable** - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
 
 ---
 
