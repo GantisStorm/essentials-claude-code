@@ -80,21 +80,65 @@ This agent handles **new features and enhancements** in existing codebases. Keyw
 - WHAT patterns to follow
 - HOW things connect
 
-## Step 2: Explore the Codebase
+## Step 2: Check for Existing Codemaps
 
-Use tools systematically:
+Before exploring manually, check if codemaps exist:
+
+```bash
+Glob(pattern=".claude/maps/code-map-*.json")
+```
+
+**If codemaps found:**
+1. Read the most recent codemap(s) covering relevant directories
+2. Use the codemap for:
+   - **File→symbol mappings** - Know what's in each file without reading it
+   - **Signatures** - Get function/class signatures directly
+   - **Dependencies** - See file relationships from `dependencies` field
+   - **Public API** - Focus on exported symbols from `public_api`
+   - **Reference counts** - Identify heavily-used vs unused code
+3. Only read specific files when you need implementation details beyond the codemap
+
+**If no codemaps found:**
+- Proceed with manual exploration (Step 3)
+- Consider suggesting `/codemap-creator` for future planning sessions
+
+**Codemap structure:**
+```json
+{
+  "tree": {
+    "files": [{
+      "path": "src/auth/service.ts",
+      "dependencies": ["src/models/user.ts"],
+      "symbols": {
+        "functions": [{
+          "name": "validateToken",
+          "signature": "(token: string) => Promise<User>",
+          "exported": true
+        }]
+      }
+    }]
+  },
+  "summary": {
+    "public_api": [{"file": "...", "exports": ["..."]}]
+  }
+}
+```
+
+## Step 3: Explore the Codebase
+
+Use tools systematically (skip files already understood from codemap):
 - **Glob** - Find relevant files by pattern (`**/*.ext`, `**/auth/**`, etc.)
 - **Grep** - Search for patterns, function names, imports, error messages
 - **Read** - Examine full file contents (REQUIRED before referencing any code)
 
-## Step 3: Read Directory Documentation
+## Step 4: Read Directory Documentation
 
 Find and read documentation in target directories:
 - README.md, DEVGUIDE.md, CONTRIBUTING.md
 - Check CLAUDE.md for project coding standards
 - Extract patterns and conventions coders must follow
 
-## Step 4: Identify Stakeholders
+## Step 5: Identify Stakeholders
 
 Document who will be affected by this implementation:
 
@@ -113,9 +157,9 @@ Stakeholder Requirements:
 - [Stakeholder]: [What they need from this implementation]
 ```
 
-## Step 5: Map the Architecture
+## Step 6: Map the Architecture
 
-For **feature development**, gather:
+For **feature development**, gather (use codemap data when available):
 ```
 Relevant files:
 - [File path]: [What it contains and why it's relevant]
@@ -142,15 +186,16 @@ Before proceeding to external research, pause and self-critique:
 
 ### Reasoning Check
 Ask yourself:
-1. **Coverage**: Did I find ALL relevant files, or might there be more in unexpected locations?
-2. **Patterns**: Are there similar implementations elsewhere I should reference?
-3. **Assumptions**: What am I assuming that should be explicitly verified?
-4. **Scope**: Am I planning more than necessary? Or missing something important?
-5. **Stakeholders**: Did I identify everyone affected by this change?
+1. **Codemap usage**: Did I check for and use existing codemaps? Did they provide sufficient context?
+2. **Coverage**: Did I find ALL relevant files, or might there be more in unexpected locations?
+3. **Patterns**: Are there similar implementations elsewhere I should reference?
+4. **Assumptions**: What am I assuming that should be explicitly verified?
+5. **Scope**: Am I planning more than necessary? Or missing something important?
+6. **Stakeholders**: Did I identify everyone affected by this change?
 
 ### Action Decision
 Based on reflection:
-- If gaps identified → Return to Step 1-4 with specific searches
+- If gaps identified → Return to Steps 2-5 with specific searches
 - If assumptions need verification → Use tools to verify before proceeding
 - If confident → Proceed to Phase 2
 
@@ -1097,7 +1142,9 @@ Exit criteria for loop or swarm executors - these commands MUST pass before impl
 
 **Investigation & Research:**
 - [ ] First action was a tool call (no text before tools)
-- [ ] Read ALL relevant files (not just searched/grepped)
+- [ ] Checked for existing codemaps in `.claude/maps/`
+- [ ] Used codemap data for signatures, dependencies, public API (if available)
+- [ ] Read files for implementation details beyond codemap
 - [ ] Every code reference has file:line location
 - [ ] External documentation researched (or documented N/A)
 - [ ] Risks identified with mitigation strategies

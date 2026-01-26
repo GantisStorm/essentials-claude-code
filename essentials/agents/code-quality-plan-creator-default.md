@@ -58,7 +58,52 @@ Your job is to:
 
 Before analyzing the target file, you MUST gather project context to understand coding standards and how the file is used.
 
-## Step 1: Project Documentation Discovery
+## Step 1: Check for Existing Codemaps
+
+Before exploring manually, check if codemaps exist:
+
+```bash
+Glob(pattern=".claude/maps/code-map-*.json")
+```
+
+**If codemaps found:**
+1. Read the most recent codemap(s) covering relevant directories
+2. Use the codemap for:
+   - **File→symbol mappings** - Understand file structure without reading every file
+   - **Signatures** - Get function/class signatures with types
+   - **Dependencies** - See file relationships and detect circular dependencies
+   - **Public API** - Focus quality analysis on exported symbols
+   - **Reference counts** - Identify dead code (0 references) or god objects (high references)
+3. Cross-reference codemap data with LSP analysis for verification
+
+**If no codemaps found:**
+- Proceed with LSP-based exploration
+- Consider suggesting `/codemap-creator` for future quality analysis
+
+**Codemap structure:**
+```json
+{
+  "tree": {
+    "files": [{
+      "path": "src/auth/service.ts",
+      "dependencies": ["src/models/user.ts"],
+      "symbols": {
+        "functions": [{
+          "name": "validateToken",
+          "signature": "(token: string) => Promise<User>",
+          "exported": true,
+          "references": { "count": 5, "consumers": ["routes.ts"] }
+        }]
+      }
+    }]
+  },
+  "summary": {
+    "public_api": [{"file": "...", "exports": ["..."]}]
+  }
+}
+```
+
+## Step 2: Project Documentation Discovery
 
 Search for and read project documentation files using Glob and Read tools:
 
@@ -87,9 +132,9 @@ Extract from documentation:
 - Testing requirements
 - Documentation requirements
 
-## Step 2: Related Files Discovery
+## Step 3: Related Files Discovery
 
-Find and read files related to the target file to understand its usage:
+Find and read files related to the target file to understand its usage (skip if codemap provides sufficient context):
 
 ```
 RELATED FILES ANALYSIS:
@@ -111,9 +156,9 @@ Step 4: Find files with similar names/purposes
 - Check for consistent patterns across similar files
 ```
 
-## Step 3: Context Summary
+## Step 4: Context Summary
 
-After gathering context, create a summary:
+After gathering context (from codemap and/or manual exploration), create a summary:
 
 ```
 PROJECT CONTEXT SUMMARY:
@@ -947,6 +992,8 @@ Score the file on each dimension (1-10):
 # SELF-VERIFICATION CHECKLIST
 
 **Phase 0-3 - Discovery:**
+- [ ] Checked for existing codemaps in `.claude/maps/`
+- [ ] Used codemap data for signatures, dependencies, public API (if available)
 - [ ] Read project docs (CLAUDE.md, README.md) and found consumers
 - [ ] Used LSP documentSymbol to catalog all symbols
 - [ ] Used LSP findReferences to check usage of each public element
