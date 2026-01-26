@@ -1,5 +1,5 @@
 ---
-allowed-tools: ["TaskList", "TaskStop", "TaskOutput"]
+allowed-tools: ["TaskList", "TaskStop"]
 argument-hint: ""
 description: Cancel any active swarm
 model: opus
