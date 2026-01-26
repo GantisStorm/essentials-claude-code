@@ -95,7 +95,7 @@ Steps:
 
 ### Step 4: Monitor ALL Agents and Refill Queue
 
-**Always monitor ALL active agents — never just one:**
+**Poll ALL active agents each cycle — never monitor just one:**
 
 ```
 WHILE tasks remain incomplete:
@@ -106,15 +106,12 @@ WHILE tasks remain incomplete:
      → One call per active agent, ALL in the same message
 
   2. If ANY agent completed → go to step 4
-     If NONE completed → go to step 3
 
-  3. BLOCK on ALL active agents in a SINGLE message (parallel tool calls):
-     → TaskOutput({ task_id: <agent_1>, block: true })
-     → TaskOutput({ task_id: <agent_2>, block: true })
-     → TaskOutput({ task_id: <agent_3>, block: true })
-     → ALL calls in the same message, ALL with block: true
-     → Each call blocks independently until its agent finishes
-     → The message returns when ALL agents have completed
+  3. If NONE completed → wait for one to finish:
+     → Pick ONE active agent
+     → TaskOutput({ task_id: <agent_id>, block: true })
+     → When it returns → immediately poll ALL remaining with block: false
+       to catch any that finished concurrently
 
   4. Process ALL completed agents:
      → Remove each from active list
@@ -130,10 +127,11 @@ WHILE tasks remain incomplete:
 ```
 
 **CRITICAL:**
-- ALWAYS include ALL active agents in every TaskOutput call — never monitor just one
-- The non-blocking poll (step 1) catches fast completions without waiting
-- The blocking call (step 3) monitors ALL remaining agents simultaneously
-- After blocking returns, ALL agents have finished — refill ALL slots at once
+- Step 1 MUST poll ALL active agents every cycle, not just one
+- Step 3 blocks on one agent only as a "sleep until something happens"
+- After the blocking call returns, ALWAYS re-poll ALL remaining agents (block: false)
+  to catch concurrent completions before refilling slots
+- Step 5 refills ALL empty slots, not just one
 
 **If user interrupts polling:**
 - Active agents continue running in background
