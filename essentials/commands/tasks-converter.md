@@ -20,7 +20,7 @@ Plan path: `.claude/plans/feature-3k7f2-plan.md`
 
 ### Step 1: Launch Agent
 
-Launch agent immediately with just the path:
+Launch background agent immediately with just the path:
 
 ```
 Convert plan to prd.json: <plan-path>
@@ -29,8 +29,11 @@ Convert plan to prd.json: <plan-path>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:tasks-converter-default"
+run_in_background: true
 prompt: "Convert plan to prd.json: <plan-path>"
 ```
+
+Output a status message like "Converting to prd.json..." and **end your turn**. The system wakes you when the agent finishes.
 
 ### Step 2: Report Result
 

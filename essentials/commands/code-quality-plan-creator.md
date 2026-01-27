@@ -37,7 +37,7 @@ Parse `$ARGUMENTS` to extract file list. Validate each path exists.
 
 ### Step 2: Launch Agents
 
-For EACH file, launch agent:
+For EACH file, launch background agent:
 
 ```
 Analyze code quality: <file-path>
@@ -46,10 +46,11 @@ Analyze code quality: <file-path>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:code-quality-plan-creator-default"
+run_in_background: true
 prompt: "Analyze code quality: <file-path>"
 ```
 
-**Launch ALL agents in a single message for parallel execution.** Results return directly from each Task call.
+**Launch ALL agents in a single message for parallel execution.** Output a status message like "Analyzing N files..." and **end your turn**. The system wakes you when agents finish.
 
 ### Step 3: Report Results
 

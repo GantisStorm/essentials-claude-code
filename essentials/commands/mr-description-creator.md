@@ -74,7 +74,7 @@ git rev-list --count main..HEAD
 
 ### Step 5: Launch Agent
 
-Launch agent with gathered context:
+Launch background agent with gathered context:
 
 ```
 Generate MR/PR description:
@@ -89,8 +89,11 @@ Commits: <count>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:mr-description-creator-default"
+run_in_background: true
 prompt: "Generate MR/PR description:\nPlatform: <platform>\nCLI: <cli>\nAction: <action>\nBranch: <branch info>\nTemplate: <template>\nCommits: <count>"
 ```
+
+Output a status message like "Generating description..." and **end your turn**. The system wakes you when the agent finishes.
 
 ### Step 6: Report Result
 

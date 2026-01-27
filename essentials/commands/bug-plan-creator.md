@@ -41,7 +41,7 @@ Parse `$ARGUMENTS`:
 
 ### Step 2: Launch Agent
 
-Launch agent with gathered context:
+Launch background agent with gathered context:
 
 ```
 Investigate bug and create fix plan:
@@ -52,8 +52,11 @@ Investigate bug and create fix plan:
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:bug-plan-creator-default"
+run_in_background: true
 prompt: "Investigate bug and create fix plan:\n\n<gathered context>"
 ```
+
+Output a status message like "Investigating bug..." and **end your turn**. The system wakes you when the agent finishes.
 
 ### Step 3: Report Result
 

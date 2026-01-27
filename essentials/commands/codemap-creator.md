@@ -116,14 +116,18 @@ Filter to only files within the codemap's root directory.
 **Create Mode:**
 ```
 subagent_type: "essentials:codemap-creator-default"
+run_in_background: true
 prompt: "MODE: create\nRoot: <root_dir>\nIgnore: <patterns or none>"
 ```
 
 **Update Mode:**
 ```
 subagent_type: "essentials:codemap-creator-default"
+run_in_background: true
 prompt: "MODE: update\nCodemap: <codemap_path>\nChanged files:\n- file1.ts\n- file2.ts\n..."
 ```
+
+Output a status message like "Creating code map..." and **end your turn**. The system wakes you when the agent finishes.
 
 ### Step 4: Report Result
 

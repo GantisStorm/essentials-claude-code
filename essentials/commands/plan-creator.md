@@ -32,7 +32,7 @@ Parse `$ARGUMENTS` as the task description. Grammar and spell check before passi
 
 ### Step 2: Launch Agent
 
-Launch agent with just the task:
+Launch background agent with just the task:
 
 ```
 Create architectural plan: <corrected task description>
@@ -41,8 +41,11 @@ Create architectural plan: <corrected task description>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:plan-creator-default"
+run_in_background: true
 prompt: "Create architectural plan: <corrected task description>"
 ```
+
+Output a status message like "Creating plan..." and **end your turn**. The system wakes you when the agent finishes.
 
 ### Step 3: Report Result
 

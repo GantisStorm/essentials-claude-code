@@ -28,7 +28,7 @@ If bd not installed, report error and stop.
 
 ### Step 2: Launch Agent
 
-Launch agent immediately with just the path:
+Launch background agent immediately with just the path:
 
 ```
 Convert plan to beads: <plan-path>
@@ -37,8 +37,11 @@ Convert plan to beads: <plan-path>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:beads-converter-default"
+run_in_background: true
 prompt: "Convert plan to beads: <plan-path>"
 ```
+
+Output a status message like "Converting to beads..." and **end your turn**. The system wakes you when the agent finishes.
 
 ### Step 3: Report Result
 

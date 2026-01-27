@@ -55,7 +55,7 @@ For each directory:
 
 ### Step 4: Launch Agents
 
-For EACH directory, launch agent:
+For EACH directory, launch background agent:
 
 ```
 Generate DEVGUIDE: <directory-path>
@@ -66,10 +66,11 @@ Rules: <exists/not found>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:document-creator-default"
+run_in_background: true
 prompt: "Generate DEVGUIDE: <dir>\nOutput: <path>\nRules: <status>"
 ```
 
-**Launch ALL agents in a single message for parallel execution.** Results return directly from each Task call.
+**Launch ALL agents in a single message for parallel execution.** Output a status message like "Generating N DEVGUIDE files..." and **end your turn**. The system wakes you when agents finish.
 
 ### Step 5: Report Results
 
