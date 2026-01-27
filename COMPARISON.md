@@ -81,15 +81,20 @@ Verification-driven loops for brownfield development. Plans define exit criteria
 
 **Quick Start:**
 ```bash
+# Generate codemap first (recommended — grounds plans in real codebase symbols)
+/codemap-creator src/
+
 # From conversation context (after discussing)
 /implement-loop fix the auth bug       # Sequential
 /implement-swarm refactor handlers     # Parallel
 
-# Or with plan file
+# Or with plan file (auto-uses codemap for better accuracy)
 /plan-creator Add user authentication
 /plan-loop plan.md    # Sequential
 /plan-swarm plan.md   # Parallel
 ```
+
+**Codemap tip:** Plans built with a codemap produce fewer hallucinations because the plan creator starts with real symbols and dependency relationships. Sub-agents spawned by swarm commands inherit this grounding — the plan they execute was built with accurate codebase knowledge.
 
 ---
 

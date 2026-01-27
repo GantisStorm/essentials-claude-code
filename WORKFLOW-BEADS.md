@@ -89,7 +89,14 @@ bd doctor --fix
 ## Usage
 
 ### 1. Create Plan
+
+**Recommended:** Generate a codemap first. Plans built with a codemap are more accurate because the plan creator starts with real symbols and real dependency relationships instead of exploring from scratch. Sub-agents spawned by swarm commands also benefit — the plan they receive was built with grounded codebase knowledge.
+
 ```bash
+# Generate codemap once (recommended — better plans, fewer hallucinations)
+/codemap-creator src/
+
+# Then create a plan (auto-uses codemap if present in .claude/maps/)
 /plan-creator Add complete auth system
 # Also works: /bug-plan-creator, /code-quality-plan-creator
 ```

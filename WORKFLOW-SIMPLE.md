@@ -26,8 +26,13 @@
 
 ### 1. Create Plan
 
+**Recommended:** Generate a codemap first. Plans built with a codemap are more accurate because the plan creator starts with real symbols and real dependency relationships instead of exploring from scratch. Sub-agents spawned by swarm commands also benefit — the plan they receive was built with grounded codebase knowledge.
+
 ```bash
-# New features
+# Generate codemap once (recommended — better plans, fewer hallucinations)
+/codemap-creator src/
+
+# Then create a plan (auto-uses codemap if present in .claude/maps/)
 /plan-creator Add user authentication with JWT
 
 # Bug fixes
@@ -37,7 +42,7 @@
 /code-quality-plan-creator src/auth.ts src/api.ts
 ```
 
-All three plan creators produce plans with the same structure: per-file implementation code, a `## Dependency Graph` table, and exit criteria.
+All three plan creators produce plans with the same structure: per-file implementation code, a `## Dependency Graph` table, and exit criteria. All three auto-detect codemaps in `.claude/maps/` for faster, more accurate codebase orientation.
 
 **Tip:** Use `/prompt-creator` to create better inputs:
 ```bash
