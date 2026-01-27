@@ -23,7 +23,7 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ### Step 1: Read prd.json (Only)
 
-**DO NOT read other files, grep, or explore the codebase** - just parse the prd.json:
+**DO NOT read other files, grep, or explore the codebase** - just parse the prd.json. **Never spawn sub-agents or delegate work — do ALL implementation directly yourself.**
 
 ```bash
 cat <prd-path>

@@ -31,6 +31,7 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 - Read files unless the user explicitly asks you to
 - Grep or explore the codebase
 - Use Glob to find files
+- Spawn sub-agents or delegate work — do ALL implementation directly yourself
 
 Create tasks immediately from context. Include file paths in task descriptions so they can be read during execution.
 
