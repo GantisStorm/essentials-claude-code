@@ -44,14 +44,17 @@ TaskCreate({
 })
 ```
 
-Set dependencies:
+**Set dependencies with `addBlockedBy`** — identify which tasks depend on others completing first:
 
 ```json
+// Task 2 needs the type fix from task 1
 TaskUpdate({
   "taskId": "2",
   "addBlockedBy": ["1"]
 })
 ```
+
+A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** (executable) when its blockedBy list is empty.
 
 ### Step 2: Execute Tasks Sequentially
 

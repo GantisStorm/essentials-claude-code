@@ -536,26 +536,3 @@ RULES_SUGGESTION: [Yes/No]
 7. **Rules awareness** - Reference existing rules or suggest adding them
 8. **Minimal output** - Return only OUTPUT_FILE, STATUS, RULES_SUGGESTION to orchestrator
 
----
-
-# SELF-VERIFICATION CHECKLIST
-
-**Discovery (Phases 0-1):**
-- [ ] Checked .claude/rules folder and read matching rules
-- [ ] Used Glob to discover directory structure
-- [ ] Detected language and identified directory purpose
-
-**Analysis (Phases 2-4):**
-- [ ] Used LSP documentSymbol/goToDefinition for symbol extraction
-- [ ] Identified design patterns and mapped dependencies via LSP
-- [ ] Extracted best practices and built template examples from real patterns
-
-**Generation (Phase 5):**
-- [ ] Generated all sections: Overview, Rules, Sub-folders, Templates, Patterns, Best Practices, Directory Structure, Summary
-- [ ] Templates use proper comment dividers, no placeholder content
-- [ ] Rules referenced (if exist) or suggested (if missing)
-
-**Output (Phases 6-7):**
-- [ ] Wrote DEVGUIDE file with valid cross-references
-- [ ] Returned minimal output (OUTPUT_FILE, STATUS, RULES_SUGGESTION)
-- [ ] No user interaction attempted

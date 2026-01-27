@@ -46,14 +46,17 @@ TaskCreate({
 })
 ```
 
-Set dependencies:
+**Set dependencies with `addBlockedBy`** — identify which tasks depend on others completing first:
 
 ```json
+// Task 2 needs the type fix from task 1
 TaskUpdate({
   "taskId": "2",
   "addBlockedBy": ["1"]
 })
 ```
+
+A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** when its blockedBy list is empty.
 
 ### Step 2: Spawn Workers
 
@@ -79,9 +82,12 @@ After all Task() calls return, output a status message like "3 workers launched.
 When a worker finishes, you are automatically woken. Then:
 
 1. **TaskUpdate** — mark the finished worker's task as `completed`
-2. **TaskList()** — see overall progress and find ready tasks
-3. Mark ready tasks `in_progress` and spawn new workers if slots available
-4. Output status and **end your turn** — you will be woken on the next completion
+2. **TaskList()** — see overall progress and find newly unblocked tasks
+3. **Find ready tasks**: A task is ready when its status is `pending` AND its `blockedBy` list is empty. Completing a task automatically removes it from other tasks' `blockedBy` lists, potentially unblocking them.
+4. Mark ready tasks `in_progress` and spawn new workers if slots available (respect worker limit N)
+5. Output status and **end your turn** — you will be woken on the next completion
+
+**Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
 
 Repeat until all tasks completed → say **"Swarm complete"**
 

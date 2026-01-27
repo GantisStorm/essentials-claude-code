@@ -38,10 +38,20 @@ Read the plan file and extract tasks. **DO NOT read other files, grep, or explor
 3. **Implementation Plan** - per-file implementation instructions
 4. **Requirements** - acceptance criteria
 5. **Exit Criteria** - verification script and success conditions
+6. **Dependency Graph** - file dependency phases for execution ordering
 
 ### Step 2: Create Task Graph
 
-For each work item, create a task with dependencies:
+Create a task for each work item and build an **ID map** as you go:
+
+```json
+TaskCreate({ "subject": "Create auth types", ... })        // → task "1"
+TaskCreate({ "subject": "Implement auth middleware", ... }) // → task "2"
+TaskCreate({ "subject": "Add route protection", ... })     // → task "3"
+TaskCreate({ "subject": "Run exit criteria", ... })        // → task "4"
+```
+
+Full TaskCreate per item:
 
 ```json
 TaskCreate({
@@ -51,14 +61,32 @@ TaskCreate({
 })
 ```
 
-Set dependencies based on plan structure:
+**Translate the plan's `## Dependency Graph` table to `addBlockedBy`**. The plan contains a table mapping files to phases and dependencies — use it to set up the task graph:
+
+```
+Plan's Dependency Graph:
+| Phase | File                    | Action | Depends On                |
+|-------|-------------------------|--------|---------------------------|
+| 1     | `src/types/auth.ts`     | create | —                         |
+| 2     | `src/middleware/auth.ts` | create | `src/types/auth.ts`       |
+| 3     | `src/routes/auth.ts`    | edit   | `src/middleware/auth.ts`   |
+
+File→Task map: types→"1", middleware→"2", routes→"3", exit criteria→"4"
+```
 
 ```json
-TaskUpdate({
-  "taskId": "2",
-  "addBlockedBy": ["1"]
-})
+// Phase 1: no deps (task "1" is ready immediately)
+// Phase 2: middleware depends on types
+TaskUpdate({ "taskId": "2", "addBlockedBy": ["1"] })
+// Phase 3: routes depends on middleware
+TaskUpdate({ "taskId": "3", "addBlockedBy": ["2"] })
+// Exit criteria blocked by all implementation tasks
+TaskUpdate({ "taskId": "4", "addBlockedBy": ["1", "2", "3"] })
 ```
+
+If the plan has no `## Dependency Graph` section (older plans), infer dependencies from per-file `Dependencies`/`Provides` fields.
+
+A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** (executable) when its blockedBy list is empty.
 
 **Task types:**
 - File edits/creates → one task per file

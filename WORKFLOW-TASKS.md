@@ -30,6 +30,21 @@
                                                    →  ralph-tui run          (dashboard)
 ```
 
+**How dependencies flow:**
+```
+Plan Creator               tasks-converter            tasks-loop / tasks-swarm
+┌──────────────────┐    ┌────────────────────┐    ┌──────────────────────┐
+│ ## Dependency     │ →  │ dependsOn arrays   │ →  │ addBlockedBy (task   │
+│ Graph            │    │ in prd.json        │    │ primitive)           │
+│                  │    │                    │    │                      │
+│ Phase 1: A, B   │    │ US-001: []         │    │ task "1": ready      │
+│ Phase 2: C      │    │ US-002: []         │    │ task "2": ready      │
+│   depends on A,B│    │ US-003: ["001","002"]│   │ task "3": blocked    │
+└──────────────────┘    └────────────────────┘    └──────────────────────┘
+```
+
+The plan's `## Dependency Graph` table is the source of truth. The converter reads it to build `dependsOn` arrays. The executor translates those to `addBlockedBy` using an ID map. Tasks in the same phase run in parallel in swarm mode.
+
 ---
 
 ## Usage
@@ -37,31 +52,34 @@
 ### 1. Create Plan
 ```bash
 /plan-creator Add user authentication with JWT
+# Also works: /bug-plan-creator, /code-quality-plan-creator
 ```
 
 ### 2. Convert to prd.json
 ```bash
 /tasks-converter .claude/plans/user-auth-3k7f2-plan.md
-# Output: .claude/prd/user-auth-3k7f2.json
+# Output: .claude/prd/user-auth.json
 ```
+
+The converter reads the plan's `## Dependency Graph` table, builds a file→task ID map, and translates file dependencies to `dependsOn` arrays. Falls back to per-file `Dependencies`/`Provides` for older plans.
 
 ### 3. Execute: Loop or Swarm
 
 **Loop (sequential, updates prd.json):**
 ```bash
-/tasks-loop .claude/prd/user-auth-3k7f2.json
+/tasks-loop .claude/prd/user-auth.json
 /cancel-loop                                     # Stop gracefully
 ```
 
 **Swarm (parallel, faster):**
 ```bash
-/tasks-swarm .claude/prd/user-auth-3k7f2.json    # Default: 3 workers
+/tasks-swarm .claude/prd/user-auth.json          # Default: 3 workers
 /cancel-swarm                                    # Stop workers
 ```
 
 **RalphTUI (optional dashboard):**
 ```bash
-ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
+ralph-tui run --prd .claude/prd/user-auth.json
 ```
 
 ### Loop vs Swarm
@@ -71,10 +89,12 @@ ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
 | **Executor** | Main agent (foreground) | Background agents |
 | **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
 | **Context** | Full conversation history | Each agent gets task description only |
-| **prd.json sync** | ✅ Updates `passes` | ✅ Updates `passes` |
-| **RalphTUI compatible** | ✅ Yes | ✅ Yes |
+| **prd.json sync** | Updates `passes` | Updates `passes` |
+| **RalphTUI compatible** | Yes | Yes |
 
-**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel — parallelism depends on the `dependsOn` structure. Tasks with no unresolved dependencies run simultaneously.
+
+**Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
 
 ---
 
@@ -92,6 +112,15 @@ ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
       "priority": 1,
       "passes": false,
       "dependsOn": []
+    },
+    {
+      "id": "US-002",
+      "title": "Task that depends on US-001",
+      "description": "FULL implementation",
+      "acceptanceCriteria": ["Criterion"],
+      "priority": 2,
+      "passes": false,
+      "dependsOn": ["US-001"]
     }
   ]
 }
@@ -104,9 +133,27 @@ ralph-tui run --prd .claude/prd/user-auth-3k7f2.json
 | `userStories` | array | NOT `tasks` or `items` |
 | `passes` | boolean | NOT `status: "pending"` |
 | `acceptanceCriteria` | string[] | NOT `criteria` |
-| `dependsOn` | string[] | NOT `dependencies` |
+| `dependsOn` | string[] | NOT `dependencies` or `blockedBy` |
 
-Each task's `description` must contain EVERYTHING needed to implement—the executor never reads the original plan.
+Each task's `description` must contain EVERYTHING needed to implement — the executor never reads the original plan. The coding agent receives only one task's description at a time.
+
+### How `dependsOn` Becomes `addBlockedBy`
+
+The executor builds an ID map as it creates tasks:
+
+```
+prd.json: US-001 (dependsOn: []), US-002 (dependsOn: []), US-003 (dependsOn: ["US-001", "US-002"])
+
+TaskCreate("US-001: ...") → task "1"
+TaskCreate("US-002: ...") → task "2"
+TaskCreate("US-003: ...") → task "3"
+
+ID map: { "US-001": "1", "US-002": "2", "US-003": "3" }
+
+TaskUpdate({ taskId: "3", addBlockedBy: ["1", "2"] })
+```
+
+Task "3" is now blocked. When tasks "1" and "2" complete, "3" automatically becomes ready.
 
 ---
 
@@ -122,7 +169,7 @@ jq '[.userStories[] | select(.passes == false)]' <file>   # Pending tasks
 
 ## RalphTUI (Optional)
 
-Visual TUI dashboard for task execution. **For execution only**—use this plugin for planning.
+Visual TUI dashboard for task execution. **For execution only** — use this plugin for planning.
 
 ### Install
 

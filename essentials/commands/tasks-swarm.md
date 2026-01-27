@@ -37,7 +37,18 @@ Parse the JSON and identify:
 
 ### Step 2: Create Task Graph
 
-For each userStory, create a task:
+Create a task for each userStory and build an **ID map** as you go:
+
+```json
+// Create tasks in order — each returns a task ID
+TaskCreate({ "subject": "US-001: Setup database schema", ... })  // → task "1"
+TaskCreate({ "subject": "US-002: Implement auth service", ... }) // → task "2"
+TaskCreate({ "subject": "US-003: Add login route", ... })        // → task "3"
+
+// ID map: { "US-001": "1", "US-002": "2", "US-003": "3" }
+```
+
+Full TaskCreate per story:
 
 ```json
 TaskCreate({
@@ -48,14 +59,18 @@ TaskCreate({
 })
 ```
 
-Set dependencies from `dependsOn`:
+**Translate `dependsOn` to `addBlockedBy`** using the ID map:
 
 ```json
+// prd.json says: US-003 has dependsOn: ["US-001", "US-002"]
+// ID map: US-001→"1", US-002→"2", US-003→"3"
 TaskUpdate({
-  "taskId": "2",
-  "addBlockedBy": ["1"]
+  "taskId": "3",
+  "addBlockedBy": ["1", "2"]
 })
 ```
+
+A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** when its blockedBy list is empty.
 
 Skip stories already completed (`passes: true`).
 
@@ -83,9 +98,12 @@ After all Task() calls return, output a status message like "3 workers launched.
 When a worker finishes, you are automatically woken. Then:
 
 1. **TaskUpdate** — mark the finished worker's task as `completed`
-2. **TaskList()** — see overall progress and find ready tasks
-3. Mark ready tasks `in_progress` and spawn new workers if slots available
-4. Output status and **end your turn** — you will be woken on the next completion
+2. **TaskList()** — see overall progress and find newly unblocked tasks
+3. **Find ready tasks**: A task is ready when its status is `pending` AND its `blockedBy` list is empty. Completing a task automatically removes it from other tasks' `blockedBy` lists, potentially unblocking them.
+4. Mark ready tasks `in_progress` and spawn new workers if slots available (respect worker limit N)
+5. Output status and **end your turn** — you will be woken on the next completion
+
+**Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
 
 Repeat until all tasks completed → say **"Tasks swarm complete"**
 

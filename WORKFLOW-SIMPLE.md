@@ -37,6 +37,8 @@
 /code-quality-plan-creator src/auth.ts src/api.ts
 ```
 
+All three plan creators produce plans with the same structure: per-file implementation code, a `## Dependency Graph` table, and exit criteria.
+
 **Tip:** Use `/prompt-creator` to create better inputs:
 ```bash
 /prompt-creator "feature: add OAuth login with Google"  # Creates detailed feature request
@@ -49,6 +51,7 @@
 Check `.claude/plans/` before executing:
 - Architecture makes sense
 - Reference code is complete
+- Dependency Graph reflects real code dependencies (not unnecessary chains)
 - Exit criteria are exact commands
 
 Fixing a plan is cheap. Debugging bad code is expensive.
@@ -75,36 +78,44 @@ The commands extract goals, requirements, and exit criteria from your discussion
 
 #### How They Work
 
-Both use Claude Code's **Task System** - a dependency graph, not a flat list.
+Both use Claude Code's **Task System** — a dependency graph, not a flat list. The plan's `## Dependency Graph` table determines execution order.
 
 **Loop (sequential):**
 ```
-TaskCreate → TaskUpdate (set blockedBy) → Execute in order → Verify → Loop if fail
+Read plan → Create tasks → Set addBlockedBy from Dependency Graph → Execute in order → Verify → Loop if fail
 ```
 1. Creates task graph with `TaskCreate`
-2. Sets dependencies with `TaskUpdate({ addBlockedBy: [...] })`
+2. Reads plan's `## Dependency Graph` table to set `addBlockedBy` dependencies
 3. Executes tasks in dependency order (blocked tasks wait)
 4. Runs exit criteria
 5. **Loops until exit criteria pass**
 
 **Swarm (parallel, queue-based):**
 ```
-TaskCreate → TaskUpdate (set blockedBy) → Mark in_progress → Spawn up to N agents → Wait → Refill
+Read plan → Create tasks → Set addBlockedBy from Dependency Graph → Spawn ready tasks → Wait → Refill
 ```
-1. Creates task graph with dependencies
-2. Marks tasks in_progress, spawns up to N background agents (default: 3, or `--workers N`)
-3. Each agent does ONE task then exits
-4. Main agent stops and waits — background agents notify on completion
-5. When notified → mark task completed → check TaskList → mark in_progress → spawn next agent
-6. **Completes when all tasks done**
+1. Creates task graph with dependencies from Dependency Graph
+2. Identifies **ready tasks** (status=`pending`, empty `blockedBy`) and marks them `in_progress`
+3. Spawns up to N background agents (default: 3, or `--workers N`)
+4. Each agent does ONE task then exits
+5. Main agent stops and waits — background agents notify on completion
+6. When notified → mark task `completed` → check TaskList for newly unblocked tasks → spawn next agents
+7. **Completes when all tasks done**
 
-**Why dependencies matter:**
+**Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
+
+**Why the Dependency Graph matters:**
 ```
-#1 Set up database
-#2 Create auth middleware [blocked by #1]
-#3 Add routes [blocked by #2]
+Plan's Dependency Graph:
+| Phase | File                    | Depends On              |
+|-------|-------------------------|-------------------------|
+| 1     | src/types/auth.ts       | —                       |
+| 1     | src/config/oauth.ts     | —                       |
+| 2     | src/services/auth.ts    | src/types/auth.ts       |
+
+Phase 1 tasks run in parallel. Phase 2 waits for Phase 1.
+If every task chains to the previous, swarm degrades to sequential.
 ```
-Task #2 **cannot start** until #1 is done. The system enforces this - no more "oops, I forgot the prerequisite."
 
 ### Options
 
@@ -141,11 +152,11 @@ Task #2 **cannot start** until #1 is done. The system enforces this - no more "o
 | **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
 | **Context** | Full conversation history | Each agent gets task description only |
 | **Visibility** | See work live | Check with `ctrl+t` or TaskList |
-| **Task system** | ✅ Same | ✅ Same |
-| **Dependencies** | ✅ Same | ✅ Same |
-| **Exit criteria** | ✅ Enforced | ✅ Enforced |
+| **Task system** | Same | Same |
+| **Dependencies** | Same | Same |
+| **Exit criteria** | Enforced | Enforced |
 
-**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel — parallelism depends on the plan's Dependency Graph structure.
 
 ---
 
@@ -153,11 +164,12 @@ Task #2 **cannot start** until #1 is done. The system enforces this - no more "o
 
 | Section | Purpose |
 |---------|---------|
-| Reference Implementation | Complete code (50-200+ lines) |
-| Migration Patterns | Before/after with line numbers |
+| Implementation Plan | Complete code per file (50-200+ lines) |
+| Dependencies / Provides | Per-file exact file path dependencies |
+| Dependency Graph | Phase table for execution ordering |
 | Exit Criteria | Exact commands (`npm test -- auth`) |
 
-The plan is the **source of truth**. When context compacts, re-read it.
+The plan is the **source of truth**. The `## Dependency Graph` table tells executors which tasks can run in parallel and which must wait. When context compacts, re-read the plan.
 
 ---
 

@@ -10,7 +10,7 @@
 
 **Loops and swarms powered by Claude Code's built-in Task System.**
 
-Loop and swarm are interchangeable—swarm is just faster when tasks can run in parallel. Both enforce exit criteria, use Claude's native task dependencies, `ctrl+t` progress, and automatic persistence.
+Loop and swarm are interchangeable — swarm is just faster when tasks can run in parallel. Both enforce exit criteria, use Claude's native task dependencies, `ctrl+t` progress, and automatic persistence.
 
 Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
@@ -84,7 +84,7 @@ The community built Ralph Wiggum loops with workarounds:
 
 - **Stop hooks**: Shell scripts (`.sh` files) that ran after each Claude response, grepping output for keywords like "complete" or "done" to decide whether to continue the loop
 - **External plan files**: Markdown files tracking task state since Claude had no built-in persistence
-- **TodoWrite**: Flat task lists with no dependency ordering - tasks could run out of order
+- **TodoWrite**: Flat task lists with no dependency ordering — tasks could run out of order
 - **Fresh sessions**: Starting new conversations to fight context rot, manually re-establishing state each time
 
 ### What We Use Now
@@ -95,7 +95,7 @@ Claude Code v2.1.19+ provides native tools that replace all of this:
 |----------------|-------------------|-----------------|
 | Stop hooks (shell scripts) | `TaskUpdate({ status: "completed" })` | No external scripts, status is structured data |
 | External plan.md for state | `~/.claude/tasks/` storage | Survives context compaction automatically |
-| TodoWrite flat lists | `TaskUpdate({ addBlockedBy: [...] })` | Dependencies enforced - tasks can't run out of order |
+| TodoWrite flat lists | `TaskUpdate({ addBlockedBy: [...] })` | Dependencies enforced — tasks can't run out of order |
 | Manual session coordination | `CLAUDE_CODE_TASK_LIST_ID` env var | Same task list across sessions |
 | Single agent | `TaskList` + parallel workers | Multiple agents coordinate via shared state |
 
@@ -110,7 +110,7 @@ Claude Code v2.1.19+ provides native tools that replace all of this:
 
 ### What Tasks Don't Do
 
-`TaskList` shows ID, subject, status, and blockedBy - **but NOT description**. To see implementation details, you must call `TaskGet` for each task individually.
+`TaskList` shows ID, subject, status, and blockedBy — **but NOT description**. To see implementation details, you must call `TaskGet` for each task individually.
 
 **This is why we still use plan files.** Tasks track status. Plans hold implementation details.
 
@@ -130,10 +130,29 @@ Task System (~/.claude/tasks/) →  Status tracking, dependencies, parallel coor
 
 ### How Dependencies Work
 
+Dependencies flow through the entire pipeline:
+
 ```
-TaskCreate({ subject: "Set up database" })           // #1
-TaskCreate({ subject: "Create auth middleware" })    // #2
-TaskUpdate({ taskId: "2", addBlockedBy: ["1"] })     // #2 waits for #1
+Plan Creator                    Converter                      Executor
+┌──────────────┐    ┌─────────────────────────┐    ┌──────────────────────┐
+│ Dependency   │ →  │ dependsOn (prd.json)    │ →  │ addBlockedBy (task   │
+│ Graph        │    │ depends_on (beads)      │    │ primitive)           │
+│              │    │                         │    │                      │
+│ Phase 1: A,B │    │ US-003: ["US-001","002"]│    │ taskId "3":          │
+│ Phase 2: C   │    │                         │    │  blockedBy: ["1","2"]│
+└──────────────┘    └─────────────────────────┘    └──────────────────────┘
+```
+
+Plan creators write a `## Dependency Graph` table. Converters read it to build `dependsOn` (prd.json) or `depends_on` (beads). Loop/swarm commands translate those to `addBlockedBy` using an ID map.
+
+**Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
+
+A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** (executable) when its `blockedBy` list is empty.
+
+```
+TaskCreate({ subject: "Set up database" })           // → task "1"
+TaskCreate({ subject: "Create auth middleware" })     // → task "2"
+TaskUpdate({ taskId: "2", addBlockedBy: ["1"] })      // #2 waits for #1
 ```
 
 Task #2 **cannot start** until #1 completes. The system enforces this.
@@ -180,7 +199,7 @@ CLAUDE_CODE_TASK_LIST_ID="my-project" claude
 { "env": { "CLAUDE_CODE_TASK_LIST_ID": "my-project" } }
 ```
 
-Start a new session tomorrow - your task list is still there.
+Start a new session tomorrow — your task list is still there.
 
 ---
 
@@ -192,7 +211,7 @@ Start a new session tomorrow - your task list is still there.
 | **Tasks** | prd.json format | `/tasks-converter` | `/tasks-loop` | `/tasks-swarm` |
 | **Beads** | Persistent memory | `/beads-converter` | `/beads-loop` | `/beads-swarm` |
 
-**Converters** transform plans into executable formats. `/tasks-converter` creates prd.json files. `/beads-converter` creates beads with epic→task hierarchy. Simple workflow doesn't need conversion—it executes plans directly.
+**Converters** transform plans into executable formats. `/tasks-converter` creates prd.json files with `dependsOn` arrays. `/beads-converter` creates beads with epic→task hierarchy and `depends_on` via `bd dep add`. Both read the plan's `## Dependency Graph` table to build dependencies that maximize parallel execution.
 
 **All use Claude Code's built-in Task System** for dependencies, `ctrl+t` progress, and persistence.
 
@@ -206,10 +225,10 @@ Start a new session tomorrow - your task list is still there.
 | **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
 | **Context** | Full conversation history | Each agent gets task description only |
 | **Visibility** | See work live | Check with `ctrl+t` or TaskList |
-| **Task system** | ✅ Same | ✅ Same |
-| **Dependencies** | ✅ Same | ✅ Same |
+| **Task system** | Same | Same |
+| **Dependencies** | Same | Same |
 
-**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel. Dependencies determine parallelism — tasks in the same dependency phase run simultaneously, later phases wait.
 
 ### Simple (Start Here)
 
@@ -267,6 +286,7 @@ ralph-tui run --tracker beads --epic <epic-id>
                     ┌─────────────────┐
                     │  Create Tasks   │
                     │  + Dependencies │
+                    │ (from Dep Graph)│
                     └────────┬────────┘
                              │
         ┌────────────────────┴────────────────────┐
@@ -325,7 +345,7 @@ ralph-tui run --tracker beads --epic <epic-id>
                 └─────────────────┘
 ```
 
-**Sequential execution.** Main agent works through tasks one at a time in dependency order. Exit criteria verified at end. Loops until all tests pass.
+**Sequential execution.** Main agent works through tasks one at a time in dependency order. Blocked tasks wait until their dependencies complete. Exit criteria verified at end. Loops until all tests pass.
 
 ---
 
@@ -341,12 +361,14 @@ ralph-tui run --tracker beads --epic <epic-id>
                     ┌─────────────────┐
                     │  Create Tasks   │
                     │  + Dependencies │
+                    │ (from Dep Graph)│
                     └────────┬────────┘
                              │
                              ▼
                     ┌─────────────────┐
                     │  Spawn up to N  │
                     │ background agents│
+                    │ (ready tasks)   │
                     └────────┬────────┘
                              │
          ┌───────────────────┼───────────────────┐
@@ -377,7 +399,9 @@ ralph-tui run --tracker beads --epic <epic-id>
         │            │                │           │
         │            ▼                │           │
         │   ┌─────────────────┐       │           │
-        │   │  Check TaskList │       │           │
+        │   │  Find ready     │       │           │
+        │   │ (pending+empty  │       │           │
+        │   │  blockedBy)     │       │           │
         │   │  Mark in_progress│      │           │
         │   │  Spawn workers  │       │           │
         │   └────────┬────────┘       │           │
@@ -396,7 +420,7 @@ ralph-tui run --tracker beads --epic <epic-id>
                     └─────────────────┘
 ```
 
-**Queue-based parallel execution (default: 3 workers).** Main agent marks tasks in_progress and spawns up to N background agents. Each agent does ONE task then exits. On completion notification, main agent marks the task completed, checks TaskList, marks new tasks in_progress, and spawns workers. Dependencies enforced—blocked tasks wait until unblocked.
+**Queue-based parallel execution (default: 3 workers).** Main agent marks tasks in_progress and spawns up to N background agents. Each agent does ONE task then exits. On completion notification, main agent marks the task completed, checks TaskList for newly unblocked tasks (status=`pending`, empty `blockedBy`), marks them in_progress, and spawns workers. Dependencies enforced — blocked tasks wait until all their blockers complete.
 
 ---
 
@@ -409,6 +433,8 @@ ralph-tui run --tracker beads --epic <epic-id>
 | `/plan-creator <feature>` | New features (brownfield development) |
 | `/bug-plan-creator <error> <desc>` | Bug fixes, root cause analysis |
 | `/code-quality-plan-creator <files>` | Refactoring, dead code, security |
+
+All three produce plans with the same structure: per-file implementation details, `## Dependency Graph` table, and exit criteria. Any plan can be fed to any converter or executed directly via `/plan-loop` or `/plan-swarm`.
 
 ### Execute Loops (Sequential)
 
@@ -434,10 +460,12 @@ Cancel any swarm: `/cancel-swarm`
 
 ### Convert Formats
 
-| Command | Output |
-|---------|--------|
-| `/tasks-converter <plan>` | prd.json for RalphTUI |
-| `/beads-converter <plan>` | Beads issues |
+| Command | Output | Dependency Source |
+|---------|--------|-------------------|
+| `/tasks-converter <plan>` | prd.json with `dependsOn` arrays | Plan's `## Dependency Graph` table |
+| `/beads-converter <plan>` | Beads issues with `bd dep add` | Plan's `## Dependency Graph` table |
+
+Converters read the plan's `## Dependency Graph` to build file→task/bead ID maps and translate file dependencies to task dependencies. Falls back to per-file `Dependencies`/`Provides` for older plans without a Dependency Graph.
 
 ### Utilities
 
@@ -456,21 +484,35 @@ Cancel any swarm: `/cancel-swarm`
 
 ## What's In A Plan?
 
-Plans are markdown files in `.claude/plans/`:
+Plans are markdown files in `.claude/plans/` with structured sections:
 
 ```markdown
-## Reference Implementation
-[Complete code, 50-200+ lines — not pseudocode]
+## Implementation Plan
 
-## Migration Patterns
-[Exact before/after with file:line references]
+### src/types/auth.ts [create]
+[Complete code — not pseudocode]
+Dependencies: —
+Provides: AuthToken type, validateToken() function
+
+### src/services/auth.ts [create]
+[Complete code]
+Dependencies: src/types/auth.ts
+Provides: AuthService class
+
+## Dependency Graph
+
+| Phase | File                    | Action | Depends On              |
+|-------|-------------------------|--------|-------------------------|
+| 1     | `src/types/auth.ts`     | create | —                       |
+| 2     | `src/services/auth.ts`  | create | `src/types/auth.ts`     |
 
 ## Exit Criteria
 npm test -- auth && npm run typecheck
-[Specific commands, not "run tests"]
 ```
 
 **Self-Contained Rule:** Each task must be implementable with ONLY its description. No "see design.md" allowed.
+
+**Dependency Graph Rule:** The `## Dependency Graph` table is the source of truth for execution order. Converters read it to build `dependsOn`/`depends_on`. Files in the same phase can execute in parallel. Only real code dependencies should create phase boundaries.
 
 ---
 
@@ -497,8 +539,8 @@ Code maps give plan creators a head start by providing file→symbol mappings, s
 ```
 your-project/
 ├── .claude/
-│   ├── plans/          # Source of truth
-│   ├── prd/            # prd.json files
+│   ├── plans/          # Source of truth (plan files with Dependency Graphs)
+│   ├── prd/            # prd.json files (from /tasks-converter)
 │   ├── maps/           # Code maps (consumed by plan creators)
 │   └── prompts/        # Generated prompts
 ├── .ralph-tui/         # RalphTUI config (if using)
@@ -543,6 +585,7 @@ model: opus    # opus | sonnet | haiku
 | Context filling up | Plans persist outside conversation |
 | prd.json not found | Use `userStories` and `passes` fields |
 | Beads CLI missing | `brew tap steveyegge/beads && brew install bd` |
+| Swarm runs sequentially | Check plan's Dependency Graph — every task chained to previous degrades swarm to sequential. Only declare real code dependencies. |
 
 ---
 

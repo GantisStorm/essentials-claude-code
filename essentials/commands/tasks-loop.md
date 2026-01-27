@@ -37,7 +37,18 @@ Parse the JSON and identify:
 
 ### Step 2: Create Task Graph
 
-For each userStory, create a built-in task:
+Create a task for each userStory and build an **ID map** as you go:
+
+```json
+// Create tasks in order — each returns a task ID
+TaskCreate({ "subject": "US-001: Setup database schema", ... })  // → task "1"
+TaskCreate({ "subject": "US-002: Implement auth service", ... }) // → task "2"
+TaskCreate({ "subject": "US-003: Add login route", ... })        // → task "3"
+
+// ID map: { "US-001": "1", "US-002": "2", "US-003": "3" }
+```
+
+Full TaskCreate per story:
 
 ```json
 TaskCreate({
@@ -48,16 +59,20 @@ TaskCreate({
 })
 ```
 
-Set dependencies from `dependsOn`:
+**Translate `dependsOn` to `addBlockedBy`** using the ID map:
 
 ```json
+// prd.json says: US-003 has dependsOn: ["US-001", "US-002"]
+// ID map: US-001→"1", US-002→"2", US-003→"3"
 TaskUpdate({
-  "taskId": "2",
-  "addBlockedBy": ["1"]  // Map US-xxx IDs to task IDs
+  "taskId": "3",
+  "addBlockedBy": ["1", "2"]
 })
 ```
 
-Skip stories already completed (`passes: true`) - create them as already completed.
+A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** (executable) when its blockedBy list is empty.
+
+Skip stories already completed (`passes: true`) — create them as already completed.
 
 ### Step 3: Execute Tasks Sequentially
 

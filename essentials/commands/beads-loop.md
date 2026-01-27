@@ -35,7 +35,18 @@ Parse the output to get all beads.
 
 ### Step 2: Create Task Graph
 
-For each bead, create a built-in task:
+Create a task for each bead and build an **ID map** as you go:
+
+```json
+// Create tasks in order — each returns a task ID
+TaskCreate({ "subject": "beads-abc123: Setup types", ... })      // → task "1"
+TaskCreate({ "subject": "beads-def456: Implement auth", ... })   // → task "2"
+TaskCreate({ "subject": "beads-ghi789: Add routes", ... })       // → task "3"
+
+// ID map: { "beads-abc123": "1", "beads-def456": "2", "beads-ghi789": "3" }
+```
+
+Full TaskCreate per bead:
 
 ```json
 TaskCreate({
@@ -46,14 +57,18 @@ TaskCreate({
 })
 ```
 
-Set dependencies based on parent/child relationships:
+**Translate bead dependencies to `addBlockedBy`** using the ID map. Extract `depends_on` from `bd list --json` output:
 
 ```json
+// bd list shows: beads-ghi789 depends_on ["beads-abc123", "beads-def456"]
+// ID map: beads-abc123→"1", beads-def456→"2", beads-ghi789→"3"
 TaskUpdate({
-  "taskId": "2",
-  "addBlockedBy": ["1"]
+  "taskId": "3",
+  "addBlockedBy": ["1", "2"]
 })
 ```
+
+A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** (executable) when its blockedBy list is empty.
 
 ### Step 3: Execute Tasks Sequentially
 

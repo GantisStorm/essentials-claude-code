@@ -40,6 +40,22 @@ brew tap steveyegge/beads && brew install bd
                                                    →  ralph-tui run (dashboard)
 ```
 
+**How dependencies flow:**
+```
+Plan Creator               beads-converter            beads-loop / beads-swarm
+┌──────────────────┐    ┌────────────────────┐    ┌──────────────────────┐
+│ ## Dependency     │ →  │ bd dep add         │ →  │ addBlockedBy (task   │
+│ Graph            │    │ (beads depends_on) │    │ primitive)           │
+│                  │    │                    │    │                      │
+│ Phase 1: A, B   │    │ beads-abc: no deps │    │ task "1": ready      │
+│ Phase 2: C      │    │ beads-def: no deps │    │ task "2": ready      │
+│   depends on A,B│    │ beads-ghi: dep abc │    │ task "3": blocked    │
+│                  │    │            dep def │    │   blockedBy: ["1","2"]│
+└──────────────────┘    └────────────────────┘    └──────────────────────┘
+```
+
+The plan's `## Dependency Graph` table is the source of truth. The converter reads it to build file→bead ID maps and runs `bd dep add` for each dependency. The executor reads `depends_on` from `bd list --json` and translates to `addBlockedBy` using an ID map. Beads in the same phase run in parallel in swarm mode.
+
 ---
 
 ## Setup
@@ -75,13 +91,17 @@ bd doctor --fix
 ### 1. Create Plan
 ```bash
 /plan-creator Add complete auth system
+# Also works: /bug-plan-creator, /code-quality-plan-creator
 ```
 
 ### 2. Convert to Beads
 ```bash
 /beads-converter .claude/plans/auth-system-3k7f2-plan.md
 # Creates epic + child tasks with 'ralph' label
+# Sets dependencies via bd dep add from plan's Dependency Graph
 ```
+
+The converter reads the plan's `## Dependency Graph` table, builds a file→bead ID map, and runs `bd dep add` for each dependency. Uses heredoc (`<<'BEAD_EOF'`) for bead descriptions containing code blocks. Falls back to per-file `Dependencies`/`Provides` for older plans.
 
 ### 3. Execute: Loop or Swarm
 
@@ -112,10 +132,12 @@ ralph-tui run --tracker beads --epic <epic-id>
 | **Executor** | Main agent (foreground) | Background agents |
 | **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
 | **Context** | Full conversation history | Each agent gets task description only |
-| **Beads sync** | ✅ Closes beads | ✅ Closes beads |
-| **RalphTUI compatible** | ✅ Yes | ✅ Yes |
+| **Beads sync** | Closes beads | Closes beads |
+| **RalphTUI compatible** | Yes | Yes |
 
-**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel.
+**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel — parallelism depends on the `depends_on` structure. Beads with no unresolved dependencies run simultaneously.
+
+**Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
 
 ---
 

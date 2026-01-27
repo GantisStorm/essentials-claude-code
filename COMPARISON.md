@@ -1,6 +1,6 @@
 # How Essentials Compares
 
-> **Loops and swarms powered by Claude Code's built-in Task System.** Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
+> **Loops and swarms powered by Claude Code's built-in Task System.** Loop and swarm are interchangeable — swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
 
 Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
@@ -22,10 +22,10 @@ Human: [gives up, fixes manually]
 The AI said "done" three times when it wasn't done. This pattern wastes more time than writing code yourself.
 
 **Why it happens:**
-- No verification requirement - "done" means "I wrote code" not "code works"
-- Optimistic completion - AI assumes success rather than proving it
-- Context loss - long tasks exceed context windows, losing requirements
-- No defined success - vague criteria like "tests pass" instead of exact commands
+- No verification requirement — "done" means "I wrote code" not "code works"
+- Optimistic completion — AI assumes success rather than proving it
+- Context loss — long tasks exceed context windows, losing requirements
+- No defined success — vague criteria like "tests pass" instead of exact commands
 
 **Essentials fixes this.** The loop cannot end until verification passes. "Done" means actually done.
 
@@ -71,9 +71,9 @@ Interactive back-and-forth. Human guides every step.
 Request → Plan with Exit Criteria → Execute → Verify → Loop if Failed → Done
 ```
 
-Verification-driven loops for brownfield development. Plans define exit criteria. Loops run until tests pass. Execute via loop (sequential) or swarm (parallel).
+Verification-driven loops for brownfield development. Plans define exit criteria and a `## Dependency Graph` for execution ordering. Loops run until tests pass. Execute via loop (sequential) or swarm (parallel).
 
-**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Integrates with Ralph TUI for dashboard visualization and Beads for persistent task tracking.
+**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Structured dependency graph enables parallel execution. Integrates with Ralph TUI for dashboard visualization and Beads for persistent task tracking.
 
 **Weaknesses:** Overhead for trivial tasks. Solo-focused.
 
@@ -120,7 +120,7 @@ The [Ralph Wiggum pattern](https://ghuntley.com/ralph/) pioneered autonomous Cla
 
 - **Stop hooks**: Shell scripts (`.sh` files) configured in `hooks.json` that ran after each Claude response. They'd grep the output for keywords like "complete" or "EXIT_CRITERIA_PASSED" to decide whether to continue looping or stop.
 - **External plan files**: Since Claude had no persistent storage, we tracked task state in markdown files that survived between sessions.
-- **TodoWrite lists**: Flat task lists with no ordering - if task #3 depended on #1, you had to hope Claude did them in order.
+- **TodoWrite lists**: Flat task lists with no ordering — if task #3 depended on #1, you had to hope Claude did them in order.
 - **Fresh sessions**: Starting new conversations to fight context rot, then manually re-reading plan files to restore state.
 - **Single agent**: No way to coordinate multiple agents working on the same task list.
 
@@ -155,17 +155,38 @@ TaskGet     → Get full task details when needed
 
 ## Why We Still Use Plan Files
 
-Tasks track **status**. Plans hold **implementation details**.
+Tasks track **status**. Plans hold **implementation details** and **dependency structure**.
 
-`TaskList` shows ID, subject, status, blockedBy - but **not descriptions**. To see what was done, you'd call `TaskGet` for each task individually. There's no "show me all implementation notes at a glance."
+`TaskList` shows ID, subject, status, blockedBy — but **not descriptions**. To see what was done, you'd call `TaskGet` for each task individually. There's no "show me all implementation notes at a glance."
 
 ```
-Plan file (.claude/plans/)     →  Full code (50-200+ lines per task)
+Plan file (.claude/plans/)     →  Full code, Dependency Graph, exit criteria
 Task System (~/.claude/tasks/) →  Status, dependencies, parallel coordination
 ```
 
 **Use Tasks for:** Tracking progress, enforcing order, coordinating workers.
-**Use Plans for:** Implementation details, reference code, exit criteria.
+**Use Plans for:** Implementation details, reference code, dependency graph, exit criteria.
+
+---
+
+## The Dependency Pipeline
+
+Plans now include a structured `## Dependency Graph` table that flows through the entire system:
+
+```
+Plan Creator                    Converter                      Executor
+┌──────────────┐    ┌─────────────────────────┐    ┌──────────────────────┐
+│ ## Dependency │ →  │ dependsOn (prd.json)    │ →  │ addBlockedBy (task   │
+│ Graph        │    │ depends_on (beads)      │    │ primitive)           │
+│              │    │                         │    │                      │
+│ Phase 1: A,B │    │ US-003: ["US-001","002"]│    │ taskId "3":          │
+│ Phase 2: C   │    │                         │    │   blockedBy: ["1","2"]│
+└──────────────┘    └─────────────────────────┘    └──────────────────────┘
+```
+
+**All three plan creators** (`/plan-creator`, `/bug-plan-creator`, `/code-quality-plan-creator`) produce plans with the same `## Dependency Graph` table. Both converters (`/tasks-converter`, `/beads-converter`) read the table to build dependency arrays. All eight executors translate those to `addBlockedBy`.
+
+**Why this matters for swarms:** Tasks in the same dependency phase have no inter-dependencies and can execute simultaneously. If you chain every task to the previous one, swarm degrades to sequential. The Dependency Graph maximizes parallelism by only declaring real code dependencies.
 
 ---
 
@@ -177,7 +198,7 @@ Task System (~/.claude/tasks/) →  Status, dependencies, parallel coordination
 
 **Other tools:** Start over, re-explain everything, or accept degraded quality.
 
-**Essentials:** Task state persists in `~/.claude/tasks/` - outside the conversation. On compaction:
+**Essentials:** Task state persists in `~/.claude/tasks/` — outside the conversation. On compaction:
 1. `TaskList` shows all tasks and their status
 2. Re-read plan file for full context
 3. Find next pending unblocked task
@@ -205,7 +226,7 @@ The old TodoWrite lists disappeared on compaction. The new Task System survives.
 
 **Other tools:** Human notices eventually. Manually redirect.
 
-**Essentials:** Detects stuck state (>3 iterations on same task, repeated errors). Triggers decomposition - break the stuck task into 2-3 smaller, more specific tasks with their own exit criteria.
+**Essentials:** Detects stuck state (>3 iterations on same task, repeated errors). Triggers decomposition — break the stuck task into 2-3 smaller, more specific tasks with their own exit criteria.
 
 ---
 
@@ -222,23 +243,6 @@ The old TodoWrite lists disappeared on compaction. The new Task System survives.
 ## Verification: The Key Innovation
 
 Most tools optimize for speed of first output. Essentials optimizes for time-to-actually-done.
-
-```
-Traditional total time:
-  Generation:     10 min
-  "It's broken":  15 min
-  "Still broken": 20 min
-  Manual fix:     30 min
-  Total:          75 min
-
-Essentials total time:
-  Planning:       10 min
-  Loop iteration: 40 min
-  (Exit criteria pass)
-  Total:          50 min
-```
-
-The planning "overhead" pays for itself by eliminating debug cycles.
 
 **Exit criteria examples:**
 
@@ -271,16 +275,26 @@ Specific, executable commands. The loop runs them automatically.
 
 ## Parallel Execution with Dependencies
 
-Swarms use a queue-based approach with background agents:
+Swarms use a queue-based approach with background agents. The plan's `## Dependency Graph` determines which tasks can run in parallel:
 
 ```
-Task Graph:
-#1 Set up database
-#2 Create user model      [no deps - can run with #1]
-#3 Auth middleware        [blocked by #1, #2]
-#4 Login routes           [blocked by #3]
-#5 Protected routes       [blocked by #3]
-#6 Tests                  [blocked by #4, #5]
+Dependency Graph from Plan:
+| Phase | File                  | Depends On        |
+|-------|-----------------------|-------------------|
+| 1     | src/db/schema.ts      | —                 |
+| 1     | src/models/user.ts    | —                 |
+| 2     | src/auth/middleware.ts | schema, user      |
+| 3     | src/routes/login.ts   | middleware         |
+| 3     | src/routes/protected.ts| middleware         |
+| 4     | tests/auth.test.ts    | login, protected   |
+
+Task Graph (after converter + executor):
+#1 Set up database           (Phase 1 — ready)
+#2 Create user model         (Phase 1 — ready, parallel with #1)
+#3 Auth middleware            (Phase 2 — blocked by #1, #2)
+#4 Login routes              (Phase 3 — blocked by #3)
+#5 Protected routes          (Phase 3 — blocked by #3, parallel with #4)
+#6 Tests                     (Phase 4 — blocked by #4, #5)
 ```
 
 **How the queue works:**
@@ -296,7 +310,7 @@ Main:     Woken → Mark #3 completed → TaskList → #4, #5 unblocked → Mark
 ...
 ```
 
-Each agent does ONE task then exits. Main agent marks tasks in_progress on spawn, completed on return, checks TaskList, and spawns new agents as tasks unblock. No racing, no stuck loops.
+Each agent does ONE task then exits. Main agent marks tasks in_progress on spawn, completed on return, checks TaskList for newly unblocked tasks (status=`pending`, empty `blockedBy`), and spawns new agents as tasks unblock. No racing, no stuck loops.
 
 **Workers limit:** Use `--workers N` to control max concurrent agents (default: 3).
 
@@ -318,7 +332,7 @@ If you need these things, excellent tools exist. Essentials solves a different p
 
 ## The Three Tiers
 
-> **Start with Simple.** 80% of tasks don't need tasks or beads conversion. Escalate only when you hit problems—hallucinations, lost context, multi-day features, or want prd.json format.
+> **Start with Simple.** 80% of tasks don't need tasks or beads conversion. Escalate only when you hit problems — hallucinations, lost context, multi-day features, or want prd.json format.
 
 Match workflow to task size:
 
@@ -349,7 +363,7 @@ Single session. Exit criteria enforced. Loop until pass. **This handles 80% of t
 ralph-tui run --prd ./prd.json
 ```
 
-Creates prd.json file with self-contained tasks. **Use when you want prd.json format.** Each task has full implementation code—no reading the original plan.
+Creates prd.json file with self-contained tasks and `dependsOn` arrays (from plan's Dependency Graph). **Use when you want prd.json format.** Each task has full implementation code — no reading the original plan.
 
 ### Beads: Plan → Beads → Beads Loop (Persistent Memory)
 
@@ -365,7 +379,7 @@ Creates prd.json file with self-contained tasks. **Use when you want prd.json fo
 ralph-tui run --tracker beads --epic <id>
 ```
 
-Full persistence. Each bead is self-contained. Survives sessions, context compaction, interruptions. **Use when Simple tier fails—AI hallucinates mid-task, loses track, or feature spans multiple days.**
+Full persistence. Each bead is self-contained with dependencies (from plan's Dependency Graph via `bd dep add`). Survives sessions, context compaction, interruptions. **Use when Simple tier fails — AI hallucinates mid-task, loses track, or feature spans multiple days.**
 
 ### Execution Options
 
@@ -386,11 +400,11 @@ Code-first gives you code in seconds. But if it's wrong, you spend hours debuggi
 
 **Freedom vs Structure**
 
-Code-first lets you improvise. Essentials requires a plan. The structure is the feature - it's what prevents premature completion.
+Code-first lets you improvise. Essentials requires a plan. The structure is the feature — it's what prevents premature completion.
 
 **Throughput vs Reliability**
 
-Loop and swarm are interchangeable - swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
+Loop and swarm are interchangeable — swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync. The plan's Dependency Graph determines how much parallelism is possible.
 
 **Simplicity vs Power**
 
@@ -398,13 +412,13 @@ Conversation tools have no learning curve. Essentials has three tiers to learn. 
 
 **Token Cost vs Context Recovery**
 
-The tasks and beads workflows (plan → tasks/beads) copy implementation code into each task/bead. This is intentional—each must be self-contained for context recovery. But it's expensive. For simple tasks, use `/implement-loop` directly.
+The tasks and beads workflows (plan → tasks/beads) copy implementation code into each task/bead. This is intentional — each must be self-contained for context recovery. But it's expensive. For simple tasks, use `/implement-loop` directly.
 
 ---
 
 ## The Bottom Line
 
-Loops and swarms powered by Claude Code's built-in Task System. Plans define exit criteria. Loops run until tests pass. Done means actually done.
+Loops and swarms powered by Claude Code's built-in Task System. Plans define exit criteria and structured dependency graphs. Loops run until tests pass. Done means actually done.
 
 The loop won't end until verification passes. That's the guarantee.
 
