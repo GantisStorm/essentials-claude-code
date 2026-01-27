@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Glob, Read
+allowed-tools: Task, Glob, Read
 argument-hint: "<dir1> [dir2] ... [dirN]"
 description: Generate DEVGUIDE.md architectural documentation using LSP (project)
 context: fork
@@ -55,7 +55,7 @@ For each directory:
 
 ### Step 4: Launch Agents
 
-For EACH directory, launch background agent:
+For EACH directory, launch agent:
 
 ```
 Generate DEVGUIDE: <directory-path>
@@ -66,17 +66,12 @@ Rules: <exists/not found>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:document-creator-default"
-run_in_background: true
 prompt: "Generate DEVGUIDE: <dir>\nOutput: <path>\nRules: <status>"
 ```
 
-**Launch ALL agents in a single message for parallel execution.**
+**Launch ALL agents in a single message for parallel execution.** Results return directly from each Task call.
 
-### Step 5: Collect Results
-
-Use `TaskOutput` with `block: true` for each agent. Collect output paths and status.
-
-### Step 6: Report Results
+### Step 5: Report Results
 
 ```
 ## DEVGUIDE Documentation Created (LSP)

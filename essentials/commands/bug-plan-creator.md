@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Bash, Read
+allowed-tools: Task, Bash, Read
 argument-hint: <any-input>
 description: Deep bug investigation with architectural fix plan generation - works with any executor (loop or swarm)
 context: fork
@@ -41,7 +41,7 @@ Parse `$ARGUMENTS`:
 
 ### Step 2: Launch Agent
 
-Launch background agent with gathered context:
+Launch agent with gathered context:
 
 ```
 Investigate bug and create fix plan:
@@ -52,11 +52,8 @@ Investigate bug and create fix plan:
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:bug-plan-creator-default"
-run_in_background: true
 prompt: "Investigate bug and create fix plan:\n\n<gathered context>"
 ```
-
-Wait with TaskOutput (block: true).
 
 ### Step 3: Report Result
 

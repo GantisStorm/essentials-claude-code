@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput
+allowed-tools: Task
 argument-hint: <feature-description>
 description: Create architectural plans for new features - works with any executor (loop or swarm). For bugs use /bug-plan-creator, for code quality use /code-quality-plan-creator.
 context: fork
@@ -32,7 +32,7 @@ Parse `$ARGUMENTS` as the task description. Grammar and spell check before passi
 
 ### Step 2: Launch Agent
 
-Launch background agent with just the task:
+Launch agent with just the task:
 
 ```
 Create architectural plan: <corrected task description>
@@ -41,11 +41,8 @@ Create architectural plan: <corrected task description>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:plan-creator-default"
-run_in_background: true
 prompt: "Create architectural plan: <corrected task description>"
 ```
-
-Wait with TaskOutput (block: true).
 
 ### Step 3: Report Result
 

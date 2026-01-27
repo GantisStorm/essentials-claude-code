@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Bash
+allowed-tools: Task, Bash
 argument-hint: "<root_dir> [--ignore <patterns>] | --update <codemap> [--diff | --mr <id>]"
 description: Generate or update hierarchical code map from any directory as root, with nested tree structure (project)
 context: fork
@@ -116,18 +116,14 @@ Filter to only files within the codemap's root directory.
 **Create Mode:**
 ```
 subagent_type: "essentials:codemap-creator-default"
-run_in_background: true
 prompt: "MODE: create\nRoot: <root_dir>\nIgnore: <patterns or none>"
 ```
 
 **Update Mode:**
 ```
 subagent_type: "essentials:codemap-creator-default"
-run_in_background: true
 prompt: "MODE: update\nCodemap: <codemap_path>\nChanged files:\n- file1.ts\n- file2.ts\n..."
 ```
-
-Wait with TaskOutput (block: true).
 
 ### Step 4: Report Result
 

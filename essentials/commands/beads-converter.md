@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Bash, Read, Glob
+allowed-tools: Task, Bash, Read, Glob
 argument-hint: "<plan-path>"
 description: Convert plans to Beads - works with /beads-loop, /beads-swarm, or RalphTUI
 model: opus
@@ -28,7 +28,7 @@ If bd not installed, report error and stop.
 
 ### Step 2: Launch Agent
 
-Launch background agent immediately with just the path:
+Launch agent immediately with just the path:
 
 ```
 Convert plan to beads: <plan-path>
@@ -37,11 +37,8 @@ Convert plan to beads: <plan-path>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:beads-converter-default"
-run_in_background: true
 prompt: "Convert plan to beads: <plan-path>"
 ```
-
-Wait with TaskOutput (block: true).
 
 ### Step 3: Report Result
 

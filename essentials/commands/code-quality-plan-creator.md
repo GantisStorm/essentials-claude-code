@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput
+allowed-tools: Task
 argument-hint: "<file1> [file2] ... [fileN]"
 description: LSP-powered architectural code quality analysis - works with any executor (loop or swarm)
 context: fork
@@ -37,7 +37,7 @@ Parse `$ARGUMENTS` to extract file list. Validate each path exists.
 
 ### Step 2: Launch Agents
 
-For EACH file, launch background agent:
+For EACH file, launch agent:
 
 ```
 Analyze code quality: <file-path>
@@ -46,17 +46,12 @@ Analyze code quality: <file-path>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:code-quality-plan-creator-default"
-run_in_background: true
 prompt: "Analyze code quality: <file-path>"
 ```
 
-**Launch ALL agents in a single message for parallel execution.**
+**Launch ALL agents in a single message for parallel execution.** Results return directly from each Task call.
 
-### Step 3: Collect Results
-
-Use `TaskOutput` with `block: true` for each agent. Collect scores, stats, plan paths.
-
-### Step 4: Report Results
+### Step 3: Report Results
 
 ```
 ## Code Quality Analysis Complete (LSP-Powered)

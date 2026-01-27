@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Bash, Read, Glob, Grep, AskUserQuestion
+allowed-tools: Task, Bash, Read, Glob, Grep, AskUserQuestion
 argument-hint: "[--template 'markdown']"
 description: Generate and apply MR/PR description directly via gh or glab CLI (project)
 skills: ["github-cli", "gitlab-cli"]
@@ -74,7 +74,7 @@ git rev-list --count main..HEAD
 
 ### Step 5: Launch Agent
 
-Launch background agent with gathered context:
+Launch agent with gathered context:
 
 ```
 Generate MR/PR description:
@@ -89,11 +89,8 @@ Commits: <count>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:mr-description-creator-default"
-run_in_background: true
 prompt: "Generate MR/PR description:\nPlatform: <platform>\nCLI: <cli>\nAction: <action>\nBranch: <branch info>\nTemplate: <template>\nCommits: <count>"
 ```
-
-Wait with TaskOutput (block: true).
 
 ### Step 6: Report Result
 

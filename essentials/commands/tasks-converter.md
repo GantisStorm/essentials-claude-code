@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Bash, Read, Glob, Write
+allowed-tools: Task, Bash, Read, Glob, Write
 argument-hint: "<plan-path>"
 description: Convert plans to prd.json - works with /tasks-loop, /tasks-swarm, or RalphTUI
 model: opus
@@ -20,7 +20,7 @@ Plan path: `.claude/plans/feature-3k7f2-plan.md`
 
 ### Step 1: Launch Agent
 
-Launch background agent immediately with just the path:
+Launch agent immediately with just the path:
 
 ```
 Convert plan to prd.json: <plan-path>
@@ -29,11 +29,8 @@ Convert plan to prd.json: <plan-path>
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:tasks-converter-default"
-run_in_background: true
 prompt: "Convert plan to prd.json: <plan-path>"
 ```
-
-Wait with TaskOutput (block: true).
 
 ### Step 2: Report Result
 

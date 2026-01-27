@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, TaskOutput, Bash, Read, AskUserQuestion
+allowed-tools: Task, Bash, Read, AskUserQuestion
 argument-hint: <description>
 description: Enhance rough prompt ideas into detailed, effective prompts (project)
 model: opus
@@ -37,7 +37,7 @@ Path: `.claude/prompts/{slug}-{hash5}.md`
 
 ### Step 2: Launch Agent
 
-Launch `prompt-creator-default` in background:
+Launch `prompt-creator-default` agent:
 
 ```
 Enhance this rough prompt idea into a detailed, effective prompt.
@@ -51,10 +51,8 @@ Research the codebase for context, then write the enhanced prompt.
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:prompt-creator-default"
-run_in_background: true
+prompt: "Enhance this rough prompt idea into a detailed, effective prompt.\n\nDescription: <user input>\nOutput file: <generated path>\n\nResearch the codebase for context, then write the enhanced prompt."
 ```
-
-Wait with TaskOutput (block: true).
 
 ### Step 3: Report Result
 
