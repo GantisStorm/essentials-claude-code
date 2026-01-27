@@ -44,13 +44,14 @@ brew tap steveyegge/beads && brew install bd
 ```
 Plan Creator               beads-converter            beads-loop / beads-swarm
 ┌──────────────────┐    ┌────────────────────┐    ┌──────────────────────┐
-│ ## Dependency     │ →  │ bd dep add         │ →  │ addBlockedBy (task   │
+│ ## Dependency    │ →  │ bd dep add         │ →  │ addBlockedBy (task   │
 │ Graph            │    │ (beads depends_on) │    │ primitive)           │
 │                  │    │                    │    │                      │
-│ Phase 1: A, B   │    │ beads-abc: no deps │    │ task "1": ready      │
-│ Phase 2: C      │    │ beads-def: no deps │    │ task "2": ready      │
-│   depends on A,B│    │ beads-ghi: dep abc │    │ task "3": blocked    │
-│                  │    │            dep def │    │   blockedBy: ["1","2"]│
+│ Phase 1: A, B    │    │ beads-abc: no deps │    │ task "1": ready      │
+│ Phase 2: C       │    │ beads-def: no deps │    │ task "2": ready      │
+│   depends on A,B │    │ beads-ghi: dep abc │    │ task "3": blocked    │
+│                  │    │            dep def │    │   blockedBy: ["1",   │
+│                  │    │                    │    │   "2"]               │
 └──────────────────┘    └────────────────────┘    └──────────────────────┘
 ```
 

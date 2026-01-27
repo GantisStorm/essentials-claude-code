@@ -181,11 +181,12 @@ Plans now include a structured `## Dependency Graph` table that flows through th
 ```
 Plan Creator                    Converter                      Executor
 ┌──────────────┐    ┌─────────────────────────┐    ┌──────────────────────┐
-│ ## Dependency │ →  │ dependsOn (prd.json)    │ →  │ addBlockedBy (task   │
+│ Dependency   │ →  │ dependsOn (prd.json)    │ →  │ addBlockedBy (task   │
 │ Graph        │    │ depends_on (beads)      │    │ primitive)           │
 │              │    │                         │    │                      │
 │ Phase 1: A,B │    │ US-003: ["US-001","002"]│    │ taskId "3":          │
-│ Phase 2: C   │    │                         │    │   blockedBy: ["1","2"]│
+│ Phase 2: C   │    │                         │    │   blockedBy: ["1",   │
+│              │    │                         │    │   "2"]               │
 └──────────────┘    └─────────────────────────┘    └──────────────────────┘
 ```
 
@@ -284,14 +285,14 @@ Swarms use a queue-based approach with background agents. The plan's `## Depende
 
 ```
 Dependency Graph from Plan:
-| Phase | File                  | Depends On        |
-|-------|-----------------------|-------------------|
-| 1     | src/db/schema.ts      | —                 |
-| 1     | src/models/user.ts    | —                 |
-| 2     | src/auth/middleware.ts | schema, user      |
-| 3     | src/routes/login.ts   | middleware         |
-| 3     | src/routes/protected.ts| middleware         |
-| 4     | tests/auth.test.ts    | login, protected   |
+| Phase | File                    | Depends On        |
+|-------|-------------------------|-------------------|
+| 1     | src/db/schema.ts        | —                 |
+| 1     | src/models/user.ts      | —                 |
+| 2     | src/auth/middleware.ts  | schema, user      |
+| 3     | src/routes/login.ts     | middleware        |
+| 3     | src/routes/protected.ts | middleware        |
+| 4     | tests/auth.test.ts      | login, protected  |
 
 Task Graph (after converter + executor):
 #1 Set up database           (Phase 1 — ready)

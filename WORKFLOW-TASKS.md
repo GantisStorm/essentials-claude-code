@@ -34,12 +34,13 @@
 ```
 Plan Creator               tasks-converter            tasks-loop / tasks-swarm
 ┌──────────────────┐    ┌────────────────────┐    ┌──────────────────────┐
-│ ## Dependency     │ →  │ dependsOn arrays   │ →  │ addBlockedBy (task   │
+│ ## Dependency    │ →  │ dependsOn arrays   │ →  │ addBlockedBy (task   │
 │ Graph            │    │ in prd.json        │    │ primitive)           │
 │                  │    │                    │    │                      │
-│ Phase 1: A, B   │    │ US-001: []         │    │ task "1": ready      │
-│ Phase 2: C      │    │ US-002: []         │    │ task "2": ready      │
-│   depends on A,B│    │ US-003: ["001","002"]│   │ task "3": blocked    │
+│ Phase 1: A, B    │    │ US-001: []         │    │ task "1": ready      │
+│ Phase 2: C       │    │ US-002: []         │    │ task "2": ready      │
+│   depends on A,B │    │ US-003: ["001",    │    │ task "3": blocked    │
+│                  │    │ "002"]             │    │                      │
 └──────────────────┘    └────────────────────┘    └──────────────────────┘
 ```
 
