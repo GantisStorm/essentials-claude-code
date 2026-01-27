@@ -55,11 +55,14 @@ AI:  "Exit criteria passed" ✓
 /plugin install essentials@essentials-claude-code
 mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
 
+# Generate a codemap first (recommended — gives plan creators grounded codebase knowledge)
+/codemap-creator src/
+
 # Option A: From conversation (after discussing a bug/feature)
 /implement-loop fix the auth bug we discussed    # Sequential
 /implement-swarm refactor the API handlers       # Parallel
 
-# Option B: With plan file
+# Option B: With plan file (auto-uses codemap if present)
 /plan-creator Add user authentication with JWT
 /plan-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential
 /plan-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel
@@ -516,21 +519,26 @@ npm test -- auth && npm run typecheck
 
 ---
 
-## Code Maps (Optional)
+## Code Maps (Recommended)
 
-Code maps give plan creators a head start by providing file→symbol mappings, signatures, dependencies, and export status via LSP.
+**Generate a codemap before creating plans.** Code maps give plan creators and sub-agents grounded knowledge of your codebase — file→symbol mappings, function signatures, dependencies, and export status extracted via LSP. Plans built with a codemap are more accurate and produce fewer hallucinations because the agent starts with real symbols and real dependency relationships instead of exploring from scratch.
 
 ```bash
-# Create a codemap
+# Create a codemap (do this once, then update incrementally)
 /codemap-creator src/
 
-# Update after changes (instead of recreating)
+# Update after changes (instead of recreating from scratch)
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --diff      # git diff
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --mr 123   # GitLab MR
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456   # GitHub PR
+
+# Then create a plan — it automatically uses the codemap
+/plan-creator Add user authentication with JWT
 ```
 
-**All plan creators check for codemaps automatically.** When `.claude/maps/code-map-*.json` exists, plan-creator, bug-plan-creator, and code-quality-plan-creator use it for faster codebase orientation instead of exploring from scratch.
+**All plan creators check for codemaps automatically.** When `.claude/maps/code-map-*.json` exists, plan-creator, bug-plan-creator, and code-quality-plan-creator use it for faster codebase orientation. This means sub-agents spawned by swarm commands also benefit — the plan they receive was built with accurate codebase knowledge, so they write code that fits existing patterns and imports.
+
+**Best practice:** Create a codemap once per project, then use `--update` with `--diff`, `--mr`, or `--pr` to keep it current as code changes. The upfront cost pays for itself across every plan and every sub-agent that executes from those plans.
 
 ---
 
