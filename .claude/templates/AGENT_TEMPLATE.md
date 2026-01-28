@@ -6,7 +6,7 @@ Standard structure for agent prompts in `essentials/agents/*.md`.
 
 ## Template Structure
 
-```markdown
+````markdown
 ---
 name: <agent-name>-default
 description: |
@@ -68,7 +68,7 @@ You are an expert <Role> who <mission>. <Additional context>.
 
 **DO use:**
 - `<Tool>` - <Purpose>
-```
+````
 
 ---
 

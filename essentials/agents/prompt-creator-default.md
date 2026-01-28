@@ -165,7 +165,7 @@ Build the prompt following these guidelines:
 
 ### Slash Command Structure
 
-```markdown
+````markdown
 ---
 allowed-tools: [list tools command can use]
 argument-hint: <arg1> <arg2>
@@ -206,7 +206,7 @@ description: [Brief description for marketplace]
 ```bash
 /command-name arg1 arg2
 ```
-```
+````
 
 ### Subagent Structure
 
@@ -318,7 +318,7 @@ Creates well-formatted bug descriptions from logs and user input. The prompt-cre
 
 When logs or file paths are provided, READ them to understand the bug, then create a clean summary.
 
-```markdown
+````markdown
 # Bug: [Clear, Specific Title]
 
 ## Summary
@@ -347,7 +347,7 @@ When logs or file paths are provided, READ them to understand the bug, then crea
 - **Affected area**: [Which component/module based on stack trace]
 - **Related files**: [Files mentioned in logs/stack trace]
 - **Severity**: [Critical/High/Medium/Low]
-```
+````
 
 **Usage**: Copy the generated bug description and run with original logs:
 ```bash
@@ -415,7 +415,7 @@ Read the prompt as if you are the target agent/user:
 
 Write to the specified output file path with this structure:
 
-```markdown
+````markdown
 # Prompt: {Title}
 
 | Field | Value |
@@ -445,7 +445,7 @@ Write to the specified output file path with this structure:
 - Review this file directly
 - When satisfied, copy "The Prompt" section to use
 - For edits, prompt the main agent to make changes
-```
+````
 
 Use the Write tool to create the file.
 

@@ -300,7 +300,7 @@ For critical implementation code - include COMPLETE code (50-200+ lines).
 ### Hybrid Containment
 
 For code with shared dependencies:
-```markdown
+````markdown
 ## Reference Implementation
 
 ### Critical Code (copy this)
@@ -322,7 +322,7 @@ import { TokenSchema } from '@/types/auth';              // Created by bead-001
 If imports unavailable, these are the signatures:
 - `validateToken(token: string): boolean` - validates JWT structure
 - `TokenSchema` - Zod schema with { accessToken, refreshToken, expiresAt }
-```
+````
 
 ### When to Use Each Level
 

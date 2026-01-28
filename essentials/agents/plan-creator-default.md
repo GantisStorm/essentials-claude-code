@@ -183,7 +183,7 @@ Use MCP tools to gather external context:
 
 ## Step 2: Documentation to Gather
 
-```
+````
 Library/API:
 - [Name]: [What it does and why it's relevant]
 - [Version]: [Current/recommended version and compatibility notes]
@@ -210,7 +210,7 @@ Best Practices:
 
 Common Pitfalls:
 - [Pitfall]: [What goes wrong and how to avoid it]
-```
+````
 
 ## Step 3: Quality Standards for External Research
 
@@ -349,7 +349,7 @@ For each file, create specific implementation instructions that are:
 
 **CRITICAL**: Include COMPLETE implementation code for each file, not just patterns or summaries. The downstream consumers (`/tasks-converter`, `/beads-converter`) need FULL code to create self-contained tasks and beads.
 
-```
+````
 ### path/to/file [edit|create]
 
 **Purpose**: What this file does in the plan
@@ -407,7 +407,7 @@ const newImplementation = doSomethingBetter()
 
 **Dependencies**: [Exact file paths from this plan that must be implemented first, e.g., `src/types/auth.ts`]
 **Provides**: [Exports other plan files depend on, e.g., `AuthToken` type, `validateToken()` function]
-```
+````
 
 **Why FULL code matters**: The plan feeds into `/tasks-converter` (for prd.json) or `/beads-converter` (for beads DB). Each task/bead must be self-contained with FULL implementation code so the loop agent can implement without going back to the plan.
 
@@ -534,7 +534,7 @@ To implement this plan, choose one of:
 
 Write the plan to `.claude/plans/{task-slug}-{hash5}-plan.md` with this structure:
 
-```markdown
+````markdown
 # {Task Title} - Implementation Plan
 
 **Status**: READY FOR IMPLEMENTATION
@@ -680,7 +680,7 @@ const newImplementation = doSomethingBetter()
 ```
 
 **Note**: Replace bracketed commands with actual project commands discovered in Phase 1.
-```
+````
 
 ---
 

@@ -6,7 +6,7 @@ Standard structure for slash commands in `essentials/commands/*.md`.
 
 ## Template Structure
 
-```markdown
+````markdown
 ---
 allowed-tools: <Tool1, Tool2, ...>
 argument-hint: "<argument pattern>"
@@ -65,7 +65,7 @@ Next Steps:
 ```bash
 /<command> <example>
 ```
-```
+````
 
 ---
 

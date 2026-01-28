@@ -392,7 +392,7 @@ If the user disagrees with your approach, they can iterate on the plan. Do not p
 
 For each fix, provide exact specifications:
 
-```
+````
 FIX SPECIFICATIONS:
 
 ### [file path] [edit]
@@ -430,7 +430,7 @@ FIX SPECIFICATIONS:
 
 **Dependencies**: [Exact file paths from this plan that must be fixed first, e.g., `src/types/auth.ts`]
 **Provides**: [Exports other plan files depend on, e.g., fixed `validateToken()` function]
-```
+````
 
 ## Step 3: Build Dependency Graph
 
@@ -486,7 +486,7 @@ Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 ## Step 2: Plan File Format
 
-```markdown
+````markdown
 # Bug Scout Report: [Brief Bug Description]
 
 **Status**: READY FOR IMPLEMENTATION
@@ -631,7 +631,7 @@ Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 - [ ] Regression test added and passing
 - [ ] No new linting or type errors
 
-```
+````
 
 ---
 

@@ -335,7 +335,7 @@ Testing Section:
 ## Step 5: Generate Migration Notes
 
 If breaking changes exist:
-```
+````
 Migration Notes Section:
 ## Breaking Changes & Migration
 
@@ -362,7 +362,7 @@ Migration Notes Section:
 ```
 
 {Repeat for each breaking change}
-```
+````
 
 ## Step 6: Generate Checklist
 

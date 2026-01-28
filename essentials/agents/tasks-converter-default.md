@@ -240,7 +240,7 @@ Each task's `description` field must be **100% self-contained**.
 
 ### Full Description Template
 
-```markdown
+````markdown
 ## Context (disaster recovery ONLY - not for implementation)
 
 **Plan Reference**: <plan-path>
@@ -316,7 +316,7 @@ function doSomething(param: string): Result | null {
 
 - `<exact file path>` - <what to do>
 - `<exact file path>` - <what to do>
-```
+````
 
 ## Step 1: Apply Containment Strategy
 
@@ -335,7 +335,7 @@ For critical implementation code - include COMPLETE code (50-200+ lines).
 ### Hybrid Containment
 
 For code with shared dependencies:
-```markdown
+````markdown
 ## Reference Implementation
 
 ### Critical Code (copy this)
@@ -357,7 +357,7 @@ import { TokenSchema } from '@/types/auth';              // Created by US-001
 If imports unavailable, these are the signatures:
 - `validateToken(token: string): boolean` - validates JWT structure
 - `TokenSchema` - Zod schema with { accessToken, refreshToken, expiresAt }
-```
+````
 
 ### When to Use Each Level
 

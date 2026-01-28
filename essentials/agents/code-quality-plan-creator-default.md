@@ -579,7 +579,7 @@ Write to: `.claude/plans/code-quality-{filename}-{hash5}-plan.md`
 
 ## Plan File Contents
 
-```markdown
+````markdown
 # Code Quality Plan: [filename]
 
 **Status**: READY FOR IMPLEMENTATION
@@ -712,7 +712,7 @@ Improve code quality for [filename] based on LSP-powered analysis.
 - [ ] No linting errors (exit code 0)
 - [ ] No type errors (exit code 0)
 - [ ] LSP verification passes (no dead code, unused symbols)
-```
+````
 
 ---
 
