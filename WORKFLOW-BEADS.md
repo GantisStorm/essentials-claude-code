@@ -151,6 +151,8 @@ ralph-tui run --tracker beads --epic <epic-id>
 
 ## Essential Commands
 
+> **Full reference:** Run `/beads-schema` for all issue types, statuses, priorities, and commands, or `/beads-schema validate` to check setup.
+
 ```bash
 bd ready                             # Tasks with no blockers
 bd blocked                           # Tasks waiting on dependencies
@@ -165,6 +167,7 @@ bd sync                              # Force sync
 ## Context Recovery
 
 ```bash
+/show-status beads <epic-id>    # Formatted status dashboard
 bd ready                        # What's next
 bd blocked                      # What's waiting
 bd list --status in_progress    # Current work

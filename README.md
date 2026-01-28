@@ -470,6 +470,16 @@ Cancel any swarm: `/cancel-swarm`
 
 Converters read the plan's `## Dependency Graph` to build file→task/bead ID maps and translate file dependencies to task dependencies. Falls back to per-file `Dependencies`/`Provides` for older plans without a Dependency Graph.
 
+### Schema References
+
+| Command | Purpose |
+|---------|---------|
+| `/plan-schema [validate <path>]` | Plan file format — sections, per-file format, dependency graph rules |
+| `/prd-schema [validate <path>]` | prd.json schema — required fields, rejected fields, examples |
+| `/beads-schema [validate]` | Beads CLI — issue types, statuses, priorities, commands |
+
+Invoke without arguments for a quick reference. Invoke with `validate` to check an existing file against the schema.
+
 ### Utilities
 
 | Command | Purpose |
@@ -479,6 +489,7 @@ Converters read the plan's `## Dependency Graph` to build file→task/bead ID ma
 | `/document-creator <dir>` | DEVGUIDE.md generation |
 | `/prompt-creator <desc>` | Create prompts, feature requests, bug reports |
 | `/mr-description-creator` | PR/MR descriptions via gh/glab |
+| `/show-status <json\|beads> [path\|epic-id]` | Task/bead status dashboard |
 | `/reset-prd <path>` | Reset prd.json to initial state |
 | `/reset-beads <epic-id>` | Reopen all tasks in a beads epic |
 | `/ralph-config <json\|beads>` | Write RalphTUI config for workflow |

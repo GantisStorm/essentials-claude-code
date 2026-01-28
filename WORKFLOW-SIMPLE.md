@@ -176,6 +176,8 @@ If every task chains to the previous, swarm degrades to sequential.
 
 The plan is the **source of truth**. The `## Dependency Graph` table tells executors which tasks can run in parallel and which must wait. When context compacts, re-read the plan.
 
+**Full schema:** Run `/plan-schema` for the complete section reference, or `/plan-schema validate <path>` to check a plan file.
+
 ---
 
 ## Visual Progress

@@ -108,6 +108,8 @@ ralph-tui run --prd .claude/prd/user-auth.json
 
 ## prd.json Schema
 
+> **Full schema:** Run `/prd-schema` for the complete reference (required fields, rejected fields, examples), or `/prd-schema validate <path>` to check a file.
+
 ```json
 {
   "name": "Feature Name",
@@ -168,6 +170,7 @@ Task "3" is now blocked. When tasks "1" and "2" complete, "3" automatically beco
 ## Context Recovery
 
 ```bash
+/show-status json .claude/prd/<name>.json                 # Formatted status dashboard
 ls .claude/prd/                                           # List prd files
 jq '.' .claude/prd/<name>.json                            # Read prd
 jq '[.userStories[] | select(.passes == false)]' <file>   # Pending tasks

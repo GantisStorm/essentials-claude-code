@@ -44,7 +44,7 @@ If rules exist:
 - Pass relevant rules info to agents
 
 If no rules exist:
-- Note this for agents to suggest creating rules in DEVGUIDE
+- Note this for agents to create rules files when missing
 ```
 
 ### Step 3: Determine Output Paths
@@ -87,7 +87,7 @@ Rules Status: [Found N rules / No rules folder found]
 Next Steps:
 1. Review generated documentation
 2. Commit the DEVGUIDE files
-3. [If no rules] Consider adding .claude/rules for this directory
+3. [If no rules] Agent created .claude/rules/ file automatically
 ```
 
 ## Error Handling

@@ -27,13 +27,6 @@ Update an existing codemap with only changed files:
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456
 ```
 
-## Built-in LSP Operations
-
-- `documentSymbol` - Get all symbols in a document
-- `findReferences` - Verify symbol usage
-- `goToDefinition` - Find symbol definitions
-- `hover` - Get signatures and descriptions
-
 ## Arguments
 
 ### Create Mode

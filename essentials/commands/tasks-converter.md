@@ -10,8 +10,6 @@ context: fork
 
 Convert architectural plans into prd.json format. Works with `/tasks-loop`, `/tasks-swarm`, or RalphTUI - they're interchangeable.
 
-**Key Principle**: Each task must be implementable with ONLY its description. Never reference external files without copying the content.
-
 ## Arguments
 
 Plan path: `.claude/plans/feature-3k7f2-plan.md`
@@ -53,33 +51,6 @@ Execute (choose one):
   /tasks-swarm <path>          # Parallel (syncs prd.json)
   ralph-tui run --prd <path>   # Classic Ralph TUI executor
 ```
-
-## Self-Contained Task Example
-
-**BAD:**
-```json
-{
-  "description": "Update auth. See plan for details."
-}
-```
-
-**GOOD:**
-```json
-{
-  "id": "US-001",
-  "title": "Add JWT validation",
-  "description": "## Requirements\n<copied from plan - FULL text>\n\n## Reference Implementation\n```typescript\n<FULL code from plan>\n```\n\n## Exit Criteria\n- `npm test -- auth` passes\n- TypeScript compiles",
-  "acceptanceCriteria": [
-    "npm test -- auth passes",
-    "TypeScript compiles"
-  ],
-  "priority": 1,
-  "passes": false,
-  "dependsOn": []
-}
-```
-
-**Litmus test:** Could someone implement this with ONLY the task description?
 
 ## Error Handling
 

@@ -15,13 +15,6 @@ Analyze code quality using Claude Code's built-in LSP for semantic understanding
 - **New features/enhancements** → `/plan-creator`
 - **Bug fixes** → `/bug-plan-creator`
 
-## Built-in LSP Operations
-
-- `documentSymbol` — Get all symbols in a document
-- `findReferences` — Find all references to a symbol
-- `goToDefinition` — Find where a symbol is defined
-- `incomingCalls`/`outgoingCalls` — Build call hierarchy
-
 ## Arguments
 
 File paths to analyze (one agent per file):

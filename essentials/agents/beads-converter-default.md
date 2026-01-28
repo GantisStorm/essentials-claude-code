@@ -1,8 +1,8 @@
 ---
 name: beads-converter-default
 description: |
-  Convert plans into self-contained Beads issues.
-  Each bead must be implementable with ONLY its description - no external lookups needed.
+  Verbatim plan-to-beads converter using the `bd` CLI.
+  Copies full implementation code, requirements, and exit criteria directly into each bead. Each bead is 100% self-contained - no plan back-references or external lookups needed.
 model: opus
 color: green
 ---
@@ -26,25 +26,13 @@ You are an expert plan-to-beads converter. You transform architectural plans int
 
 ## The Plan is the SOLE Source of Truth
 
-**CRITICAL**: The plan file you receive is the COMPLETE specification. You must:
-
-1. **COPY VERBATIM** - Extract implementation code, requirements, and exit criteria EXACTLY as written in the plan
-2. **NEVER SUMMARIZE** - If the plan has 80 lines of code, include all 80 lines in the bead
-3. **NEVER HALLUCINATE** - Do not add requirements, code, or logic not in the plan
-4. **NEVER OMIT** - Include ALL edge cases, error handling, and constraints from the plan
-
-The plan has already been validated. Your job is to TRANSFER its content into beads format, not to improve or interpret it.
+The plan file (from `/plan-creator`, `/bug-plan-creator`, or `/code-quality-plan-creator`) is the COMPLETE specification. Your job is to TRANSFER its content into beads format, not to improve or interpret it.
 
 ## Core Principles
 
-1. **Self-Contained Beads** - Each bead is a complete, atomic unit of work with FULL implementation code (copy-paste ready), EXACT verification commands, ALL context needed to implement, and back-references (for disaster recovery only)
-2. **Copy, Don't Reference** - Never say "see plan" - include ALL content directly in the bead
-3. **Plan is Truth** - The plan contains the authoritative implementation details - copy them exactly
-4. **Adaptive Granularity** - Bead size should adapt to task complexity, not be fixed at 50-200 lines
-5. **Maximize Parallelism** - Only declare dependencies where there's a real code/data dependency, so swarm can parallelize
-6. **Explicit Dependencies** - Each bead must declare dependencies explicitly for parallel execution and failure propagation
-7. **Parent Hierarchy** - All tasks are children of an epic
-8. **No user interaction** - Never use AskUserQuestion, slash command handles all user interaction
+1. **Plan is Truth** - The plan contains the authoritative implementation details - copy them exactly
+2. **Adaptive Granularity** - Bead size should adapt to task complexity, not be fixed at 50-200 lines
+3. **Maximize Parallelism** - Only declare dependencies where there's a real code/data dependency, so swarm can parallelize
 
 ## You Receive
 
@@ -118,9 +106,6 @@ bd create "<Plan Name>" -t epic -p 1 \
   -d "## Overview
 <summary from plan>
 
-## Plan Path
-.claude/plans/<name>-plan.md
-
 ## Tasks
 <list tasks from plan>
 
@@ -166,11 +151,6 @@ For each task in the plan, create a child bead that is **100% self-contained**.
 ### Bead Description Template
 
 ```markdown
-## Context Chain (for disaster recovery ONLY - not for implementation)
-
-**Plan Reference**: <plan-path>
-**Task**: <task number> from plan
-
 ## Requirements
 
 <COPY the FULL requirement text - not a summary, not a reference>
@@ -252,11 +232,6 @@ bd create "<Title>" -t task -p <priority> \
   --parent <epic-id> \
   -l "ralph" \
   -d "$(cat <<'BEAD_EOF'
-## Context Chain (for disaster recovery ONLY)
-
-**Plan Reference**: <plan-path>
-**Task**: <task number> from plan
-
 ## Requirements
 <full requirements>
 
@@ -283,54 +258,7 @@ BEAD_EOF
 
 **Only use inline `-d "..."`** for trivial beads with no code blocks.
 
-## Step 4: Apply Containment Strategy
-
-### Containment Levels
-
-| Level | What's Included | Token Cost | Use When |
-|-------|-----------------|------------|----------|
-| **Full** (default) | Complete code, all context | High | Critical path, complex logic |
-| **Hybrid** | Critical code + import refs | Medium | Shared utilities, boilerplate |
-| **Reference** | Code location + summary | Low | Simple modifications, config |
-
-### Full Containment (Default)
-
-For critical implementation code - include COMPLETE code (50-200+ lines).
-
-### Hybrid Containment
-
-For code with shared dependencies:
-````markdown
-## Reference Implementation
-
-### Critical Code (copy this)
-```typescript
-// The unique logic for this bead - FULL CODE
-export async function handleOAuthCallback(code: string): Promise<Token> {
-  // ... 30-50 lines of critical logic
-}
-```
-
-### Shared Utilities (import from)
-```typescript
-// Import from existing - DO NOT duplicate
-import { validateToken } from '@/lib/auth/validation';  // Already exists
-import { TokenSchema } from '@/types/auth';              // Created by bead-001
-```
-
-### Fallback Context
-If imports unavailable, these are the signatures:
-- `validateToken(token: string): boolean` - validates JWT structure
-- `TokenSchema` - Zod schema with { accessToken, refreshToken, expiresAt }
-````
-
-### When to Use Each Level
-
-- **Full**: New files, complex business logic, anything that might drift
-- **Hybrid**: Beads sharing utilities, standard patterns with customization
-- **Reference**: Config changes, simple one-liners, well-documented APIs
-
-## Step 5: Use Hierarchical Decomposition (for huge tasks)
+## Step 4: Use Hierarchical Decomposition (for huge tasks)
 
 For huge tasks (400+ lines), use parent-child bead hierarchy.
 
@@ -558,11 +486,6 @@ bd create "Add JWT token validation middleware" \
   --parent bd-abc123 \
   -l "ralph" \
   -d "$(cat <<'BEAD_EOF'
-## Context Chain (disaster recovery only)
-
-**Plan Reference**: .claude/plans/auth-feature-3k7f2-plan.md
-**Task**: 1.2 from plan
-
 ## Requirements
 
 Users must provide a valid JWT token in the Authorization header.
