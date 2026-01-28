@@ -201,7 +201,11 @@ Ralph TUI selects the next task by:
 
 ## Instructions
 
-### If `validate <path>` argument provided:
+Parse `$ARGUMENTS` to determine mode.
+
+### If `$ARGUMENTS` starts with `validate`:
+
+Extract the path from `$ARGUMENTS` (e.g., `/prd-schema validate .claude/prd/auth.json`).
 
 Read the file and check for schema violations:
 
@@ -218,7 +222,7 @@ jq '.userStories[] | to_entries[] | select(.key | test("^(subtasks|estimated_hou
 
 Report each violation with the fix from the schema above.
 
-### If no argument:
+### If `$ARGUMENTS` is empty:
 
 Output the schema summary:
 

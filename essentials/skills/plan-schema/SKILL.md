@@ -298,7 +298,11 @@ Replace with: exact exceptions, specific line numbers, file:line references, exp
 
 ## Instructions
 
-### If `validate <path>` argument provided:
+Parse `$ARGUMENTS` to determine mode.
+
+### If `$ARGUMENTS` starts with `validate`:
+
+Extract the path from `$ARGUMENTS` (e.g., `/plan-schema validate .claude/plans/auth-a3f9e-plan.md`).
 
 Read the plan file and check against the validation checklist:
 
@@ -309,7 +313,7 @@ Read the plan file and check against the validation checklist:
 5. Check Dependencies/Provides consistency
 6. Report violations with the fix from the schema above
 
-### If no argument:
+### If `$ARGUMENTS` is empty:
 
 Output the quick reference:
 

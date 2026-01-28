@@ -20,7 +20,9 @@ Show a formatted status dashboard for tasks (prd.json) or beads.
 
 ## Instructions
 
-### If no argument or invalid argument:
+Parse `$ARGUMENTS` to determine mode.
+
+### If `$ARGUMENTS` is empty or invalid:
 
 ```
 Usage: /show-status <json|beads> [path|epic-id]
@@ -30,7 +32,7 @@ Usage: /show-status <json|beads> [path|epic-id]
   beads -l <label>  Show bead status by label
 ```
 
-### If first argument is `json`:
+### If `$ARGUMENTS` starts with `json`:
 
 **If path provided**, read the raw JSON:
 
@@ -72,7 +74,7 @@ ls .claude/prd/*.json 2>/dev/null || echo "No prd.json files found in .claude/pr
 
 Ask which file to show.
 
-### If first argument is `beads`:
+### If `$ARGUMENTS` starts with `beads`:
 
 **If epic-id provided:**
 

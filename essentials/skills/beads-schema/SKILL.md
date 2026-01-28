@@ -293,7 +293,9 @@ bd sync
 
 ## Instructions
 
-### If `validate` argument provided:
+Parse `$ARGUMENTS` to determine mode.
+
+### If `$ARGUMENTS` is `validate`:
 
 Check beads is set up and working:
 
@@ -313,7 +315,7 @@ bd ready --json
 
 Report the beads version, issue count, and any issues.
 
-### If no argument:
+### If `$ARGUMENTS` is empty:
 
 Output the quick reference:
 
