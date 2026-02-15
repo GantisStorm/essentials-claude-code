@@ -1,6 +1,6 @@
 # Tasks Workflow
 
-> **Loops and swarms with prd.json format.** Powered by Claude Code's built-in Task System.
+> **Loops and swarms with prd.json format.** Powered by Claude Code's built-in Task System. (For Agent Teams, use `/plan-team` or `/implement-team` from the [Simple workflow](WORKFLOW-SIMPLE.md).)
 
 **Optional workflow for prd.json format.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Tasks when you want structured JSON task tracking.
 
@@ -52,16 +52,12 @@ The plan's `## Dependency Graph` table is the source of truth. The converter rea
 
 ### 1. Create Plan
 
-**Recommended:** Generate a codemap first. Plans built with a codemap are more accurate because the plan creator starts with real symbols and real dependency relationships instead of exploring from scratch. Sub-agents spawned by swarm commands also benefit — the plan they receive was built with grounded codebase knowledge.
-
 ```bash
-# Generate codemap once (recommended — better plans, fewer hallucinations)
-/codemap-creator src/
-
-# Then create a plan (auto-uses codemap if present in .claude/maps/)
 /plan-creator Add user authentication with JWT
 # Also works: /bug-plan-creator, /code-quality-plan-creator
 ```
+
+Pass a code map, design doc, or any reference file as additional context.
 
 ### 2. Convert to prd.json
 ```bash

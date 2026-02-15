@@ -1,6 +1,6 @@
 # How Essentials Compares
 
-> **Loops and swarms powered by Claude Code's built-in Task System.** Loop and swarm are interchangeable — swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync.
+> **Loops, swarms, and teams powered by Claude Code's built-in Task System.** Loop, swarm, and team are three execution modes — loop runs sequentially, swarm runs parallel subagents, team spawns full Claude Code instances with shared contracts. All enforce exit criteria and sync.
 
 Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
@@ -71,30 +71,27 @@ Interactive back-and-forth. Human guides every step.
 Request → Plan with Exit Criteria → Execute → Verify → Loop if Failed → Done
 ```
 
-Verification-driven loops for brownfield development. Plans define exit criteria and a `## Dependency Graph` for execution ordering. Loops run until tests pass. Execute via loop (sequential) or swarm (parallel).
+Verification-driven loops for brownfield development. Plans define exit criteria and a `## Dependency Graph` for execution ordering. Loops run until tests pass. Execute via loop (sequential), swarm (parallel subagents), or team (Agent Teams with contracts).
 
-**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Structured dependency graph enables parallel execution. Integrates with Ralph TUI for dashboard visualization and Beads for persistent task tracking.
+**Strengths:** Guaranteed completion. Automatic retry on failure. Context recovery from plan file. Structured dependency graph enables parallel execution. Agent Teams for multi-component builds with contract-first coordination. Integrates with Ralph TUI for dashboard visualization and Beads for persistent task tracking.
 
-**Weaknesses:** Overhead for trivial tasks. Solo-focused.
+**Weaknesses:** Overhead for trivial tasks. Solo-focused (multi-agent, not multi-user).
 
 **Best for:** Adding features to existing codebases, quality-critical code, multi-session work, when you've been burned by premature "done."
 
 **Quick Start:**
 ```bash
-# Generate codemap first (recommended — grounds plans in real codebase symbols)
-/codemap-creator src/
-
 # From conversation context (after discussing)
 /implement-loop fix the auth bug       # Sequential
-/implement-swarm refactor handlers     # Parallel
+/implement-swarm refactor handlers     # Parallel subagents
+/implement-team build the dashboard    # Agent Teams with contracts
 
-# Or with plan file (auto-uses codemap for better accuracy)
+# Or with plan file
 /plan-creator Add user authentication
 /plan-loop plan.md    # Sequential
-/plan-swarm plan.md   # Parallel
+/plan-swarm plan.md   # Parallel subagents
+/plan-team plan.md    # Agent Teams with contracts
 ```
-
-**Codemap tip:** Plans built with a codemap produce fewer hallucinations because the plan creator starts with real symbols and dependency relationships. Sub-agents spawned by swarm commands inherit this grounding — the plan they execute was built with accurate codebase knowledge.
 
 ---
 
@@ -190,7 +187,7 @@ Plan Creator                    Converter                      Executor
 └──────────────┘    └─────────────────────────┘    └──────────────────────┘
 ```
 
-**All three plan creators** (`/plan-creator`, `/bug-plan-creator`, `/code-quality-plan-creator`) produce plans with the same `## Dependency Graph` table. Both converters (`/tasks-converter`, `/beads-converter`) read the table to build dependency arrays. All eight executors translate those to `addBlockedBy`.
+**All three plan creators** (`/plan-creator`, `/bug-plan-creator`, `/code-quality-plan-creator`) produce plans with the same `## Dependency Graph` table. Both converters (`/tasks-converter`, `/beads-converter`) read the table to build dependency arrays. All executors translate those to `addBlockedBy`. Team mode additionally uses the plan to define integration contracts between agents.
 
 **Why this matters for swarms:** Tasks in the same dependency phase have no inter-dependencies and can execute simultaneously. If you chain every task to the previous one, swarm degrades to sequential. The Dependency Graph maximizes parallelism by only declaring real code dependencies.
 
@@ -281,7 +278,7 @@ Specific, executable commands. The loop runs them automatically.
 
 ## Parallel Execution with Dependencies
 
-Swarms use a queue-based approach with background agents. The plan's `## Dependency Graph` determines which tasks can run in parallel:
+Swarms and teams both enable parallel execution. Swarms use a queue-based approach with isolated background agents. Teams use contract-first coordination with full Claude Code instances. The plan's `## Dependency Graph` determines which tasks can run in parallel:
 
 ```
 Dependency Graph from Plan:
@@ -324,7 +321,7 @@ Each agent does ONE task then exits. Main agent marks tasks in_progress on spawn
 
 ## What Essentials Doesn't Do
 
-**No team features.** No dashboards, permissions, or multi-user sync. Essentials is for individual developers.
+**No multi-user features.** No dashboards, permissions, or multi-user sync. Essentials is for individual developers. (Agent Teams are multi-agent, not multi-user — one developer coordinating multiple Claude instances.)
 
 **No cloud infrastructure.** Runs locally. Your code never leaves your machine. No subscriptions.
 
@@ -410,7 +407,7 @@ Code-first lets you improvise. Essentials requires a plan. The structure is the 
 
 **Throughput vs Reliability**
 
-Loop and swarm are interchangeable — swarm is just faster when tasks can run in parallel. Both enforce exit criteria and sync. The plan's Dependency Graph determines how much parallelism is possible.
+Loop, swarm, and team all enforce exit criteria and sync. Swarm is faster than loop when tasks can run in parallel. Team adds contract-first coordination for multi-component builds where interfaces must align. The plan's Dependency Graph determines how much parallelism is possible.
 
 **Simplicity vs Power**
 
@@ -424,7 +421,7 @@ The tasks and beads workflows (plan → tasks/beads) copy implementation code in
 
 ## The Bottom Line
 
-Loops and swarms powered by Claude Code's built-in Task System. Plans define exit criteria and structured dependency graphs. Loops run until tests pass. Done means actually done.
+Loops, swarms, and teams powered by Claude Code's built-in Task System. Plans define exit criteria and structured dependency graphs. All execution modes run until tests pass. Done means actually done.
 
 The loop won't end until verification passes. That's the guarantee.
 
@@ -441,3 +438,4 @@ The loop won't end until verification passes. That's the guarantee.
 **Optional integrations:**
 - [Beads](https://github.com/steveyegge/beads) — Persistent memory across sessions
 - [Ralph TUI](https://github.com/subsy/ralph-tui) — Classic Ralph loop executor with TUI dashboard
+- [build-with-agent-team](https://github.com/coleam00/context-engineering-intro/tree/main/use-cases/build-with-agent-team) — Contract-first Agent Teams pattern by Cole Medin

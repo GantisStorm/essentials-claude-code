@@ -42,4 +42,4 @@ TaskList
 
 ## Note
 
-Unlike loop cancellation, swarm workers are independent agents. If a worker completed its current task before cancellation, that work is saved.
+Unlike loop cancellation, swarm workers are independent agents. If a worker completed its current task before cancellation, that work is saved. For Agent Teams (tmux-based), use `/cancel-team` instead.

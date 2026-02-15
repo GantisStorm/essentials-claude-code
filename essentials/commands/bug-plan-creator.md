@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Bash, Read
+allowed-tools: Task, Bash, Read, AskUserQuestion
 argument-hint: <any-input>
 description: Deep bug investigation with architectural fix plan generation - works with any executor (loop or swarm)
 context: fork
@@ -19,14 +19,13 @@ Investigate bugs from any input - error logs, stack traces, user reports. Create
 
 ## Arguments
 
-Takes any input:
+Takes any input — error info, file paths, reference material:
 - Error logs: `"TypeError: 'NoneType' at auth.py:45"`
 - Stack traces: `"$(cat stacktrace.txt)"`
 - Log files: `./logs/error.log`
 - User reports: `"Login fails when user has no profile"`
 - Diagnostic instructions: `"Check docker logs for api-service"`
-
-**Tip:** Use `/prompt-creator "bug: ./logs/error.log <description>"` first to analyze logs and create a structured bug description, then pass both the description and original logs here.
+- Reference files: pass a code map, design doc, or any file as additional context
 
 ## Instructions
 
@@ -39,26 +38,41 @@ Parse `$ARGUMENTS`:
   - Docker logs: `docker logs <container> --tail 500`
   - Process logs: `journalctl -u <service>`
 
-### Step 2: Launch Agent
+### Step 2: Ask Clarifying Questions
 
-Launch background agent with gathered context:
+Use AskUserQuestion to gather missing context. Ask only what's unclear — skip questions the user already answered in their input.
+
+**Questions to consider** (ask 1-4 based on what's missing):
+
+- **Reproduction**: Can you reproduce this? Always, intermittent, or specific conditions?
+- **Timeline**: When did this start? Any recent changes (deploys, config, dependencies)?
+- **Impact**: What's affected? Any workarounds currently in use?
+- **Environment**: Any relevant environment details? (OS, versions, prod vs dev, config differences)
+
+**If the input is already detailed enough** (clear error, obvious reproduction, sufficient context from logs), skip this step entirely and go straight to Step 3.
+
+### Step 3: Launch Agent
+
+Assemble the enriched prompt from gathered logs/errors + clarifying answers. Launch background agent:
 
 ```
 Investigate bug and create fix plan:
 
 <all gathered logs, errors, context>
+
+<clarifying context from user answers, if any>
 ```
 
 **REQUIRED Task tool parameters:**
 ```
 subagent_type: "essentials:bug-plan-creator-default"
 run_in_background: true
-prompt: "Investigate bug and create fix plan:\n\n<gathered context>"
+prompt: "<assembled prompt with all context>"
 ```
 
 Output a status message like "Investigating bug..." and **end your turn**. The system wakes you when the agent finishes.
 
-### Step 3: Report Result
+### Step 4: Report Result
 
 ```
 ## Bug Investigation Complete
@@ -71,8 +85,10 @@ Root Cause: [file:line] - [brief description]
 
 Next Steps:
 1. Review the fix plan
-2. Execute directly (loop or swarm are interchangeable):
-   - `/plan-loop <plan-path>` or `/plan-swarm <plan-path>`
+2. Execute directly:
+   - `/plan-loop <plan-path>` (sequential)
+   - `/plan-swarm <plan-path>` (parallel subagents)
+   - `/plan-team <plan-path>` (Agent Teams with contracts)
 3. Or convert to prd.json/beads first:
    - `/tasks-converter <plan-path>` → `/tasks-loop` or `/tasks-swarm`
    - `/beads-converter <plan-path>` → `/beads-loop` or `/beads-swarm`

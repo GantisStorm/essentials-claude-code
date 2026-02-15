@@ -8,9 +8,9 @@
 [![Claude Code](https://img.shields.io/badge/Built%20for-Claude%20Code-blueviolet)](https://claude.ai/code)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-**Loops and swarms powered by Claude Code's built-in Task System.**
+**Loops, swarms, and teams powered by Claude Code's built-in Task System.**
 
-Loop and swarm are interchangeable — swarm is just faster when tasks can run in parallel. Both enforce exit criteria, use Claude's native task dependencies, `ctrl+t` progress, and automatic persistence.
+Loop, swarm, and team are three execution modes. Loop runs sequentially. Swarm runs parallel subagents. Team spawns full Claude Code instances with shared contracts via [Agent Teams](https://www.anthropic.com/news/claude-opus-4-6). All use Claude's native task dependencies, `ctrl+t` progress, and automatic persistence.
 
 Plans define exit criteria. Loops run until tests pass. Done means actually done.
 
@@ -41,7 +41,9 @@ AI:  "Exit criteria passed" ✓
 
 # Option B: Create plan first, then execute
 You: /plan-creator Add authentication
-You: /plan-loop .claude/plans/auth-plan.md
+You: /plan-loop .claude/plans/auth-plan.md       # Sequential
+You: /plan-swarm .claude/plans/auth-plan.md      # Parallel subagents
+You: /plan-team .claude/plans/auth-plan.md       # Agent Teams with contracts
 AI:  "Exit criteria passed" ✓
 ```
 
@@ -53,31 +55,30 @@ AI:  "Exit criteria passed" ✓
 # Install
 /plugin marketplace add GantisStorm/essentials-claude-code
 /plugin install essentials@essentials-claude-code
-mkdir -p .claude/plans .claude/maps .claude/prompts .claude/prd
-
-# Generate a codemap first (recommended — gives plan creators grounded codebase knowledge)
-/codemap-creator src/
+mkdir -p .claude/plans .claude/prompts .claude/prd
 
 # Option A: From conversation (after discussing a bug/feature)
 /implement-loop fix the auth bug we discussed    # Sequential
-/implement-swarm refactor the API handlers       # Parallel
+/implement-swarm refactor the API handlers       # Parallel subagents
+/implement-team build the full-stack feature     # Agent Teams with contracts
 
-# Option B: With plan file (auto-uses codemap if present)
+# Option B: With plan file
 /plan-creator Add user authentication with JWT
 /plan-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential
-/plan-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel
+/plan-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel subagents
+/plan-team .claude/plans/user-auth-3k7f2-plan.md   # Agent Teams with contracts
 
 # Visual progress
 ctrl+t   # Toggle task tree view
 ```
 
-**Zero external dependencies.** Both loop and swarm enforce exit criteria. Swarm defaults to 3 concurrent workers.
+**Zero external dependencies.** All three modes enforce exit criteria. Swarm defaults to 3 concurrent workers. Team requires tmux and `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 
 ---
 
 ## Powered by Claude Code's Task System
 
-Our loop and swarm commands use Claude Code's **built-in Task Management System** (v2.1.19+).
+Our loop, swarm, and team commands use Claude Code's **built-in Task Management System** (v2.1.19+).
 
 > **Ralph TUI and Beads integrate seamlessly.** Use [Ralph TUI](https://github.com/subsy/ralph-tui) for dashboard visualization. Use [Beads](https://github.com/steveyegge/beads) for persistent task tracking across sessions.
 
@@ -208,11 +209,11 @@ Start a new session tomorrow — your task list is still there.
 
 ## Workflows
 
-| Workflow | Best For | Converter | Loop | Swarm |
-|----------|----------|-----------|------|-------|
-| **Simple** | 80% of tasks | — | `/implement-loop`, `/plan-loop` | `/implement-swarm`, `/plan-swarm` |
-| **Tasks** | prd.json format | `/tasks-converter` | `/tasks-loop` | `/tasks-swarm` |
-| **Beads** | Persistent memory | `/beads-converter` | `/beads-loop` | `/beads-swarm` |
+| Workflow | Best For | Converter | Loop | Swarm | Team |
+|----------|----------|-----------|------|-------|------|
+| **Simple** | 80% of tasks | — | `/implement-loop`, `/plan-loop` | `/implement-swarm`, `/plan-swarm` | `/implement-team`, `/plan-team` |
+| **Tasks** | prd.json format | `/tasks-converter` | `/tasks-loop` | `/tasks-swarm` | — |
+| **Beads** | Persistent memory | `/beads-converter` | `/beads-loop` | `/beads-swarm` | — |
 
 **Converters** transform plans into executable formats. `/tasks-converter` creates prd.json files with `dependsOn` arrays. `/beads-converter` creates beads with epic→task hierarchy and `depends_on` via `bd dep add`. Both read the plan's `## Dependency Graph` table to build dependencies that maximize parallel execution.
 
@@ -220,30 +221,36 @@ Start a new session tomorrow — your task list is still there.
 
 **Alternative executor:** [Ralph TUI](https://github.com/subsy/ralph-tui) runs Tasks/Beads with the classic Ralph Wiggum loop style (community approach before Claude Code had native tasks).
 
-### Loop vs Swarm
+### Loop vs Swarm vs Team
 
-| Aspect | Loop | Swarm |
-|--------|------|-------|
-| **Executor** | Main agent (foreground) | Background agents |
-| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
-| **Context** | Full conversation history | Each agent gets task description only |
-| **Visibility** | See work live | Check with `ctrl+t` or TaskList |
-| **Task system** | Same | Same |
-| **Dependencies** | Same | Same |
+| Aspect | Loop | Swarm | Team |
+|--------|------|-------|------|
+| **Executor** | Main agent (foreground) | Background subagents | Full Claude Code instances (tmux panes) |
+| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) | All agents in parallel |
+| **Context** | Full conversation history | Each agent gets task description only | Each agent gets contracts + ownership scope |
+| **Communication** | N/A (single agent) | Workers isolated | Agents message each other via lead |
+| **Lead role** | Implements directly | Queue manager | Contract author + coordinator (no coding) |
+| **Pre-work** | Parse plan, create tasks | Parse plan, create tasks | Parse plan, **define contracts**, create tasks |
+| **Visibility** | See work live | Check with `ctrl+t` or TaskList | Each agent visible in tmux pane |
+| **Best for** | Sequential tasks | Independent parallel tasks | Multi-component builds requiring integration |
+| **Task system** | Same | Same | Same |
+| **Dependencies** | Same | Same | Same |
 
-**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel. Dependencies determine parallelism — tasks in the same dependency phase run simultaneously, later phases wait.
+**All three use the same task graph with dependencies.** Loop executes sequentially. Swarm spawns isolated subagents for independent parallel work. Team defines integration contracts upfront and spawns full Claude Code instances that can communicate — use when components must agree on interfaces (frontend + backend + database).
 
 ### Simple (Start Here)
 
 ```bash
 # From conversation context (after discussing)
 /implement-loop fix the auth bug       # Sequential
-/implement-swarm refactor API handlers  # Parallel
+/implement-swarm refactor API handlers  # Parallel subagents
+/implement-team build the dashboard    # Agent Teams with contracts
 
 # Or with plan file
 /plan-creator Add JWT authentication
 /plan-loop .claude/plans/jwt-auth-plan.md    # Sequential
-/plan-swarm .claude/plans/jwt-auth-plan.md   # Parallel
+/plan-swarm .claude/plans/jwt-auth-plan.md   # Parallel subagents
+/plan-team .claude/plans/jwt-auth-plan.md    # Agent Teams with contracts
 ```
 
 ### Tasks (prd.json Format)
@@ -427,6 +434,96 @@ ralph-tui run --tracker beads --epic <epic-id>
 
 ---
 
+## How Teams Work
+
+```
+                    ┌─────────────────┐
+                    │  Read Source    │
+                    │ (plan/context)  │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ Determine Team  │
+                    │ Structure       │
+                    │ (2-5+ agents)   │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ Define Contracts│
+                    │ (exact URLs,    │
+                    │  JSON shapes,   │
+                    │  status codes)  │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ Enter Delegate  │
+                    │ Mode + Spawn    │
+                    │ all agents      │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
+  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+  │  Agent 1    │     │  Agent 2    │     │  Agent N    │
+  │ (Backend)   │     │ (Database)  │     │ (Frontend)  │
+  │─────────────│     │─────────────│     │─────────────│
+  │ contracts + │     │ contracts + │     │ contracts + │
+  │ ownership   │◄───►│ ownership   │◄───►│ ownership   │
+  │ scope       │relay│ scope       │relay│ scope       │
+  └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                             │
+        ┌────────────────────┴────────────────────┐
+        │              LEAD AGENT                 │
+        │         (Delegate Mode)                 │
+        │                                         │
+        │   ┌─────────────────┐                   │
+        │   │ Relay messages   │                   │
+        │   │ Mediate changes  │                   │
+        │   │ Resolve conflicts│                   │
+        │   └────────┬────────┘                   │
+        │            │                            │
+        │            ▼                            │
+        │   ┌─────────────────┐                   │
+        │   │ Contract diff   │                   │
+        │   │ (built vs spec) │                   │
+        │   └────────┬────────┘                   │
+        │            │                            │
+        └────────────┼────────────────────────────┘
+                     │
+                     ▼
+              ┌─────────────────┐
+              │ End-to-end      │
+              │ validation      │
+              └────────┬────────┘
+                       │
+                 ┌─────┴─────┐
+                 │           │
+               FAIL        PASS
+                 │           │
+                 │           ▼
+                 │    ┌─────────────────┐
+                 │    │ Team complete ✓ │
+                 │    └─────────────────┘
+                 │
+                 ▼
+          ┌─────────────────┐
+          │ Re-spawn agent  │
+          │ with fix        │
+          └─────────────────┘
+```
+
+**Contract-first parallel execution.** Lead agent reads the plan, defines exact integration contracts (API URLs, JSON shapes, status codes, SSE formats), then spawns full Claude Code instances in tmux panes via Delegate Mode. Each agent gets contracts it produces, contracts it consumes, and ownership boundaries. Agents communicate through the lead for contract changes. After all agents complete, lead runs a contract diff and end-to-end validation.
+
+**Key difference from swarms:** Swarm workers are isolated — they can't talk to each other. Team agents share contracts and communicate through the lead, making teams ideal for multi-component builds where interfaces must align.
+
+---
+
 ## Commands
 
 ### Plan Creators
@@ -437,7 +534,7 @@ ralph-tui run --tracker beads --epic <epic-id>
 | `/bug-plan-creator <error> <desc>` | Bug fixes, root cause analysis |
 | `/code-quality-plan-creator <files>` | Refactoring, dead code, security |
 
-All three produce plans with the same structure: per-file implementation details, `## Dependency Graph` table, and exit criteria. Any plan can be fed to any converter or executed directly via `/plan-loop` or `/plan-swarm`.
+All three produce plans with the same structure: per-file implementation details, `## Dependency Graph` table, and exit criteria. Pass a code map, design doc, or any reference file as additional context. Any plan can be fed to any converter or executed directly via `/plan-loop`, `/plan-swarm`, or `/plan-team`.
 
 ### Execute Loops (Sequential)
 
@@ -460,6 +557,17 @@ Cancel any loop: `/cancel-loop`
 | `/beads-swarm [--epic]` | Beads DB |
 
 Cancel any swarm: `/cancel-swarm`
+
+### Execute Teams (Agent Teams)
+
+| Command | Source |
+|---------|--------|
+| `/implement-team <task>` | Conversation context |
+| `/plan-team <plan>` | Plan file (required) |
+
+Cancel any team: `/cancel-team`
+
+**Requires:** tmux + `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Lead defines integration contracts, spawns full Claude Code instances in tmux panes via Delegate Mode. Agents communicate through the lead. Based on [Cole Medin's build-with-agent-team pattern](https://github.com/coleam00/context-engineering-intro/tree/main/use-cases/build-with-agent-team).
 
 ### Convert Formats
 
@@ -487,7 +595,6 @@ Invoke without arguments for a quick reference. Invoke with `validate` to check 
 | `/codemap-creator <dir>` | Create JSON code map via LSP |
 | `/codemap-creator --update <map> [--diff\|--mr\|--pr]` | Update existing codemap with changed files |
 | `/document-creator <dir>` | DEVGUIDE.md generation |
-| `/prompt-creator <desc>` | Create prompts, feature requests, bug reports |
 | `/mr-description-creator` | PR/MR descriptions via gh/glab |
 | `/show-status <json\|beads> [path\|epic-id]` | Task/bead status dashboard |
 | `/reset-prd <path>` | Reset prd.json to initial state |
@@ -530,29 +637,6 @@ npm test -- auth && npm run typecheck
 
 ---
 
-## Code Maps (Recommended)
-
-**Generate a codemap before creating plans.** Code maps give plan creators and sub-agents grounded knowledge of your codebase — file→symbol mappings, function signatures, dependencies, and export status extracted via LSP. Plans built with a codemap are more accurate and produce fewer hallucinations because the agent starts with real symbols and real dependency relationships instead of exploring from scratch.
-
-```bash
-# Create a codemap (do this once, then update incrementally)
-/codemap-creator src/
-
-# Update after changes (instead of recreating from scratch)
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --diff      # git diff
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --mr 123   # GitLab MR
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456   # GitHub PR
-
-# Then create a plan — it automatically uses the codemap
-/plan-creator Add user authentication with JWT
-```
-
-**All plan creators check for codemaps automatically.** When `.claude/maps/code-map-*.json` exists, plan-creator, bug-plan-creator, and code-quality-plan-creator use it for faster codebase orientation. This means sub-agents spawned by swarm commands also benefit — the plan they receive was built with accurate codebase knowledge, so they write code that fits existing patterns and imports.
-
-**Best practice:** Create a codemap once per project, then use `--update` with `--diff`, `--mr`, or `--pr` to keep it current as code changes. The upfront cost pays for itself across every plan and every sub-agent that executes from those plans.
-
----
-
 ## Project Structure
 
 ```
@@ -560,7 +644,7 @@ your-project/
 ├── .claude/
 │   ├── plans/          # Source of truth (plan files with Dependency Graphs)
 │   ├── prd/            # prd.json files (from /tasks-converter)
-│   ├── maps/           # Code maps (consumed by plan creators)
+│   ├── maps/           # Code maps (from /codemap-creator)
 │   └── prompts/        # Generated prompts
 ├── .ralph-tui/         # RalphTUI config (if using)
 │   └── config.toml     # Tracker, agent settings
@@ -575,11 +659,12 @@ your-project/
 
 | Tool | Required? | Purpose |
 |------|-----------|---------|
-| None | — | Simple workflow works out of the box |
+| None | — | Simple workflow (loop/swarm) works out of the box |
+| tmux | For Team mode | Agent Teams use tmux for split-pane visualization |
 | [Beads CLI](https://github.com/steveyegge/beads) | For Beads workflow | Persistent memory across sessions |
 | [Ralph TUI](https://github.com/subsy/ralph-tui) | Optional | Classic Ralph loop executor with TUI dashboard |
 
-**Simple workflow has zero dependencies.** Add Beads for persistent memory. Add Ralph TUI if you prefer the classic Ralph Wiggum loop style over Claude Code's native Task System.
+**Simple workflow has zero dependencies** for loop and swarm. Team mode requires tmux and `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Add Beads for persistent memory. Add Ralph TUI if you prefer the classic Ralph Wiggum loop style.
 
 ---
 
@@ -631,12 +716,13 @@ model: opus    # opus | sonnet | haiku
 - [Ralph Wiggum pattern](https://ghuntley.com/ralph/) by Geoffrey Huntley
 - [Beads](https://github.com/steveyegge/beads) by Steve Yegge — Persistent memory
 - [Ralph TUI](https://github.com/subsy/ralph-tui) by subsy — Classic Ralph loop executor
+- [build-with-agent-team](https://github.com/coleam00/context-engineering-intro/tree/main/use-cases/build-with-agent-team) by Cole Medin — Contract-first Agent Teams pattern
 - Built for [Claude Code](https://claude.ai/code)
 
 ---
 
 <div align="center">
 
-*Plans define exit criteria. Loops run until tests pass. Done means actually done.*
+*Plans define exit criteria. Loops, swarms, and teams run until tests pass. Done means actually done.*
 
 </div>

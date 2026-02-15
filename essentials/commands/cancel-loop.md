@@ -12,7 +12,7 @@ Gracefully stop any active loop while preserving progress.
 
 Works with all loop commands: `/implement-loop`, `/plan-loop`, `/tasks-loop`, `/beads-loop`.
 
-Note: Loop and swarm commands are interchangeable - use `/cancel-loop` for loops and `/cancel-swarm` for swarms.
+Note: Use `/cancel-loop` for loops, `/cancel-swarm` for swarms, and `/cancel-team` for Agent Teams.
 
 ## Instructions
 

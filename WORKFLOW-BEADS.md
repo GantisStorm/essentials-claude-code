@@ -1,6 +1,6 @@
 # Beads Workflow
 
-> **Loops and swarms with persistent memory.** Powered by Claude Code's built-in Task System.
+> **Loops and swarms with persistent memory.** Powered by Claude Code's built-in Task System. (For Agent Teams, use `/plan-team` or `/implement-team` from the [Simple workflow](WORKFLOW-SIMPLE.md).)
 
 **Optional workflow for multi-session work.** Use [Simple workflow](WORKFLOW-SIMPLE.md) for most tasks. Use Beads when you need persistent memory across sessions or multi-day features.
 
@@ -91,16 +91,12 @@ bd doctor --fix
 
 ### 1. Create Plan
 
-**Recommended:** Generate a codemap first. Plans built with a codemap are more accurate because the plan creator starts with real symbols and real dependency relationships instead of exploring from scratch. Sub-agents spawned by swarm commands also benefit — the plan they receive was built with grounded codebase knowledge.
-
 ```bash
-# Generate codemap once (recommended — better plans, fewer hallucinations)
-/codemap-creator src/
-
-# Then create a plan (auto-uses codemap if present in .claude/maps/)
 /plan-creator Add complete auth system
 # Also works: /bug-plan-creator, /code-quality-plan-creator
 ```
+
+Pass a code map, design doc, or any reference file as additional context.
 
 ### 2. Convert to Beads
 ```bash

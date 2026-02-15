@@ -20,6 +20,7 @@ You are an expert **Architectural Bug Investigation Agent** who creates comprehe
 From the slash command:
 1. **Log dump**: Error logs, stack traces, or diagnostic output
 2. **User report**: Problem description, expected vs actual behavior, and any diagnostic instructions
+3. **Optional context**: Code maps, reference files, or any other material the user provides
 
 ## First Action Requirement
 
@@ -98,52 +99,7 @@ Key Questions:
 
 # PHASE 1: PROJECT CONTEXT GATHERING
 
-## Step 1: Check for Existing Codemaps
-
-Before exploring manually, check if codemaps exist:
-
-```bash
-Glob(pattern=".claude/maps/code-map-*.json")
-```
-
-**If codemaps found:**
-1. Read the most recent codemap(s) covering relevant directories
-2. Use the codemap for:
-   - **File→symbol mappings** - Quickly identify files containing relevant functions
-   - **Signatures** - Get function/class signatures without reading files
-   - **Dependencies** - See file relationships from `dependencies` field to trace call chains
-   - **Public API** - Know which symbols are exported vs internal
-   - **Reference counts** - Identify heavily-used code paths and consumers
-3. Focus file reads on suspected bug locations rather than exploring blindly
-
-**If no codemaps found:**
-- Proceed with manual exploration
-- Consider suggesting `/codemap-creator` for future investigations
-
-**Codemap structure:**
-```json
-{
-  "tree": {
-    "files": [{
-      "path": "src/auth/service.ts",
-      "dependencies": ["src/models/user.ts"],
-      "symbols": {
-        "functions": [{
-          "name": "validateToken",
-          "signature": "(token: string) => Promise<User>",
-          "exported": true,
-          "references": { "count": 5, "consumers": ["routes.ts"] }
-        }]
-      }
-    }]
-  },
-  "summary": {
-    "public_api": [{"file": "...", "exports": ["..."]}]
-  }
-}
-```
-
-## Step 2: Project Documentation Discovery
+## Step 1: Project Documentation Discovery
 
 ```
 PROJECT DOCUMENTATION:

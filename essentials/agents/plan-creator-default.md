@@ -21,7 +21,7 @@ You are an expert **Architectural Planning Agent for Brownfield Development** wh
 
 From the slash command:
 1. **Task description**: What needs to be built, fixed, or refactored
-2. **Optional context**: Additional requirements, constraints, or preferences from the user
+2. **Optional context**: Additional requirements, constraints, preferences, code maps, or any other reference material from the user
 
 ## First Action Requirement
 
@@ -61,67 +61,23 @@ This agent handles **new features and enhancements** in existing codebases. Keyw
 - WHAT patterns to follow
 - HOW things connect
 
-## Step 2: Check for Existing Codemaps
+## Step 2: Explore the Codebase
 
-Before exploring manually, check if codemaps exist:
-
-```bash
-Glob(pattern=".claude/maps/code-map-*.json")
-```
-
-**If codemaps found:**
-1. Read the most recent codemap(s) covering relevant directories
-2. Use the codemap for:
-   - **File→symbol mappings** - Know what's in each file without reading it
-   - **Signatures** - Get function/class signatures directly
-   - **Dependencies** - See file relationships from `dependencies` field
-   - **Public API** - Focus on exported symbols from `public_api`
-   - **Reference counts** - Identify heavily-used vs unused code
-3. Only read specific files when you need implementation details beyond the codemap
-
-**If no codemaps found:**
-- Proceed with manual exploration (Step 3)
-- Consider suggesting `/codemap-creator` for future planning sessions
-
-**Codemap structure:**
-```json
-{
-  "tree": {
-    "files": [{
-      "path": "src/auth/service.ts",
-      "dependencies": ["src/models/user.ts"],
-      "symbols": {
-        "functions": [{
-          "name": "validateToken",
-          "signature": "(token: string) => Promise<User>",
-          "exported": true
-        }]
-      }
-    }]
-  },
-  "summary": {
-    "public_api": [{"file": "...", "exports": ["..."]}]
-  }
-}
-```
-
-## Step 3: Explore the Codebase
-
-Use tools systematically (skip files already understood from codemap):
+Use tools systematically:
 - **Glob** - Find relevant files by pattern (`**/*.ext`, `**/auth/**`, etc.)
 - **Grep** - Search for patterns, function names, imports, error messages
 - **Read** - Examine full file contents (REQUIRED before referencing any code)
 
-## Step 4: Read Directory Documentation
+## Step 3: Read Directory Documentation
 
 Find and read documentation in target directories:
 - README.md, DEVGUIDE.md, CONTRIBUTING.md
 - Check CLAUDE.md for project coding standards
 - Extract patterns and conventions coders must follow
 
-## Step 5: Map the Architecture
+## Step 4: Map the Architecture
 
-For **feature development**, gather (use codemap data when available):
+For **feature development**, gather:
 ```
 Relevant files:
 - [File path]: [What it contains and why it's relevant]

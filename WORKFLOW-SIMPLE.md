@@ -1,8 +1,8 @@
 # Simple Workflow
 
-> **Loops and swarms powered by Claude Code's built-in Task System.** Both enforce exit criteria and sync. Swarm is just faster when tasks can run in parallel.
+> **Loops, swarms, and teams powered by Claude Code's built-in Task System.** All enforce exit criteria and sync. Swarm is faster when tasks can run in parallel. Team adds contract-first coordination for multi-component builds.
 
-**Default workflow with zero dependencies.** Handles 80% of tasks. Plans define exit criteria. Loops run until tests pass. Done means actually done.
+**Default workflow with zero dependencies (loop/swarm).** Handles 80% of tasks. Plans define exit criteria. All modes run until tests pass. Done means actually done.
 
 **Requires:** Claude Code v2.1.19+ (native task dependencies, `ctrl+t` progress, automatic persistence)
 
@@ -12,10 +12,12 @@
 # From conversation context (no plan file needed)
 [discuss bug/feature]  →  /implement-loop <task>   →  Exit criteria pass ✓
                        →  /implement-swarm <task>  →  All tasks complete ✓
+                       →  /implement-team <task>   →  All agents complete ✓
 
 # With plan file
 /plan-creator <task>  →  /plan-loop plan.md   →  Exit criteria pass ✓
                       →  /plan-swarm plan.md  →  All tasks complete ✓
+                      →  /plan-team plan.md   →  All agents complete ✓
 ```
 
 **No external tools required.** Uses Claude Code's built-in Task system for dependency tracking and `ctrl+t` visual progress.
@@ -26,13 +28,7 @@
 
 ### 1. Create Plan
 
-**Recommended:** Generate a codemap first. Plans built with a codemap are more accurate because the plan creator starts with real symbols and real dependency relationships instead of exploring from scratch. Sub-agents spawned by swarm commands also benefit — the plan they receive was built with grounded codebase knowledge.
-
 ```bash
-# Generate codemap once (recommended — better plans, fewer hallucinations)
-/codemap-creator src/
-
-# Then create a plan (auto-uses codemap if present in .claude/maps/)
 /plan-creator Add user authentication with JWT
 
 # Bug fixes
@@ -42,14 +38,7 @@
 /code-quality-plan-creator src/auth.ts src/api.ts
 ```
 
-All three plan creators produce plans with the same structure: per-file implementation code, a `## Dependency Graph` table, and exit criteria. All three auto-detect codemaps in `.claude/maps/` for faster, more accurate codebase orientation.
-
-**Tip:** Use `/prompt-creator` to create better inputs:
-```bash
-/prompt-creator "feature: add OAuth login with Google"  # Creates detailed feature request
-/prompt-creator "bug: ./logs/error.log API timeout"     # Analyzes logs, creates bug description
-# Then use the generated prompt with /plan-creator or /bug-plan-creator
-```
+All three plan creators produce plans with the same structure: per-file implementation code, a `## Dependency Graph` table, and exit criteria. Pass a code map, design doc, or any reference file as additional context.
 
 ### 2. Review Plan
 
@@ -61,7 +50,7 @@ Check `.claude/plans/` before executing:
 
 Fixing a plan is cheap. Debugging bad code is expensive.
 
-### 3. Execute: Loop or Swarm
+### 3. Execute: Loop, Swarm, or Team
 
 #### From Conversation Context
 
@@ -69,7 +58,8 @@ After discussing a bug or feature in chat:
 
 ```bash
 /implement-loop fix the auth bug we discussed    # Sequential
-/implement-swarm refactor the API handlers       # Parallel
+/implement-swarm refactor the API handlers       # Parallel subagents
+/implement-team build the full-stack feature     # Agent Teams with contracts
 ```
 
 The commands extract goals, requirements, and exit criteria from your discussion.
@@ -78,7 +68,8 @@ The commands extract goals, requirements, and exit criteria from your discussion
 
 ```bash
 /plan-loop .claude/plans/user-auth-3k7f2-plan.md   # Sequential
-/plan-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel
+/plan-swarm .claude/plans/user-auth-3k7f2-plan.md  # Parallel subagents
+/plan-team .claude/plans/user-auth-3k7f2-plan.md   # Agent Teams with contracts
 ```
 
 #### How They Work
@@ -106,6 +97,20 @@ Read plan → Create tasks → Set addBlockedBy from Dependency Graph → Spawn 
 5. Main agent stops and waits — background agents notify on completion
 6. When notified → mark task `completed` → check TaskList for newly unblocked tasks → spawn next agents
 7. **Completes when all tasks done**
+
+**Team (contract-first parallel, Agent Teams):**
+```
+Read plan → Determine team → Define contracts → Spawn all agents → Facilitate → Validate
+```
+1. Reads plan, determines team structure (2-5+ agents based on components)
+2. Defines exact integration contracts (API URLs, JSON shapes, status codes, SSE formats)
+3. Creates task graph (one task per agent + validation tasks)
+4. Enters Delegate Mode, spawns all agents in tmux panes with contracts + ownership boundaries
+5. Facilitates: relays messages, mediates contract changes, resolves conflicts
+6. Runs contract diff + end-to-end validation
+7. **Completes when all agents validated and exit criteria pass**
+
+**Requires:** tmux + `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
 
 **Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
 
@@ -145,23 +150,38 @@ If every task chains to the previous, swarm degrades to sequential.
 
 # Cancel any swarm
 /cancel-swarm
+
+# Team (from context — multi-component builds)
+/implement-team build the auth system       # From conversation context
+/implement-team build dashboard --agents 4  # Override agent count
+
+# Team (from plan file)
+/plan-team plan.md                          # Plan file required
+/plan-team plan.md --agents 5              # Override agent count
+
+# Cancel any team
+/cancel-team
 ```
 
 ---
 
-## Loop vs Swarm
+## Loop vs Swarm vs Team
 
-| Aspect | Loop | Swarm |
-|--------|------|-------|
-| **Executor** | Main agent (foreground) | Background agents |
-| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) |
-| **Context** | Full conversation history | Each agent gets task description only |
-| **Visibility** | See work live | Check with `ctrl+t` or TaskList |
-| **Task system** | Same | Same |
-| **Dependencies** | Same | Same |
-| **Exit criteria** | Enforced | Enforced |
+| Aspect | Loop | Swarm | Team |
+|--------|------|-------|------|
+| **Executor** | Main agent (foreground) | Background subagents | Full Claude Code instances (tmux) |
+| **Concurrency** | 1 task at a time | Up to N tasks (`--workers`) | All agents in parallel |
+| **Context** | Full conversation history | Each agent gets task description only | Each agent gets contracts + ownership scope |
+| **Communication** | N/A (single agent) | Workers isolated | Agents message each other via lead |
+| **Lead role** | Implements directly | Queue manager | Contract author + coordinator (no coding) |
+| **Pre-work** | Parse plan, create tasks | Parse plan, create tasks | Parse plan, **define contracts**, create tasks |
+| **Best for** | Sequential tasks | Independent parallel tasks | Multi-component builds requiring integration |
+| **Requirements** | None | None | tmux + `AGENT_TEAMS=1` |
+| **Task system** | Same | Same | Same |
+| **Dependencies** | Same | Same | Same |
+| **Exit criteria** | Enforced | Enforced | Enforced |
 
-**Both use the same task graph with dependencies.** Only difference is who executes and how many at once. Swarm is faster when tasks can run in parallel — parallelism depends on the plan's Dependency Graph structure.
+**All three use the same task graph with dependencies.** Loop executes sequentially. Swarm spawns isolated subagents — faster when tasks can run in parallel. Team defines integration contracts upfront and spawns full Claude Code instances that communicate through the lead — use when components must agree on interfaces (frontend + backend + database).
 
 ---
 
